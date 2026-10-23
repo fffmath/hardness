@@ -11,13 +11,20 @@ Times Asia/Shanghai (UTC+8).
 
 - (round 6 commit, see below): complexity layer M1–M3 + conditional headline.
 
-## In flight
-- Round 6 Codex (specs/phase6_prompt.md), started ~06:23, log /workspace/hardness_codex_r6.log,
-  PID 867741, session 01a16adc-35fe-7be0-bd96-0b9a55f74ec0. Milestones M1 Problem/encodings, M2 ExactThreeSAT→MaskedSys (+polytime),
-  M3 NP membership, M4 list compiler + bridge, M5 compiler polytime, M6 headline
-  `principalCVP_npComplete`. Files so far: Hardness/Complexity/{ListRing,Problem,SatToMasked}.lean.
+## Done (cont.)
+- e9d0a61 round 6: Hardness/Complexity/* — PrincipalCVP ∈ NP (unconditional), ExactThreeSAT → MaskedSys NP-hard
+  (unconditional), compileList correctness; principalCVP_npComplete conditional on
+  hcompilePoly : ComputableTidilyInPolyTime compileList encMasked encCVP.
 
-## Next step
-- When round 6 ends: build (timeout 1500 lake build), sorry/axiom grep, #print axioms, commit+push,
-  then write phase7 prompt continuing from NOTES.md's round-6 "missing" list.
-- Stall rule: no log growth for ~30 min → kill and `codex exec resume <id>` with a nudge.
+- (round 7 commit): compileFast (cubic Sidon, pure list code) + bridge + native polytime
+  certificate poly_compileFast ⇒ principalCVP_npComplete : NPComplete encCVP PrincipalCVP
+  UNCONDITIONAL (axioms: propext, Classical.choice, Quot.sound only). Conditional variant kept as
+  principalCVP_npComplete_of_compilePoly.
+
+## In flight
+- Nothing. Headline landed; director loop stopped.
+
+## Possible next steps (not started)
+- X3C NP-completeness in complexitylib terms (3SAT → 3DM → X3C, polytime) to match the paper's source problem.
+- Module-SIVP NP-hardness via the same list-compiler pattern; fixed-family CVPP ⇒ P/poly ⇒ PH = Σ₂
+  (complexitylib has PPoly / Karp–Lipton).

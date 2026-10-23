@@ -2,28 +2,34 @@ import Hardness.Complexity.SatToMasked
 import Hardness.Complexity.Verifier
 import Hardness.Complexity.CompilePolyTime
 
-/-! # Principal cyclotomic CVP: the conditional complexity headline
+/-! # Unconditional NP-completeness of principal cyclotomic CVP
 
-NP membership and ExactThreeSAT-to-masked hardness are unconditional. The only
-remaining hypothesis is a native polynomial-time certificate for the specified
-executable compiler. No custom axioms are used.
+The native complexitylib chain is ExactThreeSAT → masked Boolean equations →
+principal CVP. Both reductions and NP membership have proved runtime certificates.
 -/
 namespace Hardness
 open Cslib.Complexity Turing.MultiTapeTM
 
-/-- NP-hardness from Cook–Levin and the proved gadget/compiler correctness,
-conditional only on certifying the reference compiler's runtime. -/
-theorem principalCVP_npHard
-    (hcompilePoly : ComputableTidilyInPolyTime compileList encMasked encCVP) :
-    NPHard encCVP PrincipalCVP :=
-  maskedSys_npHard.trans (polyTimeReducible_Masked_CVP hcompilePoly)
+/-- NP-hardness from Cook–Levin, the SAT gadget, and the cubic list compiler. -/
+theorem principalCVP_npHard : NPHard encCVP PrincipalCVP :=
+  maskedSys_npHard.trans polyTimeReducible_Masked_CVP
 
 /-- Exact principal-ideal CVP in power-of-two cyclotomic dimension, with signed
-binary integer data, is NP-complete once the compiler runtime is certified. -/
-theorem principalCVP_npComplete
+binary integer data, is NP-complete without additional hypotheses. -/
+theorem principalCVP_npComplete : NPComplete encCVP PrincipalCVP :=
+  ⟨principalCVP_mem_NP, principalCVP_npHard⟩
+
+/-- The former conditional reference-compiler hardness theorem. -/
+theorem principalCVP_npHard_of_compilePoly
+    (hcompilePoly : ComputableTidilyInPolyTime compileList encMasked encCVP) :
+    NPHard encCVP PrincipalCVP :=
+  maskedSys_npHard.trans (polyTimeReducible_Masked_CVP_of_compilePoly hcompilePoly)
+
+/-- The former conditional headline, retained under an explicit name. -/
+theorem principalCVP_npComplete_of_compilePoly
     (hcompilePoly : ComputableTidilyInPolyTime compileList encMasked encCVP) :
     NPComplete encCVP PrincipalCVP :=
-  ⟨principalCVP_mem_NP, principalCVP_npHard hcompilePoly⟩
+  ⟨principalCVP_mem_NP, principalCVP_npHard_of_compilePoly hcompilePoly⟩
 
 /-- The paper's X3C route, for any supplied encoding and native runtime
 certificate. No X3C hardness theorem is postulated in this project. -/

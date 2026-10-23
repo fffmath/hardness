@@ -34,5 +34,8 @@ import Hardness.Complexity.CertificateBits
 import Hardness.Complexity.Verifier
 import Hardness.Complexity.CompileList
 import Hardness.Complexity.CompileBridge
+import Hardness.Complexity.CompileFast
+import Hardness.Complexity.CompileFastBridge
+import Hardness.Complexity.CompileFastPolyTime
 import Hardness.Complexity.CompilePolyTime
 import Hardness.Complexity.NPComplete

@@ -4,8 +4,9 @@ The LaTeX sources under `paper/src/chapter/` (`pre.tex`,
 `principal-ideal.tex`, `sivp-module.tex`, and `fixed.tex`) are the specification. Indices are
 zero-based. Integer coefficient vectors carry the ordinary squared Euclidean
 norm. Rounds 1–5 establish the mathematical reductions and certificate bounds.
-Round 6 adds native complexitylib NP membership and SAT-to-masked hardness;
-NP-completeness remains conditional on the compiler runtime certificate.
+Round 6 adds native complexitylib NP membership and SAT-to-masked hardness.
+Round 7 closes the compiler runtime obligation with a certified cubic list
+compiler and proves unconditional NP-completeness.
 
 ## Files and theorem names
 
@@ -625,3 +626,82 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   certificate are not finished. This is the only hypothesis of
   `principalCVP_npComplete`; SAT hardness, gadget correctness, total compiler
   correctness, bounded certificate sizes and NP membership are all proved.
+
+## Round 7 — cubic list compiler and unconditional runtime
+
+### Definitions and bridge checkpoint
+
+- `Complexity/CompileFast.lean` defines `MaskedSys.reductionDataCubic` and
+  `compileFast`. The program uses only list/natural/integer operations: bounded
+  range products and `countP` for sparse coefficients, cubic Sidon arithmetic,
+  and `2 ^ Nat.clog 2 (M*L)` for the dimension. The pinned complexitylib already
+  certifies this bounded power with unary output, so no custom doubling loop is
+  needed. `sqrtCeil` counts `k < r` with `k² < r`, a bounded unary search.
+- `Complexity/CompileFastBridge.lean` proves `Fast.sqrtCeil_eq`, the entry/mask
+  counts, every `h`, `t`, `u`, generator and target coefficient, and the penalty.
+  `compileFast_eq` identifies the output with the padded cubic reduction;
+  `compileFast_correct` proves total correctness, including zero rows/columns
+  and malformed inputs. Counts preserve multiplicity, allowing direct finite-sum
+  reindexing rather than a separate existence/injectivity proof for each list.
+  The existing Sidon injectivity theorems enter through `ReductionData.t_norm`.
+- Full checkpoint build passes (7036 jobs):
+  `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`, log
+  `/tmp/round7-bridge-build.log`. Both new modules are imported by `Hardness.lean`.
+- Runtime certification and the unconditional headline are the next checkpoint;
+  the Round 6 conditional theorem remains unchanged at this stage.
+
+### Runtime checkpoint (complete)
+
+- `Complexity/CompileFastPolyTime.lean` proves `poly_compileFast :
+  ComputableTidilyInPolyTime compileFast encMasked encCVP`, with **no hypotheses**.
+  Every natural intermediate (`alpha`, `c`, `L`, `rho`, exponents, `N`, counts,
+  square roots, and `P`) has a native unary-output certificate. Thus the native
+  composition API proves polynomial bounds on their numerical values as well as
+  their runtime, including on malformed inputs. Integer outputs use signed binary
+  arithmetic and certified unary-to-binary casts.
+- Explicit composition handles the nested row/column lookup, the triple-loop
+  cross count, and the penalty. Other operations use `fun_prop`, with `List.getD`
+  locally irreducible. The dimension uses complexitylib's existing
+  `unary_pow_clog_const` certificate. No prime search, finite subtype enumeration,
+  assumed resource bound, or compiler correctness hypothesis enters the runtime
+  proof.
+- `Fast.c_le` and `Fast.dimension_le` also expose the numerical bounds
+  `c ≤ 3n³+n` and `d ≤ 4M(6n³+2n+1)`, where M,n are the padded sizes.
+- Full checkpoint build passes (7038 jobs), `/tmp/round7-poly-build.log`.
+- `/tmp/HardnessRound7Smoke.lean` passes, `/tmp/round7-smoke.log`. For empty,
+  singleton, blocked-mask, malformed and inconsistent zero-column systems it
+  prints `(fast d, reference d, fast Δ, reference Δ, lengths correct)` as
+  `(2,2,484,484,true)`, `(128,64,3202,3202,true)`,
+  `(128,64,1602,1602,true)`, `(1,1,-1,-1,true)`, `(4,4,625,625,true)`.
+  Actual YES certificates accept; the blocked and inconsistent examples reject.
+  Empty and malformed outputs are also printed in full. The bridge/correctness
+  axiom checks show only `propext`, `Classical.choice`, `Quot.sound`.
+
+### Unconditional headline and final validation (complete)
+
+- `polyTimeReducible_Masked_CVP`, `principalCVP_npHard`, and
+  `principalCVP_npComplete : NPComplete encCVP PrincipalCVP` now have **no
+  hypotheses**. The native chain is Cook–Levin / ExactThreeSAT → the proved SAT
+  gadget → `compileFast` → principal cyclotomic CVP, combined with the existing
+  unconditional NP membership theorem.
+- The original reference-compiler conditional statements remain available under
+  `polyTimeReducible_Masked_CVP_of_compilePoly`,
+  `principalCVP_npHard_of_compilePoly`, and
+  `principalCVP_npComplete_of_compilePoly`. They are independent alternative
+  interfaces; the headline does not require certifying `compileList`.
+- Final full build succeeds (7038 jobs), `/tmp/round7-headline-build.log`, using
+  `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`.
+  `/tmp/HardnessRound7AllAudit.lean` checks the exact hypothesis-free types and
+  runs `#print axioms` on all **101** new/updated public declarations, including
+  definitions, bridge lemmas, runtime certificates, bounds, and both headline
+  interfaces. `/tmp/round7-all-axioms.log` was checked declaration by declaration
+  against the whitelist: only `propext`, `Classical.choice`, `Quot.sound` occur.
+- The final smoke rerun passes (`/tmp/round7-smoke.log`). A source scan of all
+  `Hardness/**/*.lean` finds no `sorry`, `axiom`, or `native_decide`.
+  README main entry points now describe the unconditional result and certified
+  compiler. All three new modules are imported by `Hardness.lean`.
+- Round 7 is complete: no compiler-runtime, correctness, or hardness hypothesis
+  remains in `principalCVP_npComplete`. The cubic dimension is larger than the
+  prime-search reference's dimension; both are valid power-of-two reductions.
+  No git command, dependency update, cache download, configuration, manifest,
+  or toolchain edit was used.

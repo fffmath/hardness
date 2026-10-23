@@ -11,15 +11,20 @@ The library is sorry-free and adds no axioms. If the toolchain artifact cache is
 
 Main entry points:
 
+- `Hardness.principalCVP_npComplete` – **unconditional** complexitylib NP-completeness
+  for exact principal cyclotomic CVP with signed binary integer data
 - `Hardness.principalCVP_mem_NP` – unconditional NP membership for exact principal
   cyclotomic CVP, with binary integer data and an explicit polynomial certificate-bit bound
 - `Hardness.maskedSys_npHard` – unconditional ExactThreeSAT → masked Boolean systems
   hardness, including repeated literals and degenerate/malformed inputs
-- `Hardness.compileList_correct` – correctness of the total executable reference compiler
-- `Hardness.principalCVP_npComplete` – **conditional** NP-completeness, with the single
-  hypothesis `hcompilePoly : ComputableTidilyInPolyTime compileList encMasked encCVP`.
-  The independent bounded list compiler rewrite and its runtime proof remain open;
-  see NOTES.md, Round 6.
+- `Hardness.compileFast_correct` – total list compiler using cubic Sidon positions,
+  with a coefficient-by-coefficient bridge to the mathematical reduction
+- `Hardness.poly_compileFast` – native multitape TM polynomial-time certificate;
+  `Hardness.polyTimeReducible_Masked_CVP` and `Hardness.principalCVP_npHard`
+  complete the unconditional hardness chain
+- `Hardness.compileList_correct` – the original prime-search reference compiler;
+  its former conditional headline is retained as
+  `Hardness.principalCVP_npComplete_of_compilePoly`. See NOTES.md, Round 7.
 
 - `Hardness.x3cToCVP` – the X3C → principal cyclotomic CVP reduction (ℤ[y]/(y^d+1), d a power of two)
 - `Hardness.x3c_correct`, `x3c_yes_gap` (min dist² = Δ), `x3c_no_gap` (dist² ≥ Δ+4),
@@ -64,7 +69,8 @@ Main entry points:
   `Hardness.x3c_iff_decode_oracle`, `x3c_iff_checkDecoded_oracle` – computable
   cover extraction and X3C decision from any closest-vector oracle on the produced family
 
-Polynomial running time and complexity-class NP membership are not formalised. Certificate
-correctness and explicit bounds for all nonsingular square integer bases are proved.
+Polynomial running time, NP membership, and NP-completeness are formalised using the pinned
+complexitylib native multitape TM API. Certificate correctness and explicit bounds for all
+nonsingular square integer bases are also proved.
 See [NOTES.md](NOTES.md) for the full theorem ↔ paper mapping.
 The Lean code was written by Codex (prompts in `specs/`).

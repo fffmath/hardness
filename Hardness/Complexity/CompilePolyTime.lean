@@ -1,19 +1,22 @@
-import Hardness.Complexity.CompileBridge
+import Hardness.Complexity.CompileFastPolyTime
 
-/-! # The remaining compiler runtime obligation
+/-! # Native polynomial-time reduction from masked systems to principal CVP
 
-Correctness of the executable reference compiler is proved. A native runtime
-certificate for its finite enumeration / prime search, or a certified equivalent
-bounded list implementation, remains open. The hypothesis here is a runtime
-statement about the specified function, not an NP-hardness assumption.
+The cubic list compiler has unconditional correctness and runtime certificates.
+The original reference compiler's conditional interface is retained separately.
 -/
 namespace Hardness
 open Turing.MultiTapeTM Cslib.Complexity
 
-/-- The semantic compiler becomes a Karp reduction once its runtime is certified. -/
-theorem polyTimeReducible_Masked_CVP
+/-- The former reference-compiler interface, retained for compatibility. -/
+theorem polyTimeReducible_Masked_CVP_of_compilePoly
     (hcompilePoly : ComputableTidilyInPolyTime compileList encMasked encCVP) :
     PolyTimeReducible encMasked encCVP {S | S.Feasible} PrincipalCVP :=
   ⟨compileList, hcompilePoly, compileList_correct⟩
+
+/-- The total cubic list compiler is an unconditional Karp reduction. -/
+theorem polyTimeReducible_Masked_CVP :
+    PolyTimeReducible encMasked encCVP {S | S.Feasible} PrincipalCVP :=
+  ⟨compileFast, poly_compileFast, compileFast_correct⟩
 
 end Hardness
