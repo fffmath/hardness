@@ -6,9 +6,20 @@ Lean 4 / Mathlib formalisation of
 > arXiv:2608.23828 (ePrint 2026/1793). PDF: `paper/2608.23828.pdf`, LaTeX source: `paper/src/`.
 
 Build with `timeout 1500 lake build` (toolchain `leanprover/lean4:v4.36.0-rc1`, Mathlib `v4.36.0-rc1`).
-The library is sorry-free and adds no axioms.
+The library is sorry-free and adds no axioms. If the toolchain artifact cache is read-only, use
+`LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`.
 
 Main entry points:
+
+- `Hardness.principalCVP_mem_NP` – unconditional NP membership for exact principal
+  cyclotomic CVP, with binary integer data and an explicit polynomial certificate-bit bound
+- `Hardness.maskedSys_npHard` – unconditional ExactThreeSAT → masked Boolean systems
+  hardness, including repeated literals and degenerate/malformed inputs
+- `Hardness.compileList_correct` – correctness of the total executable reference compiler
+- `Hardness.principalCVP_npComplete` – **conditional** NP-completeness, with the single
+  hypothesis `hcompilePoly : ComputableTidilyInPolyTime compileList encMasked encCVP`.
+  The independent bounded list compiler rewrite and its runtime proof remain open;
+  see NOTES.md, Round 6.
 
 - `Hardness.x3cToCVP` – the X3C → principal cyclotomic CVP reduction (ℤ[y]/(y^d+1), d a power of two)
 - `Hardness.x3c_correct`, `x3c_yes_gap` (min dist² = Δ), `x3c_no_gap` (dist² ≥ Δ+4),

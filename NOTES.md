@@ -3,8 +3,9 @@
 The LaTeX sources under `paper/src/chapter/` (`pre.tex`,
 `principal-ideal.tex`, `sivp-module.tex`, and `fixed.tex`) are the specification. Indices are
 zero-based. Integer coefficient vectors carry the ordinary squared Euclidean
-norm. Runtime complexity and complexity-class NP membership remain outside the scope;
-Round 4 adds certificate verification and explicit bounded witnesses for produced instances.
+norm. Rounds 1–5 establish the mathematical reductions and certificate bounds.
+Round 6 adds native complexitylib NP membership and SAT-to-masked hardness;
+NP-completeness remains conditional on the compiler runtime certificate.
 
 ## Files and theorem names
 
@@ -457,3 +458,170 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   remains separate. README main entry points are updated. All mandatory
   T3/T1/T2/T8 work is complete; no T4/T5, dependency, configuration or
   toolchain changes were made, and no git command was used.
+
+## Round 6 — complexitylib decision problems and reductions
+
+### M1 — list problems and bridges (complete)
+
+- `Complexity/Problem.lean` defines `CVPInput`, `encCVP`, `PrincipalCVP`,
+  `CVPInput.WellFormed`, and the total `ofList` / `toList` coefficient bridge.
+  Dimensions are unary; all integer coefficients and the squared threshold use
+  complexitylib's signed binary `encIntBin`. Malformed inputs are NO; zero
+  generators and negative thresholds are included.
+- `principalCVP_iff` identifies the language with well-formed coefficient CVP;
+  `toCVPInput_mem_iff` connects existing `PrincipalCVPInstance` values.
+- `MaskedSys` stores a unary column count, dense Boolean rows, rhs and mask.
+  `toSystem`, `feasible_iff`, and `feasible_iff_list` connect its language with
+  the existing `MaskedSystem.HasSolution` and explicit list certificates.
+- `timeout 900 lake env lean Hardness/Complexity/Problem.lean` passes.
+  Target build passes (6953 jobs), log `/tmp/round6-m1-build.log`.
+  New dependency artifacts initially failed to cache in the read-only toolchain;
+  builds use `LAKE_CACHE_DIR=/tmp/hardness-lake-cache` to keep the cache writable.
+  No dependency, manifest or toolchain changes are needed.
+- M1 full checkpoint: `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`
+  passes (7002 jobs), `/tmp/round6-m1-full-build.log`.
+
+### M2 — ExactThreeSAT to masked systems (complete)
+
+- `Complexity/SatToMasked.lean` implements `satToMasked` and proves
+  `satToMasked_correct`, `polyTimeReducible_ExactThreeSAT_Masked`, and
+  `maskedSys_npHard`, unconditionally from complexitylib's Cook–Levin chain.
+- The three gadget rows are exactly `¬l₁+a+b=1`, `b+l₂+c=1`,
+  `c+e+¬l₃=1`. `gadget_iff` checks all eight literal truth cases;
+  `gadget_witness` supplies explicit auxiliary bits. Literal columns have tags
+  0/1, clause auxiliaries tags 2–5, and the dummy tag is 6. Thus each row
+  has distinct columns even when a clause repeats a literal or a variable.
+- `denseRow_sum` and `denseSystem_feasible_iff` prove the sparse-to-dense
+  bridge with duplicate-free finite supports and a proved column enumeration.
+  Binary variable labels are reindexed by complexitylib's `distinctVars`;
+  their numeric magnitudes never control list-generation loops.
+- A dummy equation guarantees positive row/column counts, including empty CNFs.
+  Malformed clause lengths map to a fixed well-formed NO system. Masks are true.
+- All runtime certificates use the native multitape TM API. Explicit composition
+  and an explicit list encoding replace failed broad automation on nested lookups.
+  `timeout 900 lake env lean Hardness/Complexity/SatToMasked.lean` passes;
+  `/tmp/round6-m2-check11.log` records the check.
+- M2 full checkpoint: `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`
+  passes (7010 jobs), `/tmp/round6-m2-build.log`.
+
+### M3 — verifier and NP membership (complete)
+
+- `Complexity/ListRing.lean`: executable list `negacyclicMul` and
+  `listSqDistance`, proved equal to `Cyclotomic.mul` and `sqNorm` by finite-sum
+  reindexing. `cvpWellFormedCheck` rejects malformed dimensions/lists using a
+  bounded unary scan for a power of two. `cvpCheck` checks a length-d integer
+  list, with exact specification `cvpCheck_eq` and language equivalence
+  `principalCVP_iff_exists_check`.
+- `Complexity/Witness.lean`: `principalCVP_bounded_list` uses Round 5's
+  `principal_cvp_iff_bounded_certificate` for nonzero generators. For `g=0`
+  multiplication has image `{0}` and the zero multiplier is a certificate.
+  `intList_encoding_length_le` includes sign bits and list framing.
+  `intBinDecoder` supplies the native total decoder required by the witness API.
+- `Complexity/CertificateBits.lean`: `cvpCertificateBound_bits` proves, for
+  **every** input x (not only well-formed ones), that with N=|encCVP x|,
+  `Nat.size (cvpCertificateBound x).toNat ≤ 7*(N+1)^2`.
+  Each coefficient is bounded by 2^N and d≤N. A loose matrix entry bound d*2^N
+  gives basis magnitude ≤d^3*2^N; factorial and power estimates give the result.
+  Thus encoded witness length is bounded by the explicit cubic polynomial
+  `witnessPolynomial = X * (2*(7*(X+1)^2+1)+1)`. The witness API adds
+  outer framing/padding, so its verifier uses certificate length `2*p(N)+1`.
+- `Complexity/Verifier.lean`: `poly_cvpCheck` gives a native multitape TM
+  polynomial-time certificate, using binary integer arithmetic and unary loop
+  indices. `principalCVP_mem_NP : PrincipalCVP ∈ NP encCVP` is unconditional.
+  `principalCVP_mem_NP_of_resource_bounds` retains the reusable intermediate
+  witness API; its resource hypotheses are both discharged by these modules.
+- Direct timeout-wrapped Lean checks pass for all four modules. Logs:
+  `/tmp/round6-m3-list-check3.log`, `/tmp/round6-m3-witness-check2.log`,
+  `/tmp/round6-m3-bits-check2.log`, `/tmp/round6-m3-verifier-check.log`.
+- M3 full checkpoint: `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`
+  passes (7024 jobs), `/tmp/round6-m3-build.log`.
+
+### M4 — total compiler bridge (reference implementation complete; list rewrite open)
+
+- `Complexity/CompileList.lean` defines an executable `compileList : MaskedSys →
+  CVPInput`. For a well-formed input it evaluates the existing `ReductionData`
+  compiler and enumerates its coefficients with `toList`. It uses the existing
+  executable `erdosTuranPrime` (`Nat.find`), finite sums and subtype cardinalities.
+  This is a **reference implementation with a list interface**, not the planned
+  independent bounded-search / sparse-list / `List.countP` rewrite.
+- `MaskedSys.paddedSystem` adds the independent equation x₀=1 and a true mask
+  bit, so both sizes are positive for every original system. The original mask,
+  equations and solutions are preserved. `paddedSystem_hasSolution_iff` proves
+  both directions, including zero rows, zero columns, and inconsistent empty rows.
+  Malformed lists map to the fixed well-formed NO input `(1,[0],[0],-1)`.
+- `Complexity/CompileBridge.lean`: `compileList_eq` lists exactly the generator,
+  target and threshold of `S.reductionData.toPrincipalCVPInstance`;
+  `compileList_correct : S.Feasible ↔ compileList S ∈ PrincipalCVP` follows
+  unconditionally from padding, M1 and `ReductionData.compiler_correct`.
+- Target build passes (6957 jobs), `/tmp/round6-m4-build.log`.
+- **Remaining M4 work:** replace finite subtype enumeration and `Nat.find` by
+  bounded unary prime search, list entry/cross-position enumeration, `countP`,
+  sparse coefficient generation and list interleaving; prove pointwise equality
+  to this reference compiler. The mathematical correctness bridge and total
+  behavior are finished. No claim that the requested independent rewrite is
+  complete is made.
+- M4 full checkpoint: `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`
+  passes (7028 jobs), `/tmp/round6-m4-full-build.log`.
+
+### M5 — compiler runtime (open; conditional interface checked)
+
+- `Complexity/CompilePolyTime.lean` proves `polyTimeReducible_Masked_CVP`
+  under the single explicit hypothesis
+  `hcompilePoly : ComputableTidilyInPolyTime compileList encMasked encCVP`.
+- This hypothesis is **not proved** in Round 6. No runtime conclusion follows
+  merely from polynomial output bounds or executable Lean definitions. The
+  independent list rewrite described under M4 and its native runtime certificates
+  remain necessary work (alternatively certify the reference implementation).
+  No axioms or opaque correctness hypotheses are introduced.
+- M5 conditional interface checkpoint: `LAKE_CACHE_DIR=/tmp/hardness-lake-cache
+  timeout 1500 lake build` passes (7030 jobs), `/tmp/round6-m5-build.log`.
+
+### M6 — NP-completeness headline (conditional, complete as stated)
+
+- `Complexity/NPComplete.lean` proves `principalCVP_npHard` and
+  `principalCVP_npComplete` with exactly one hypothesis:
+  `hcompilePoly : ComputableTidilyInPolyTime compileList encMasked encCVP`.
+  The chain is complexitylib ExactThreeSAT → our 1-in-3 masked equations →
+  our total reference compiler → principal cyclotomic CVP. NP membership is
+  unconditional. There is no hypothesis assuming hardness or correctness.
+- `principalCVP_npHard_of_X3C` additionally records the paper's alternative
+  route under supplied X3C hardness, encoding and compiler-runtime certificates.
+- **Round 6 completion status:** M1, M2, M3 complete. M4's executable reference
+  and unconditional correctness bridge complete; its independent bounded list
+  rewrite remains open. M5 runtime certificate remains open. M6 is conditional
+  on precisely M5 for the actual reference function. No unconditional
+  NP-completeness claim is made.
+
+### Round 6 final validation and remaining work
+
+- Final successful full build: `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout
+  1500 lake build` (7032 jobs), `/tmp/round6-final-build.log`. All ten new
+  modules are imported by `Hardness.lean`; README main entry points are updated.
+- The exact plain `timeout 1500 lake build` was also attempted. In this sandbox,
+  complexitylib explicitly enables Lake's artifact cache and the default cache
+  directory under the installed toolchain is read-only. Four newly built
+  dependency modules therefore fail while caching artifacts, even though their
+  local object files exist. `/tmp/round6-default-cache-build.log` records this
+  environmental failure. Setting only `LAKE_CACHE_DIR` to a writable directory
+  resolves it; no project/package configuration or toolchain files were changed.
+- `/tmp/HardnessRound6AllAudit.lean` checks **all 110 new public declarations**,
+  including definitions and the conditional headline. Its log,
+  `/tmp/round6-all-axioms.log`, was checked against the whitelist: only
+  `propext`, `Classical.choice`, `Quot.sound`. The separate headline audit
+  `/tmp/HardnessRound6Audit.lean` also prints the exact remaining hypothesis.
+- `/tmp/HardnessRound6Smoke.lean` passes under `timeout 900 lake env lean`.
+  It checks negacyclic wrap/sign and dimension zero, zero generators, unit
+  generators, negative thresholds, invalid dimension, wrong certificate length,
+  empty/malformed CNFs, repeated literals and a contradictory repeated-variable
+  formula. It evaluates actual compiled certificates: a singleton system produces
+  dimension 64 and accepts its certificate; the empty system produces dimension 2
+  and accepts its padded certificate. A malformed system's output rejects.
+  Log: `/tmp/round6-smoke.log`.
+- A source scan of all `Hardness/*.lean` finds no `sorry`, custom `axiom`, or
+  `native_decide`. Rounds 1–5 source files are unchanged. No git command,
+  `lake update`, `lake exe cache get`, manifest or toolchain edit was used.
+- The outstanding proof obligation is exactly `hcompilePoly` for the concrete
+  reference `compileList`. M4's bounded-search/list-count rewrite and M5's native
+  certificate are not finished. This is the only hypothesis of
+  `principalCVP_npComplete`; SAT hardness, gadget correctness, total compiler
+  correctness, bounded certificate sizes and NP membership are all proved.
