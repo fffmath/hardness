@@ -21,13 +21,16 @@ All names below are in namespace `Hardness` unless qualified otherwise.
   specialization and the bijection, including repeated triples as separate
   indices.
 - `Sidon.lean`: `SidonPositions` is the interface used by the reduction.
-  `SidonPositions.cubic` constructs positions with a proved strict order and
-  injective nonzero ordered differences. `cubic_zero` and `cubic_size` give
-  the origin and polynomial bound. This is a proved alternative to paper
-  Lemma `lem:sidon`: alpha_j=(2n^2+1)j+j^2, with cubic size. The paper's
-  quadratic Erdős–Turán formula is also defined as `erdosTuranAlpha`, with
-  origin and strict-monotonicity proofs; its difference theorem is not
-  claimed. No unproved Sidon assumption is used by `x3cToCVP`.
+  `erdosTuranAlpha p j = 2*p*j + j^2 % p` is the exact zero-based formula
+  of paper Lemma `lem:sidon`. `erdosTuran_differences` proves uniqueness of
+  all nonzero ordered differences for prime p, 2<p, and n≤p. Its integer
+  quotient argument recovers k-j, then cancellation in `ZMod p` recovers
+  j and k. `exists_erdosTuranPrime`, `erdosTuranPrime` (a `Nat.find` search),
+  and `erdosTuranPrime_interval` obtain an odd prime in [n,2n) for n≥2
+  from Bertrand. Inputs n≤1 use p=3 and only the zero position.
+  `SidonPositions.erdosTuran`, `erdosTuran_origin`, `erdosTuran_size`,
+  and `erdosTuran_size_lower` give the complete construction, origin, and
+  bounds 2n(n-1)≤c≤4n². The proved cubic alternative is retained.
 - `Coordinates.lean`: `SidonPositions.L`, `ρ`, `hExp`, `crossExp`, `N`.
   `hExp_injective`, `crossExp_injective`, `row_ne_cross`, and the `_lt_N`
   bounds are the support and no-wrap arguments in `lem:boolean-identity`
@@ -39,7 +42,7 @@ All names below are in namespace `Hardness` unless qualified otherwise.
   `sqNorm_interleave` give the unique orthogonal even/odd decomposition.
   `sqNorm_sparse` proves orthogonality for arbitrary injectively positioned
   sparse sums. No ring or domain instance is postulated; association with
-  a polynomial quotient is not formalized.
+  a polynomial quotient is proved in `Quotient.lean`.
 - `Blocks.lean`: finite parity reindexing, `even_mul`, `mul_y` (in
   `Cyclotomic.lean`), and `shift_interleave` prove the parity algebra used
   in equation `(block-product)`.
@@ -78,34 +81,82 @@ All names below are in namespace `Hardness` unless qualified otherwise.
   `exactCoverEquivClosest` are the X3C specialization of
   `thm:cyclotomic-cvp`. The bijection sends a cover to g*a_xi(y^2).
 - `Dimensions.lean`: `SidonPositions.N_le`, `ReductionData.dimension_le`,
-  and `x3c_dimension_le` bound the ambient dimension explicitly.
+  and `x3c_dimension_le` prove `(x3cToCVP I).d ≤ 4*(3*I.q)*(8*I.n²+1)`.
+- `Quotient.lean`: `Cyclotomic.QuotRing d` is definitionally the genuine
+  `Polynomial ℤ ⧸ Ideal.span {X^d+1}` (via Mathlib's `AdjoinRoot`).
+  `toQuot_eq_mk` identifies `toQuot` with the class of the coefficient
+  polynomial. `coefficientBasis`, `quotEquiv`, and `toQuot_bijective`
+  give its ℤ-linear bijection for d>0 using monic degree-<d representatives.
+  `toQuot_mul` proves that explicit negacyclic convolution is quotient
+  multiplication. `mem_principalIdealLattice_iff` and
+  `principalIdealLattice_eq_comap` identify the coefficient lattice with
+  the preimage of `Ideal.span {toQuot g}`. `x3c_correct_quotient` restates
+  `thm:cyclotomic-cvp` using that actual ideal and coefficient distances.
 
-## Size and scope
+- `Cyclic.lean`: `Cyclic.S d` is the actual `Polynomial ℤ` quotient by
+  `X^(2*d)-1`. `concat`, `toRing`, and `coeffEquiv` implement its two
+  contiguous coefficient blocks and their unique ring representatives.
+  `generator_image` and `lift_image` identify the coefficient formulas
+  with the paper's G and T-hat. `anti_copy_mul` uses
+  `Cyclotomic.polynomial_mul_difference_dvd` to transport negacyclic
+  products into this ring. `product_image` and `product_distance` give
+  equation `eq:principal-crt-distance`. `sqNorm_lift_sub`, `small_iff`,
+  and `smallEquiv` prove the factor-eight norm identity and unique
+  small-point correspondence of Lemma `lem:principal-crt`.
+  `Cyclic.lattice` is the coefficient preimage of `Ideal.span {toRing G}`.
+  `multiplicationBasis` proves full rank assuming injectivity of the
+  original multiplication map and B≠0; `X3CInstance.cyclicBasis` supplies
+  both hypotheses for the compiler's actual generator. `penalty` is
+  exactly 2 ceil(sqrt(H)) + 1, with H=Delta+4 in `cyclicPenalty`.
+  `x3cToCyclicCVP`, `x3c_cyclic_power_two`, `x3c_cyclic_correct`,
+  `x3c_cyclic_yes_gap`, and `x3c_cyclic_no_gap` give the mathematical
+  reduction in `thm:cyclic-cvp`, with dimension 2d and squared-distance
+  gap 8 Delta versus 8 Delta+32.
 
-The coordinate construction is the paper's construction relative to a Sidon
-sequence. The canonical map uses the cubic construction, so its dimension is
-O(M(n^3+1)), rather than the paper's sharper O(Mn^2). This change affects the
-size bound only; h, t, the parity penalty, threshold, and squared-distance gap
-use the paper's formulas. `W_le`, `weight_le`, `cross_card`, and `t_norm`
-provide additional finite-size and norm calculations. `Reduction.lean` also
-has a documented size/explicitness section. No complexity class, NP-completeness,
-or computational running-time assertion is encoded as a theorem.
+## Round 2 changes and size
 
-The representation is a concrete coefficient model with explicitly defined
-negacyclic multiplication, not a transported quotient ring. General ring laws,
-quotient equivalence, irreducibility, and canonical-embedding norm scaling are
-not part of this development. Full rank for the constructed generator is
-proved directly.
+The canonical `X3CInstance.reductionData`, and hence `x3cToCVP`, now use
+`SidonPositions.erdosTuran`. The ambient dimension is O(Mn²), as in the
+paper, with the explicit bound above. The formulas for h, t, the parity
+penalty, threshold, gap, and the existing correctness theorems are unchanged.
+The Sidon formula and prime search are executable; no classical choice is
+used to select the prime. The singleton case still has c=0.
+
+The ring connection is now proved, rather than an informal interpretation
+of the coefficient model. No ring structure is postulated on the vectors:
+the additive bijection and multiplication compatibility connect them directly
+to Mathlib's quotient ring. Irreducibility and canonical-embedding norm
+scaling remain outside this development. The compiler's full-rank theorem
+continues to use its proved norm estimate, which also supplies the cyclic
+lift's full-rank proof. The cyclic dimension is exactly twice the
+cyclotomic dimension, and its squared distances are multiplied by eight.
+
+Remaining scope: full rank for an arbitrary nonzero power-of-two
+cyclotomic generator, using only irreducibility rather than a supplied
+injectivity proof, is not derived here. The generic cyclic basis theorem
+states that injectivity hypothesis explicitly; it is discharged for every
+output of this reduction. There are no remaining `sorry` placeholders.
+
+`W_le`, `weight_le`, `cross_card`, and `t_norm` give additional size and norm
+calculations. No complexity class, NP-completeness, or machine runtime
+assertion is encoded as a theorem; “polynomial” here refers to the explicit
+mathematical dimension bounds.
 
 ## Proof audit
 
 - `lake build` succeeds with the specified toolchain and existing Mathlib.
 - There are **no remaining `sorry` placeholders** and no new `axiom`
   declarations anywhere in the library.
-- `#print axioms` for `boolean_identity`, `block_product`, both admissibility
-  lemmas, `x3c_correct`, both X3C gap theorems, `exactCoverEquivClosest`, and
-  `multiplicationBasis` reports only Lean's usual `propext`,
-  `Classical.choice`, and `Quot.sound`. In particular, none uses `sorryAx`.
+- Round 2's `/tmp/HardnessRound2Audit.lean` runs `#print axioms` on the
+  Erdős–Turán difference theorem and constructor, dimension bound,
+  quotient bijection, product compatibility and ideal identification,
+  `x3c_correct_quotient`, and all original main correctness/gap/bijection
+  theorems and key compiler lemmas. It also audits the cyclic product and
+  norm identities, small-point correspondence, actual cyclic basis, and
+  all cyclic correctness/gap theorems. These report only Lean's usual
+  `propext`, `Classical.choice`, and `Quot.sound`; none uses `sorryAx`.
+- Prime-search evaluation on n=0,...,5 gives [3,3,3,3,5,5]. The five
+  Erdős–Turán positions for n=5 evaluate to [0,11,24,34,41].
 - An executable one-triple exact-cover example gives dimension 8, threshold
   2116, and squared distance 2116 for the encoded cover. This checks that
   the actual constructor and coefficient arithmetic evaluate, in addition

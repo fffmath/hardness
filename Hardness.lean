@@ -11,3 +11,5 @@ import Hardness.Reduction
 import Hardness.FullRank
 import Hardness.Main
 import Hardness.Dimensions
+import Hardness.Quotient
+import Hardness.Cyclic

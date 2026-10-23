@@ -40,13 +40,13 @@ theorem dimension_le : D.d ≤ 4 * M * (2 * D.positions.c + 1) := by
 
 end ReductionData
 
-/-- The executable cubic Sidon variant has a polynomial ambient dimension. -/
+/-- The paper’s quadratic Sidon construction gives dimension O(M n²). -/
 theorem x3c_dimension_le (I : X3CInstance) :
-    I.reductionData.d ≤ 4 * (3 * I.q) * (6 * I.n ^ 3 + 2 * I.n + 1) := by
+    (x3cToCVP I).d ≤ 4 * (3 * I.q) * (8 * I.n ^ 2 + 1) := by
   have hd := I.reductionData.dimension_le
-  have hc := SidonPositions.cubic_size I.n
+  have hc := SidonPositions.erdosTuran_size I.n
   have hm := Nat.mul_le_mul_left (4 * (3 * I.q))
-    (show 2 * (SidonPositions.cubic I.n).c + 1 ≤ 6 * I.n ^ 3 + 2 * I.n + 1 by omega)
+    (show 2 * (SidonPositions.erdosTuran I.n).c + 1 ≤ 8 * I.n ^ 2 + 1 by omega)
   exact le_trans hd hm
 
 end Hardness

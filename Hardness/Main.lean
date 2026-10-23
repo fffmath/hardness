@@ -136,7 +136,7 @@ namespace X3CInstance
 
 def reductionData (I : X3CInstance) : ReductionData (3 * I.q) I.n where
   system := I.system
-  positions := SidonPositions.cubic I.n
+  positions := SidonPositions.erdosTuran I.n
   M_pos := by have := I.q_pos; omega
   n_pos := I.n_pos
 
