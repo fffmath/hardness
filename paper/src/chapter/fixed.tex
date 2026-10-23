@@ -1,0 +1,127 @@
+The closest vector problem with preprocessing (CVPP)~\cite{Micciancio2001} allows all
+lattice-dependent work to be performed before the target is known.
+We show that exact decision-CVPP on the fixed principal-ideal
+family below has no polynomial-time solution unless $\NP\subseteq\Ppoly$.
+
+For a fixed lattice family, the preprocessing string is common to all target
+queries and can serve as a nonuniform advice string depending
+only on the input length.  We therefore encode every X3C
+instance of a given size using only the target and threshold.
+
+\paragraph{The X3C encoding.}
+For $m\geq3$, let $k_m:=\binom m3$, and let
+$\mathbf U_m\in\{0,1\}^{m\times k_m}$ be the matrix whose columns are the
+incidence vectors of all three-element subsets of $[m]$,
+listed in lexicographic order.  A mask
+$\boldsymbol\mu\in\{0,1\}^{k_m}$ specifies which of these triples belong to
+the input collection.  The collection has an exact cover precisely when
+\[
+ \mathbf U_m\boldsymbol\xi=\mathbf 1_m
+ \quad\text{for some}\quad
+ \boldsymbol\xi\in\{0,1\}^{k_m}
+ \text{ with }\boldsymbol\xi\leq\boldsymbol\mu.
+\]
+Thus $(\mathbf U_m,\mathbf 1_m)$ depends only on $m$.  The mask
+$\boldsymbol\mu$ encodes the input collection.
+
+\Needspace{14\baselineskip}
+\begin{theorem}
+\label{thm:fixed-family}
+There exists a polynomial-time reduction from X3C to exact decision-CVP such
+that every X3C instance on a universe of size $m$ is mapped to an instance
+$(I_m,T_{\boldsymbol\mu},\Delta_{\boldsymbol\mu})$, where
+\(I_m\mathrel{:=}(g_m)\lhd R_{d_m}\) is a full-rank principal ideal and
+its multiplication basis \(\mathbf B_{g_m}\) depends only on \(m\).
+\end{theorem}
+
+\begin{proof}
+Apply Theorem~\ref{thm:compiler} to the fixed system
+$(\mathbf U_m,\mathbf 1_m)$.  The reduction produces the ideal
+\(I_m\) and its multiplication basis independently of the mask.  The target
+\(T_{\boldsymbol\mu}\) and threshold \(\Delta_{\boldsymbol\mu}\) encode the
+collection.
+In the notation of Section~\ref{sec:compiler}, set \(M:=m\)
+and \(n:=k_m\).
+Thus $k_m=\Theta(m^3)$, and the explicit Sidon construction gives
+$c=\alpha_{k_m}=\Theta(k_m^2)$.  Since $\rho_m+c=\Theta(mc)$, rounding up
+to a power of two gives
+ $d_m=\Theta(mk_m^2)=\Theta(m^7)$.  The closest squared distance is
+$\Delta_{\boldsymbol\mu}$ for a YES instance and at least
+$\Delta_{\boldsymbol\mu}+4$ for a NO instance.
+\end{proof}
+
+Together with the certificate argument of
+Theorem~\ref{thm:cyclotomic-cvp}, Theorem~\ref{thm:fixed-family} also shows
+that exact decision-CVP on this fixed family is $\NP$-complete.  Its main consequence
+is the following preprocessing lower bound.
+
+\begin{corollary}
+\label{cor:cvpp}
+If exact decision-CVPP is solvable in polynomial time on the
+family $\{\mathcal L(I_m)\}_{m\geq3}$, each of which is represented by the
+corresponding multiplication basis from Theorem~\ref{thm:fixed-family}, then
+\[
+ \NP\subseteq\Ppoly.
+\]
+\end{corollary}
+
+\begin{proof}
+Let \((\mathsf{Pre},\mathsf{Dec},p)\) be an exact
+decision-CVPP scheme for \(\{\mathcal L(I_m)\}_{m\geq3}\), with each lattice
+represented by its multiplication basis \(\mathbf B_{g_m}\).
+Define the language
+\(L\subseteq\{0,1\}^*\) as follows.  For every \(m\geq3\), its
+length-\(k_m\) strings are precisely the masks
+\(\boldsymbol\mu\in\{0,1\}^{k_m}\) for which the collection encoded by
+\(\boldsymbol\mu\) admits an exact cover.  No strings of any other length
+belong to \(L\).
+An X3C collection on \([m]\) can be converted in polynomial
+time to its length-\(k_m\) mask, and vice versa.  Hence \(L\) is
+\(\NP\)-complete.  Since $k_m=\binom m3$ is strictly
+increasing, the input length determines $m$.
+For length $k_m$, use as advice
+\(\pi_m:=\mathsf{Pre}(\mathbf B_{g_m})\).  The basis has
+encoding length \(m^{O(1)}\), hence \(k_m^{O(1)}\).
+Thus \(|\pi_m|\leq k_m^{O(1)}\), as required by
+Definition~\ref{def:cvpp}.
+Given $\boldsymbol\mu$, Theorem~\ref{thm:fixed-family}
+computes $T_{\boldsymbol\mu}$ and $\Delta_{\boldsymbol\mu}$ in polynomial
+time.  Set $\mathbf t_{\boldsymbol\mu}:=\coeff(T_{\boldsymbol\mu})$.
+Definition~\ref{def:cvpp} and the correctness of the reduction give
+\[
+\mathsf{Dec}(\pi_m,\mathbf t_{\boldsymbol\mu},\Delta_{\boldsymbol\mu})=1
+\quad\Longleftrightarrow\quad
+\dist(\mathbf t_{\boldsymbol\mu},\mathcal L(I_m))^2\leq
+\Delta_{\boldsymbol\mu}
+\quad\Longleftrightarrow\quad
+\boldsymbol\mu\in L.
+\]
+Therefore
+$L\in\Ppoly$, implying $\NP\subseteq\Ppoly$.
+\end{proof}
+
+By the Karp--Lipton theorem~\cite{KarpLipton1980}, such a preprocessing
+scheme would collapse the polynomial hierarchy to $\Sigma_2^{\mathsf P}$.
+
+\Needspace{8\baselineskip}
+\begin{remark}
+Analogues of Theorem~\ref{thm:fixed-family} and
+Corollary~\ref{cor:cvpp} hold after lifting the fixed family to principal
+cyclic ideal lattices.  Let \(P_m,\nu_m\) be the values from
+Section~\ref{sec:compiler} for \((\mathbf U_m,\mathbf 1_m)\), and set
+\(H_m:=P_m^2k_m+\nu_m+4\) and
+\(B_m:=2\lceil\sqrt{H_m}\rceil+1\).
+We have \(\Delta_{\boldsymbol\mu}+4\leq H_m\).  Applying
+Lemma~\ref{lem:principal-crt} with \(H=H_m\) and \(B=B_m\) yields one
+principal cyclic ideal for each \(m\).  Its basis consists of the cyclic
+shifts of its generator.  Only the lifted target and threshold depend on the
+mask.  The
+threshold is \(8\Delta_{\boldsymbol\mu}\), and the squared-distance gap is
+\(32\).
+
+A polynomial-time solution to exact decision-CVPP on this fixed cyclic family
+would imply \(\NP\subseteq\Ppoly\).  Exact decision-CVP on the same family
+remains \(\NP\)-complete, thereby answering the exact decision version of
+Micciancio's question of whether CVP is \(\NP\)-hard even for a fixed family
+of cyclic lattices~\cite{Micciancio2007}.
+\end{remark}

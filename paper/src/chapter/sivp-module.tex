@@ -1,0 +1,204 @@
+\ifdefined\withModuleSIVP
+\else
+Let \(d\) be a power of two, and set
+\[
+ R_d:=\Z[y]/(y^d+1),
+ \qquad
+ K_d:=\Q[y]/(y^d+1).
+\]
+We identify elements of \(K_d\) with their degree-\(<d\) representatives and
+use the coefficient norm.  On \(K_d^2\), we use the corresponding product
+norm.  Since \(y^d+1\) is irreducible over \(\Q\), \(K_d\) is a field.
+For a free rank-two \(R_d\)-module
+\(\mathcal M\subseteq K_d^2\), let \(\mathcal L(\mathcal M)\subseteq
+\mathbb R^{2d}\) denote its \emph{coefficient lattice}.
+
+\paragraph{Technical overview.}
+We start with a principal cyclotomic exact-CVP instance
+\((g,T,\Delta)\).
+Here \(g\in R_d\setminus\{0\}\) generates the ideal \((g)\), \(T\in R_d\) is
+the target, and \(\Delta\in\mathbb Z_{\geq0}\) is the squared-distance
+threshold.  Choose \(Q\) such that
+\(Q^2>\max\{\|T\|_2^2,\|g\|_2^2\}\), and set
+\[
+ \mathcal M_{Q,g,T}:=R_d(Q,T)+R_d(0,g).
+\]
+The submodule \(R_d(0,g)\) spans the one-dimensional \(K_d\)-subspace
+\(V:=K_d(0,g)\).  Hence any two module vectors linearly independent over
+\(K_d\) include a vector outside \(V\).  The choice of \(Q\) ensures that a
+shortest such vector can be written as
+\(a(Q,T)+b(0,g)\) with \(\|a\|_2^2=1\), hence \(a=\pm y^j\).
+Minimizing its second coordinate recovers the
+distance from \(T\) to \((g)\), giving
+\[
+ \bigl(\lambda_2^{K_d}(\mathcal M_{Q,g,T})\bigr)^2
+ =Q^2+\dist(T,(g))^2.
+\]
+Thus the squared-distance gap \(\Delta\) versus \(\Delta+4\) transfers
+directly to module-SIVP.
+\fi
+
+\ifdefined\withModuleSIVP
+\else
+For a free rank-two \(R_d\)-module \(\mathcal M\subseteq K_d^2\), define
+\[
+ \lambda_2^{K_d}(\mathcal M)
+ :=\min\left\{r\geq0:
+ \dim_{K_d}\Span_{K_d}
+ \{\mathbf v\in\mathcal M:\|\mathbf v\|_2\leq r\}\geq2
+ \right\}.
+\]
+
+We now formulate the corresponding exact decision problem.
+\begin{definition}[Cyclotomic exact module-SIVP]
+\label{def:module-sivp}
+Given a power of two \(d\), an \(R_d\)-basis of a free rank-two
+module \(\mathcal M\subseteq K_d^2\), and a nonnegative integer squared
+threshold \(\Gamma\), exact decision-module-SIVP asks whether
+\[
+ \bigl(\lambda_2^{K_d}(\mathcal M)\bigr)^2\leq\Gamma.
+\]
+\end{definition}
+\fi
+
+The following lemma gives the embedding used in the reduction
+and identifies the second \(K_d\)-linear successive minimum.
+
+\begin{lemma}
+\label{lem:module-completion}
+Let \(g\in R_d\setminus\{0\}\), let \(T\in R_d\), and choose an integer
+\(Q>0\) such that
+\[
+ Q^2>\max\{\|T\|_2^2,\|g\|_2^2\}.
+\]
+Set
+\[
+ \mathcal M_{Q,g,T}
+ :=R_d(Q,T)+R_d(0,g)
+ =\{(Qa,Ta+gb):a,b\in R_d\}.
+\]
+Then \(\mathcal M_{Q,g,T}\) is a free rank-two \(R_d\)-module
+with {basis}
+\[
+ \begin{pmatrix}
+  Q&0\\
+  T&g
+ \end{pmatrix},
+\]
+and
+\[
+ \bigl(\lambda_2^{K_d}(\mathcal M_{Q,g,T})\bigr)^2
+ =Q^2+\dist(T,(g))^2.
+\]
+\end{lemma}
+
+\begin{proof}
+The matrix in the statement has determinant \(Qg\neq0\) in
+\(K_d\), so \((Q,T)\) and \((0,g)\) are \(K_d\)-linearly independent.
+Since these vectors span \(\mathcal M_{Q,g,T}\) over \(R_d\), they form an
+\(R_d\)-basis, and hence \(\mathcal M_{Q,g,T}\) is free of rank two.
+
+Let \(V:=K_d(0,g)\), and set
+\[
+ r^2:=Q^2+\dist(T,(g))^2.
+\]
+Every vector of \(\mathcal M_{Q,g,T}\setminus V\) has the form
+\(\mathbf v(a,b):=(Qa,Ta+gb)\) with \(a\neq0\).
+Since \(a\in R_d\setminus\{0\}\), \(\|a\|_2^2\) is a positive integer.
+
+\textit{Case 1: \(\|a\|_2^2=1\).}
+Then \(a=\pm y^j\) for some \(0\leq j<d\).  Multiplication by \(a\) is an
+isometry and \(a^{-1}\in R_d\).  Therefore
+\[
+ \|\mathbf v(a,b)\|_2^2
+ =Q^2+\|T+g(ba^{-1})\|_2^2
+ \geq r^2.
+\]
+
+\textit{Case 2: \(\|a\|_2^2\geq2\).}
+In this case,
+\[
+ \|\mathbf v(a,b)\|_2^2
+ \geq2Q^2
+ >Q^2+\dist(T,(g))^2
+ =r^2,
+\]
+where \(\dist(T,(g))\leq\|T\|_2<Q\).  Thus every vector outside \(V\) has
+norm at least \(r\).
+
+Let \(c\in(g)\) be a closest element to \(T\).  Then
+\((Q,T-c)\in\mathcal M_{Q,g,T}\) has norm \(r\) and lies outside \(V\), while
+\(\|(0,g)\|_2<Q\leq r\).  Since \((0,g)\) and \((Q,T-c)\) are linearly
+independent over \(K_d\),
+\[
+ \lambda_2^{K_d}(\mathcal M_{Q,g,T})=r.
+\]
+\end{proof}
+
+We now apply Lemma~\ref{lem:module-completion} to the
+principal-ideal CVP instances from Theorem~\ref{thm:cyclotomic-cvp}.
+
+\Needspace{12\baselineskip}
+\begin{theorem}
+\label{thm:module-sivp}
+Exact decision-module-SIVP is \(\NP\)-complete on free rank-two modules over
+the power-of-two cyclotomic rings \(R_d\).
+Hardness holds even for lower-triangular \(R_d\)-bases of the form
+\[
+ \begin{pmatrix}
+  Q&0\\
+  T&g
+ \end{pmatrix},
+ \qquad
+ Q\in\mathbb{N}^*,\quad g,T\in R_d,\quad g\neq0.
+\]
+\end{theorem}
+
+\begin{proof}
+Apply Theorem~\ref{thm:cyclotomic-cvp} to obtain a principal-ideal CVP
+instance \((d,g,T,\Delta)\) satisfying
+\[
+\begin{aligned}
+ \dist(T,(g))^2
+   &=\Delta &&\text{in a YES instance},\\
+ \dist(T,(g))^2
+   &\geq\Delta+4 &&\text{in a NO instance}.
+\end{aligned}
+\]
+Set
+\[
+ Q:=1+\left\lceil
+ \sqrt{\max\{\|T\|_2^2,\|g\|_2^2\}}
+ \right\rceil,
+ \qquad
+ \mathcal M:=\mathcal M_{Q,g,T},
+ \qquad
+ \Gamma:=Q^2+\Delta.
+\]
+Lemma~\ref{lem:module-completion} gives
+\[
+\begin{aligned}
+ \bigl(\lambda_2^{K_d}(\mathcal M)\bigr)^2
+   &=\Gamma &&\text{in a YES instance},\\
+ \bigl(\lambda_2^{K_d}(\mathcal M)\bigr)^2
+   &\geq\Gamma+4 &&\text{in a NO instance}.
+\end{aligned}
+\]
+The basis of \(\mathcal M\) and the threshold \(\Gamma\) have
+polynomially bounded encoding length, so the construction is a polynomial-time
+reduction.
+
+For membership in \(\NP\), a YES certificate consists of two vectors in
+\(\mathcal M\) of squared norm at most \(\Gamma\).
+The verifier checks membership of both coefficient vectors in
+\(\mathcal L(\mathcal M)\), their norm bounds, and \(K_d\)-linear independence
+by testing whether the corresponding \(2\times2\) determinant is nonzero.
+After clearing the denominators of the
+input basis, the norm bound gives certificates of polynomial bit length.
+\end{proof}
+
+\ifdefined\withModuleSIVP
+{By the componentwise form of Lemma~\ref{lem:canonical}, the
+theorem also holds under the componentwise canonical embedding after
+multiplying squared thresholds by \(d\).}
+\fi

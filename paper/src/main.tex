@@ -1,0 +1,170 @@
+\documentclass[11pt]{article}
+
+% STOC review submission: letter paper, single column, 11pt, 1-inch margins.
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype}
+\usepackage{needspace}
+\usepackage{xcolor}
+\usepackage[colorlinks,allcolors=blue,bookmarksdepth=2]{hyperref}
+\usepackage[capitalize]{cleveref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\R}{\mathbb R}
+\newcommand{\C}{\mathbb C}
+\newcommand{\NP}{\mathsf{NP}}
+\newcommand{\PH}{\mathsf{PH}}
+\newcommand{\Ppoly}{\mathsf{P}/\mathrm{poly}}
+\newcommand{\SVP}{\mathsf{SVP}}
+\newcommand{\CVP}{\mathsf{CVP}}
+\newcommand{\GapSVP}{\mathsf{GapSVP}}
+\newcommand{\GapCVP}{\mathsf{GapCVP}}
+\newcommand{\SIVP}{\mathsf{SIVP}}
+\newcommand{\GapSIVP}{\mathsf{GapSIVP}}
+\newcommand{\IdealSVP}{\mathsf{Ideal\text{-}SVP}}
+\newcommand{\IdealCVP}{\mathsf{Ideal\text{-}CVP}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\coeff}{\operatorname{coeff}}
+\newcommand{\Span}{\operatorname{span}}
+\newcommand{\poly}{\operatorname{poly}}
+
+
+\begin{document}
+
+% Separate title page.
+\begin{titlepage}
+\thispagestyle{empty}
+
+\begin{center}
+  \vspace*{1.5cm}
+  {\LARGE\bfseries
+    CVP Is NP-Complete for Principal Cyclotomic Ideals
+    \par}
+\end{center}
+
+\vspace{0.55cm}
+
+\begin{center}
+  {\large Jiaqi Liu \quad Yansong Feng \quad Yanbin Pan\par}
+  \vspace{0.8em}
+  {\small
+    State Key Laboratory of Mathematical Sciences,\par
+    Academy of Mathematics and Systems Science, Beijing, China\par}
+  \vspace{0.35em}
+  {\small\texttt{\{ljqi,fengyansong,panyanbin\}@amss.ac.cn}\par}
+\end{center}
+
+\vspace{0.55cm}
+
+\begin{abstract}
+We prove that exact Euclidean decision-CVP is $\NP$-complete on the
+coefficient lattices of nonzero principal ideals in the power-of-two
+cyclotomic rings $R_d\mathrel{:=}\Z[y]/(y^d+1)$.  Our deterministic
+reduction from Exact Cover by 3-Sets (X3C) produces a target and a squared
+threshold $\Delta$ such that the closest squared distance is exactly
+$\Delta$ in YES instances and at least $\Delta+4$ in NO instances.
+This also implies $\NP$-hardness of exact
+search-CVP under polynomial-time Turing reductions.
+
+We also transfer the resulting principal-ideal CVP instances to
+full-rank principal ideals of the cyclic quotient ring $\Z[X]/(X^D-1)$, where
+$D\mathrel{:=}2d$.  Their coefficient lattices are
+invariant under cyclic coordinate shifts.  The lift preserves principality and
+multiplies corresponding squared distances by eight.  Thus, on
+principal cyclic ideal lattices, exact decision-CVP is $\NP$-complete and exact
+search-CVP is $\NP$-hard.
+
+We also obtain uniformly computable fixed cyclotomic and cyclic
+families in which only the target and threshold depend on the X3C collection.
+Consequently, a polynomial-time solution to exact
+decision-CVPP on either family would imply \(\NP\subseteq\Ppoly\) and collapse
+the polynomial hierarchy to \(\Sigma_2^{\mathsf P}\).  To our knowledge, the
+cyclic results answer Micciancio's questions of whether exact decision-CVP is
+\(\NP\)-hard on cyclic lattices and on a fixed family of cyclic lattices, even
+when restricted to full-rank principal cyclic ideals.
+\ifdefined\withModuleSIVP
+
+{Finally, under the coefficient embedding, we prove that exact
+decision-module-SIVP is \(\NP\)-complete on free rank-two modules over the
+same cyclotomic rings.}
+\fi
+\end{abstract}
+
+\end{titlepage}
+
+% The first twelve numbered pages after the title page should contain the
+% paper's merits, context, main ideas, and enough proof detail for verification.
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\section{Introduction}
+\label{sec:intro}
+\input{chapter/intro}
+
+\section{Preliminaries}
+\label{sec:pre}
+\input{chapter/pre}
+
+\section{Reduction from X3C to CVP on principal ideal lattices}
+\label{sec:compiler}
+\input{chapter/principal-ideal}
+
+\section{Fixed principal-ideal families and preprocessing}
+\label{sec:fixed}
+\input{chapter/fixed}
+
+\ifdefined\withModuleSIVP
+\section{Exact module-SIVP on free rank-two cyclotomic modules}
+\label{sec:module-sivp}
+This section reduces exact CVP on principal cyclotomic ideals to
+exact module-SIVP on free rank-two modules over the power-of-two cyclotomic
+rings \(R_d\).
+
+\input{chapter/sivp-module}
+\fi
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+In this work, we prove that exact Euclidean decision-CVP is
+\(\NP\)-complete on the
+coefficient lattices of nonzero principal ideals in power-of-two cyclotomic
+rings.  The construction also yields \(\NP\)-hardness for exact search-CVP.
+By Lemma~\ref{lem:canonical}, both results also hold for the
+corresponding lattices under the canonical embedding after scaling squared
+distances and thresholds by \(d\), the degree of the cyclotomic field.
+We extend both results to full-rank principal cyclic ideal lattices using a
+lift that scales squared distances exactly.  We also
+construct uniformly
+computable fixed cyclotomic and cyclic principal-ideal families on which
+exact decision-CVP remains \(\NP\)-complete.  A polynomial-time solution to
+exact decision-CVPP on either family would imply \(\NP\subseteq\Ppoly\).
+
+\ifdefined\withModuleSIVP
+{We also prove that exact decision-module-SIVP is
+\(\NP\)-complete on free rank-two modules over the same cyclotomic rings.}
+\fi
+
+
+\paragraph{Use of generative AI.}
+The authors used GPT-5.6-sol (Codex) to assist with language
+editing, presentation, and preliminary verification of mathematical
+arguments during the drafting stage.  All mathematical
+claims and proofs in this manuscript were checked by the authors, who take full
+responsibility for the content of the paper.
+
+
+\small
+\bibliographystyle{alpha}
+\bibliography{references}
+
+\end{document}

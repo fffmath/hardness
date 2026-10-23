@@ -1,0 +1,665 @@
+We use the following masked generalization of X3C.
+For the general masked system below, \(M\) denotes the number of equations.
+In the X3C specialization, \(M=m\).
+Let
+\(M,n\geq1\), and consider the \emph{masked Boolean system}
+\begin{equation}
+ \mathbf A\boldsymbol\xi=\mathbf b,
+ \qquad
+ \boldsymbol\xi\in\{0,1\}^n,
+ \qquad
+ \boldsymbol\xi\leq\boldsymbol\mu,
+ \label{eq:masked-system}
+\end{equation}
+where \(\mathbf A\in\{0,1\}^{M\times n}\),
+\(\mathbf b\in\{0,1\}^M\), and
+\(\boldsymbol\mu\in\{0,1\}^n\).
+
+In this paper, we call \(\boldsymbol\mu\) the \emph{mask}.  The
+constraint \(\boldsymbol\xi\leq\boldsymbol\mu\) permits \(\xi_k=1\) only when
+\(\mu_k=1\).  The feasibility problem for masked Boolean systems is
+\(\NP\)-complete,
+since X3C is the special case obtained by setting
+\[
+ (\mathbf A,\mathbf b,\boldsymbol\mu)
+ \mathrel{:=} (\mathbf H,\mathbf 1_m,\mathbf 1_n).
+\]
+
+We reduce this feasibility problem to exact decision-CVP on
+principal ideal lattices.  Roughly speaking, for each Boolean vector
+\(\boldsymbol\xi\leq\boldsymbol\mu\), we form a
+sparse polynomial \(a_{\boldsymbol\xi}\) and construct a principal ideal
+\((g)\), a target \(T_{\boldsymbol\mu}\), and a threshold
+\(\Delta_{\boldsymbol\mu}\) with
+\[
+ \|g(y) a_{\boldsymbol\xi}(y^2)
+       -T_{\boldsymbol\mu}(y)\|_2^2
+ =\Delta_{\boldsymbol\mu}
+  +4\|\mathbf A\boldsymbol\xi-\mathbf b\|_2^2.
+\]
+We then add coefficients at odd powers of \(y\).  If \(q\)
+is not of the form \(a_{\boldsymbol\xi}(y^2)\) for any
+\(\boldsymbol\xi\in\{0,1\}^n\) satisfying
+\(\boldsymbol\xi\leq\boldsymbol\mu\), the resulting ideal element \(gq\)
+has squared distance from \(T_{\boldsymbol\mu}\) greater than
+\(\Delta_{\boldsymbol\mu}+4\).  Thus
+the closest squared distance is \(\Delta_{\boldsymbol\mu}\) for a YES
+instance and at least \(\Delta_{\boldsymbol\mu}+4\) for a NO instance.
+
+\subsection{Encoding the Boolean equations}
+
+We first choose coefficient positions \(\alpha_1,\ldots,\alpha_n\) whose
+nonzero ordered differences are pairwise distinct.
+Such positions are obtained from the classical
+Erd{\H{o}}s--Tur{\'a}n Sidon-sequence
+construction~\cite{ErdosTuran41}.
+
+\begin{lemma}
+\label{lem:sidon}
+There exists a deterministic polynomial-time algorithm that, on input
+\(n\geq1\), outputs integers
+\[
+ 0=\alpha_1<\cdots<\alpha_n,
+ \qquad
+ \alpha_n=\Theta(n^2)\quad(n\geq2),
+\]
+such that the ordered differences \(\alpha_k-\alpha_j\)
+\((j,k\in[n],\ j\neq k)\) are pairwise distinct.
+\end{lemma}
+
+\begin{proof}
+For \(n=1\), take \(\alpha_1=0\).  Otherwise we can always choose an odd prime
+\(p\in[n,2n)\) by Bertrand's
+postulate.  Let \(r_j\) be the least residue of \((j-1)^2\) modulo
+\(p\), and set
+\[
+ \alpha_j:=2p(j-1)+r_j.
+\]
+This is the classical Erd{\H{o}}s--Tur{\'a}n construction,
+which ensures that all nonzero ordered differences \(\alpha_k-\alpha_j\) are
+pairwise distinct~\cite{ErdosTuran41}.
+The construction runs in polynomial time.  Finally,
+\(p<2n\) and \(r_n<p\) give \(\alpha_n=O(n^2)\), while \(p\geq n\) gives
+\[
+\alpha_n\geq2p(n-1)\geq2n(n-1).
+\]
+Hence \(\alpha_n=\Theta(n^2)\) for \(n\geq2\).
+\end{proof}
+
+Set
+\[
+ c:=\alpha_n, \quad L:=2c+1,\quad \rho_i:=c+(i-1)L\quad(i\in[M]).
+\]
+We call \(\rho_i\) the \emph{row coordinate} of row \(i\).  For
+\(A_{ij}=1\) and \(k\neq j\), the position
+\(\rho_i-\alpha_j+\alpha_k\) is a
+\emph{cross-term coordinate}.  Set
+\[
+ W:=\sum_{i\in[M]}\sum_{j\in[n]}A_{ij},
+ \qquad
+ \nu:=(n-1)W.
+\]
+
+Let \(N\) be the least power of two greater than \(\rho_M+c\), and
+work in \(R_N^-:=\Z[x]/(x^N+1)\).  We use degree-\(<N\) representatives
+and their coefficient norms.  Define
+\begin{align*}
+ h(x)&:=\sum_{A_{ij}=1}x^{\rho_i-\alpha_j},\\
+ t(x)&:=2\sum_{i=1}^M b_i x^{\rho_i}
+       +\sum_{\substack{A_{ij}=1\\k\neq j}}
+          x^{\rho_i-\alpha_j+\alpha_k},\\
+ a_{\boldsymbol\xi}(x)&:=\sum_{k=1}^n\xi_kx^{\alpha_k}.
+\end{align*}
+
+\begin{lemma}
+\label{lem:boolean-identity}
+For every Boolean vector
+\(\boldsymbol\xi\in\{0,1\}^n\),
+\[
+ \|2h(x)a_{\boldsymbol\xi}(x)
+       -t(x)\|_2^2
+ =\nu+4\|\mathbf A\boldsymbol\xi-\mathbf b\|_2^2.
+\]
+\end{lemma}
+
+\begin{proof}
+Note that
+\[
+2h(x)a_{\boldsymbol{\xi}}(x)
+= 2\sum_{A_{ij}=1}\sum_{k=1}^n \xi_k x^{\rho_i - \alpha_j + \alpha_k}.
+\]
+Splitting the inner sum according to $k=j$ and $k\neq j$ yields
+\begin{equation}
+2h(x)a_{\boldsymbol{\xi}}(x)
+= 2\sum_{A_{ij}=1} \xi_j x^{\rho_i}
++ 2\sum_{\substack{A_{ij}=1\\k\neq j}} \xi_k x^{\rho_i - \alpha_j + \alpha_k}.
+\label{equ::ha}
+\end{equation}
+
+Subtracting $t(x)$ from \eqref{equ::ha} gives
+\begin{equation}
+2h(x)a_{\boldsymbol{\xi}}(x) - t(x)
+= 2\sum_{i=1}^M\Bigl(\sum_{j:A_{ij}=1}\xi_j - b_i\Bigr)x^{\rho_i}
++ \sum_{\substack{A_{ij}=1\\k\neq j}}(2\xi_k - 1)x^{\rho_i - \alpha_j + \alpha_k}.
+\label{equ::sol}
+\end{equation}
+Because $(\mathbf{A}\boldsymbol{\xi})_i=\sum_{j:A_{ij}=1}\xi_j$, the coefficient of $x^{\rho_i}$ in~(\ref{equ::sol}) is precisely $2((\mathbf{A}\boldsymbol{\xi})_i-b_i)$.
+
+To compute the \(\ell_2\)-norm of~\eqref{equ::sol}, we must verify that all its monomials have distinct exponents.
+The row coordinates \(\rho_i\) are pairwise distinct because \(L>0\).
+
+\textit{(i) Cross-term coordinates do not equal row
+coordinates.}
+A row coordinate is some
+$\rho_{i'}=c+(i'-1)L$. A cross-term coordinate is
+$\rho_i-\alpha_j+\alpha_k$ with $A_{ij}=1$ and $k\neq j$. Equality of the two
+would require $\rho_{i'}-\rho_i=\alpha_k-\alpha_j$. If $i'=i$ this forces
+$\alpha_j=\alpha_k$, hence $j=k$, contradicting $k\neq j$. If $i'\neq i$
+then $|\rho_{i'}-\rho_i|\ge L=2c+1$, whereas $|\alpha_k-\alpha_j|\le c$
+because $0\le\alpha_j,\alpha_k\le c$.
+Thus equality is impossible.
+
+\textit{(ii) Cross-term coordinates for a fixed row are
+distinct.}
+Fix $i$ and suppose
+\[
+\rho_i-\alpha_j+\alpha_k = \rho_i-\alpha_{j'}+\alpha_{k'}
+\quad\text{with }k\neq j,\; k'\neq j'.
+\]
+Cancelling $\rho_i$ gives $\alpha_k-\alpha_j=\alpha_{k'}-\alpha_{j'}$. By
+Lemma~\ref{lem:sidon} all nonzero ordered differences $\alpha_k-\alpha_j$ are distinct,
+so $(j,k)=(j',k')$.
+
+\textit{(iii) Cross-term coordinates for different rows are distinct.}
+All cross-term coordinates for row \(i\) lie in
+\([\rho_i-c,\rho_i+c]=[(i-1)L,iL-1]\).  These intervals are disjoint for
+distinct rows.
+
+Since $N$ is a power of two larger than $\rho_M+c$, all exponents lie in
+$[0,N)$ and no wrap-around modulo $x^N+1$ occurs.  Consequently, the two sums
+in~\eqref{equ::sol} have disjoint supports.  The second sum contains exactly
+$\nu=(n-1)W$ monomials, one for each triple $(i,j,k)$ with $A_{ij}=1$ and
+$k\neq j$.  Because $\xi_k\in\{0,1\}$, each coefficient satisfies
+$(2\xi_k-1)^2=1$.  Therefore
+\[
+\|2h(x)a_{\boldsymbol{\xi}}(x)-t(x)\|_2^2
+=4\|\mathbf{A}\boldsymbol{\xi}-\mathbf{b}\|_2^2+\nu.
+\]
+\end{proof}
+
+\subsection{Controlling every ideal element}
+
+Lemma~\ref{lem:boolean-identity} applies only to the
+polynomials \(a_{\boldsymbol\xi}\) encoding Boolean vectors.  We now add
+coefficients at odd powers of \(y\) so that every \(q\in R_d\) not of the
+form \(a_{\boldsymbol\xi}(y^2)\) with
+\(\boldsymbol\xi\leq\boldsymbol\mu\) satisfies
+\(\|gq-T_{\boldsymbol\mu}\|_2^2>\Delta_{\boldsymbol\mu}+4\).
+
+\begin{lemma}
+The polynomial \(h(x)=\sum_{A_{ij}=1}x^{\rho_i-\alpha_j}\) has exactly
+\(W\) distinct monomials.  Equivalently, the exponents
+\(\rho_i-\alpha_j\) with \(A_{ij}=1\) are pairwise distinct.
+\end{lemma}
+
+\begin{proof}
+Suppose \((i,j)\neq(i',j')\), \(A_{ij}=A_{i'j'}=1\), and
+\[
+\rho_i-\alpha_j=\rho_{i'}-\alpha_{j'}.
+\]
+
+\textit{Case 1: \(i=i'\).}
+Then \(\alpha_j=\alpha_{j'}\), so strict monotonicity of the
+\(\alpha_j\)'s gives \(j=j'\), a contradiction.
+
+\textit{Case 2: \(i\neq i'\).}
+The spacing of the row coordinates gives
+\[
+|\rho_{i'}-\rho_i|\geq L=2c+1,
+\qquad
+|\alpha_{j'}-\alpha_j|\leq c,
+\]
+which contradicts
+\(\rho_{i'}-\rho_i=\alpha_{j'}-\alpha_j\).
+
+Finally, \(0\leq\rho_i-\alpha_j\leq\rho_M<N\), so no wrap-around occurs
+in \(R_N^-\).  Hence all \(W\) exponents are distinct.
+\end{proof}
+
+
+
+
+
+Since these \(W\) monomials have unit coefficients, \(\|h\|_1=W\).  Set
+\[
+ s:=\lceil\sqrt{n+4}\rceil,
+ \qquad
+ P:=1+s\bigl(sW+\lceil\|t\|_2\rceil
+                    +\lceil\sqrt{\nu+4}\rceil\bigr).
+\]
+Let \(d:=2N\) and identify \(R_N^-\) with the even-coordinate subring of
+\(R_d=\Z[y]/(y^d+1)\) via \(x\mapsto y^2\).  For a mask
+\(\boldsymbol\mu\in\{0,1\}^n\), put
+\[
+ u_{\boldsymbol\mu}(x):=\sum_{k=1}^n\mu_kx^{\alpha_k}
+\]
+and define
+\begin{align}
+ g(y)&:=2h(y^2)+2Py,                                      \label{eq:generator}\\
+ T_{\boldsymbol\mu}(y)&:=t(y^2)+Py\,u_{\boldsymbol\mu}(y^2),
+                                                             \label{eq:masked-target}\\
+ \Delta_{\boldsymbol\mu}&:=P^2\|\boldsymbol\mu\|_0+\nu.
+\label{eq:masked-radius}
+\end{align}
+
+Consider the principal ideal generated by $g$.  Every \(q\in R_d\) has a unique form
+\(q=a(y^2)+yb(y^2)\) with \(a,b\in R_N^-\).  Direct multiplication gives
+\begin{equation}
+\label{eq:block-product}
+ gq-T_{\boldsymbol\mu}
+ =(2ha+2Pxb-t)(y^2)+y(2hb+2Pa-Pu_{\boldsymbol\mu})(y^2),
+\end{equation}
+where both \(2ha+2Pxb-t\) and
+\(2hb+2Pa-Pu_{\boldsymbol\mu}\) belong to \(R_N^-\).
+
+
+\begin{lemma}
+\label{lem:admissible}
+If \(\boldsymbol\xi\in\{0,1\}^n\) and
+\(\boldsymbol\xi\leq\boldsymbol\mu\), then
+\begin{equation}
+\label{eq:allowed-distance}
+ \|g(y)a_{\boldsymbol\xi}(y^2)
+       -T_{\boldsymbol\mu}(y)\|_2^2
+ =\Delta_{\boldsymbol\mu}
+  +4\|\mathbf A\boldsymbol\xi-\mathbf b\|_2^2.
+\end{equation}
+Every $q\in R_d$ not of the form \(a_{\boldsymbol\xi}(y^2)\) for some
+\(\boldsymbol\xi\in\{0,1\}^n\) with
+\(\boldsymbol\xi\leq\boldsymbol\mu\) satisfies
+\[
+ \|g(y)q(y)
+       -T_{\boldsymbol\mu}(y)\|_2^2
+ >\Delta_{\boldsymbol\mu}+4.
+\]
+\end{lemma}
+
+\begin{proof}
+Let \(\omega:=\|\boldsymbol\mu\|_0\) be the Hamming weight of
+\(\boldsymbol\mu\).
+
+\textit{Case 1: $q=a_{\boldsymbol\xi}(y^2)$ for a Boolean vector
+\(\boldsymbol\xi\leq\boldsymbol\mu\).}
+Equation~\eqref{eq:block-product} gives
+\begin{equation}
+\label{eq:case-one-blocks}
+ g(y)q(y)-T_{\boldsymbol\mu}(y)
+ =\underbrace{2h(y^2)a_{\boldsymbol\xi}(y^2)-t(y^2)}_{\text{even block}}
+ +
+ \underbrace{Py\bigl(2a_{\boldsymbol\xi}(y^2)
+                   -u_{\boldsymbol\mu}(y^2)\bigr)}_{\text{odd block}}.
+\end{equation}
+
+\paragraph{The even block.}
+The even block in~\eqref{eq:case-one-blocks} is supported on
+the even coordinates, and the substitution \(x=y^2\) preserves its
+coefficient \(\ell_2\)-norm. Hence
+Lemma~\ref{lem:boolean-identity} gives
+\[
+ \|2h(y^2)a_{\boldsymbol\xi}(y^2)-t(y^2)\|_2^2
+ =\|2h(x)a_{\boldsymbol\xi}(x)-t(x)\|_2^2
+ =\nu+4\|\mathbf A\boldsymbol\xi-\mathbf b\|_2^2.
+\]
+
+\paragraph{The odd block.}
+The odd block in~\eqref{eq:case-one-blocks} is
+\[
+ Py\bigl(2a_{\boldsymbol\xi}(y^2)-u_{\boldsymbol\mu}(y^2)\bigr)
+ =P\sum_{k=1}^n(2\xi_k-\mu_k)y^{2\alpha_k+1}.
+\]
+For every $k$, the conditions
+\(\boldsymbol\xi\leq\boldsymbol\mu\) and
+\(\boldsymbol\xi,\boldsymbol\mu\in\{0,1\}^n\) imply
+\((2\xi_k-\mu_k)^2=\mu_k\).  Moreover,
+\(2\alpha_k+1\leq2c+1\leq N<d\), so the corresponding odd-coordinate
+positions are distinct and do not wrap around in $R_d$.
+Hence the odd block in~\eqref{eq:case-one-blocks} has squared norm
+\[
+ P^2\sum_{k=1}^n(2\xi_k-\mu_k)^2
+ =P^2\|\boldsymbol\mu\|_0=P^2\omega.
+\]
+Since the even and odd coordinates are disjoint, adding the two contributions
+proves~\eqref{eq:allowed-distance}.
+
+\textit{Case 2: all remaining $q\in R_d$.}
+Write $q(y)=a(y^2)+yb(y^2)$ with $a,b\in R_N^-$, and set
+\[
+ \Phi(a,b):=\|b\|_2^2+
+ \left\|a-\frac{u_{\boldsymbol\mu}}2\right\|_2^2.
+\]
+For \(0\leq r<N\), write \(a_r\) and \(b_r\) for the
+coefficients of \(x^r\) in \(a\) and \(b\), respectively.
+For each $k$ with \(\mu_k=1\), integrality gives
+\((a_{\alpha_k}-1/2)^2\geq1/4\), with equality exactly when
+\(a_{\alpha_k}\in\{0,1\}\).
+Each coefficient \(a_r\) with
+\(r\notin\{\alpha_k:\mu_k=1\}\) contributes \(a_r^2\) to
+\(\Phi(a,b)\), and each coefficient \(b_r\) contributes \(b_r^2\).
+Consequently,
+\[
+ \Phi(a,b)=\frac\omega4
+\]
+exactly when $b=0$ and
+\(a(x)=a_{\boldsymbol\xi}(x)\) for some Boolean vector
+\(\boldsymbol\xi\leq\boldsymbol\mu\).  For every other pair,
+\(\Phi(a,b)\) is larger by at least \(1\).  Hence
+\[
+ \Phi(a,b)\geq\frac{\omega+4}{4}.
+\]
+
+Identify a polynomial in \(R_d\) with the ordered pair of its
+even- and odd-degree coefficient blocks, equipped with the product Euclidean
+norm.
+Equation~\eqref{eq:block-product} becomes
+\[
+ gq-T_{\boldsymbol\mu}
+ =2P\bigl((xb,a)-(0,u_{\boldsymbol\mu}/2)\bigr)
+  +2(ha,hb)-(t,0).
+\]
+Multiplication by $x$ is an isometry in $R_N^-$, so
+\(\|xb\|_2=\|b\|_2\).  Young's inequality and
+\(\|h\|_1=W\) give the first bound below, while the triangle inequality gives
+the second:
+\[
+ \|(ha,hb)\|_2\leq W\|(a,b)\|_2,
+ \qquad
+ \|(a,b)\|_2\leq\sqrt{\Phi(a,b)}+\frac{\sqrt\omega}{2}.
+\]
+The reverse triangle inequality therefore yields
+\[
+ \|gq-T_{\boldsymbol\mu}\|_2
+ \geq2(P-W)\sqrt{\Phi(a,b)}-W\sqrt\omega-\|t\|_2.
+\]
+Since $P\geq1+s^2W>W$, the lower bound on \(\Phi(a,b)\) gives
+\[
+ \|gq-T_{\boldsymbol\mu}\|_2
+ \geq P\sqrt{\omega+4}
+   -W\bigl(\sqrt{\omega+4}+\sqrt\omega\bigr)-\|t\|_2.
+\]
+
+Because $0\leq\omega\leq n$ and
+\(s=\lceil\sqrt{n+4}\rceil\),
+\[
+ \sqrt{\omega+4}-\sqrt\omega\geq\frac2s,
+ \qquad
+ \sqrt{\omega+4}+\sqrt\omega\leq2s.
+\]
+The definition of $P$ also gives the strict inequality
+\[
+ \frac{2P}{s}
+ =\frac2s+2sW+2\lceil\|t\|_2\rceil
+   +2\lceil\sqrt{\nu+4}\rceil
+ >2sW+\|t\|_2+\sqrt{\nu+4}.
+\]
+Combining these estimates gives
+\[
+\begin{aligned}
+ \|gq-T_{\boldsymbol\mu}\|_2-P\sqrt\omega
+ &\geq P\bigl(\sqrt{\omega+4}-\sqrt\omega\bigr)
+   -W\bigl(\sqrt{\omega+4}+\sqrt\omega\bigr)-\|t\|_2 \\
+ &>\sqrt{\nu+4}.
+\end{aligned}
+\]
+Squaring and discarding the nonnegative cross term now gives
+\[
+ \|gq-T_{\boldsymbol\mu}\|_2^2
+ >\bigl(P\sqrt\omega+\sqrt{\nu+4}\bigr)^2
+ \geq P^2\omega+\nu+4
+ =\Delta_{\boldsymbol\mu}+4.
+\]
+This proves the second assertion.
+\end{proof}
+
+The preceding lemma yields the reduction for masked Boolean
+systems.  Its X3C specialization gives the main hardness result, while the
+fact that the ideal is independent of the mask will be used for the
+fixed-family construction in Section~\ref{sec:fixed}.
+For a full-rank principal ideal \(I=(g)\lhd R_d\), we use
+\((I,T,\Delta)\) as shorthand for the standard CVP input
+\((\mathbf B_g,\coeff(T),\Delta)\).
+
+\begin{theorem}
+\label{thm:compiler}
+There is a polynomial-time reduction from the masked Boolean system
+\eqref{eq:masked-system} to exact decision-CVP that maps
+\((\mathbf A,\mathbf b,\boldsymbol\mu)\) to
+\((I,T_{\boldsymbol\mu},\Delta_{\boldsymbol\mu})\), where
+\(g\in R_d\setminus\{0\}\) and
+\(I\mathrel{:=}(g)\lhd R_d\) is a full-rank principal ideal with a multiplication
+basis depending only on \((\mathbf A,\mathbf b)\).
+Here \(d=O((M+1)n^2)\) is a power of two, and
+\(T_{\boldsymbol\mu}\) and \(\Delta_{\boldsymbol\mu}\) are integral.
+\end{theorem}
+
+\begin{proof}
+Equation~\eqref{eq:allowed-distance} shows that the element
+\(g a_{\boldsymbol\xi}(y^2)\) associated with a Boolean vector
+\(\boldsymbol\xi\leq\boldsymbol\mu\) has squared distance
+\(\Delta_{\boldsymbol\mu}\) from \(T_{\boldsymbol\mu}\)
+precisely when
+\(\mathbf A\boldsymbol\xi=\mathbf b\), i.e., when \(\boldsymbol\xi\) is a
+feasible solution of the masked Boolean system~\eqref{eq:masked-system}.
+If \(\mathbf A\boldsymbol\xi\neq\mathbf b\), then the integrality of
+\(\mathbf A\boldsymbol\xi-\mathbf b\) implies
+\(\|\mathbf A\boldsymbol\xi-\mathbf b\|_2^2\geq1\), so the squared distance
+is at least \(\Delta_{\boldsymbol\mu}+4\).
+The second assertion
+of Lemma~\ref{lem:admissible} gives the same lower bound for
+every remaining \(q\in R_d\).  Consequently,
+\[
+\begin{aligned}
+ {\dist(T_{\boldsymbol\mu},I)^2}
+ &=\Delta_{\boldsymbol\mu} &&\text{in a YES instance},\\
+ {\dist(T_{\boldsymbol\mu},I)^2}
+ &\geq\Delta_{\boldsymbol\mu}+4 &&\text{in a NO instance}.
+\end{aligned}
+\]
+
+The coefficient of \(y\) in \(g\) is \(2P\neq0\), so \(g\neq0\).
+Since \(R_d\) is an integral domain, multiplication by \(g\) is injective.
+Hence \((g)\) has full \(\mathbb Z\)-rank.  Moreover, the elements \(v\in(g)\)
+satisfying \(\|v-T_{\boldsymbol\mu}\|_2^2\leq\Delta_{\boldsymbol\mu}\) are in
+bijection with the solutions of \eqref{eq:masked-system}.
+
+Finally, \(c=O(n^2)\) and
+\(\rho_M+c=O((M+1)n^2)\), so \(d=O((M+1)n^2)\).  We also have
+\(W\leq Mn\), \(\nu\leq Mn^2\), and
+\(\|t\|_2^2=4\|\mathbf b\|_0+\nu\).  Hence every constructed quantity has
+polynomial encoding length, and the reduction runs in polynomial time.
+The generator \(g\in R_d\setminus\{0\}\) and its
+multiplication basis depend only on
+\((\mathbf A,\mathbf b)\), whereas \(T_{\boldsymbol\mu}\) and
+\(\Delta_{\boldsymbol\mu}\) also depend on the mask \(\boldsymbol\mu\).
+\end{proof}
+
+We now apply Theorem~\ref{thm:compiler} with
+\((\mathbf A,\mathbf b,\boldsymbol\mu)
+  \mathrel{:=}(\mathbf H,\mathbf 1_m,\mathbf 1_n)\).
+
+\begin{theorem}
+\label{thm:cyclotomic-cvp}
+Exact decision-CVP is \(\NP\)-complete on the coefficient lattices of
+full-rank principal ideals in the power-of-two cyclotomic rings \(R_d\).
+The hard instances have squared-distance gap \(\Delta\) versus
+\(\Delta+4\).
+\end{theorem}
+
+\begin{proof}
+Theorem~\ref{thm:compiler} gives a deterministic reduction from X3C and the
+claimed gap.  For membership in \(\NP\), a YES certificate is
+\(\coeff(v)\) for an element \(v\in(g)\) satisfying
+\(\|v-T\|_2^2\leq\Delta\).  Write
+\(\coeff(v)=(v_0,\ldots,v_{d-1})^\top\) and
+\(\coeff(T)=(T_0,\ldots,T_{d-1})^\top\).  Each coefficient satisfies
+\(|v_r|\leq|T_r|+\lceil\sqrt\Delta\rceil\), and membership in \((g)\) is
+verified by solving the nonsingular multiplication system
+\(\mathbf B_g\mathbf z=\coeff(v)\) and checking
+\(\mathbf z\in\Z^d\).
+The verifier also checks \(\|v-T\|_2^2\leq\Delta\).
+
+\end{proof}
+
+The same characterization of the elements satisfying the
+distance threshold shows that exact search-CVP on these ideals is
+\(\NP\)-hard under polynomial-time Turing reductions.
+Indeed, one call to an exact search-CVP oracle returns a closest lattice vector
+\(\coeff(v)\) for some \(v\in(g)\).
+If \(\|v-T\|_2^2\leq\Delta\), solving
+\(\mathbf B_g\mathbf z=\coeff(v)\) recovers \(q\) through
+\(\mathbf z=\coeff(q)\).  The coefficients of \(q\) at
+\(y^{2\alpha_k}\) give the exact cover.  Otherwise the X3C instance is
+negative.
+
+By Lemma~\ref{lem:canonical}, both results hold under the
+canonical embedding.  Squared thresholds and gaps are multiplied by \(d\),
+and the closest elements are unchanged.
+
+\subsection{Cyclic extension}
+\label{sec:cyclic-cvp}
+
+Let \(S_D:=\Z[X]/(X^D-1)\), identified with \(\Z^D\) by coefficient vectors.
+Multiplication by \(X\) rotates the coordinates, so every full-rank ideal of
+\(S_D\) is a \emph{cyclic lattice}.
+
+The following lemma lifts the principal cyclotomic instances to
+principal cyclic ideals in \(S_{2d}\).
+Here \(I\) is the
+original principal ideal, \(T\) is its target, and \(H\) is the
+squared-distance threshold. Under the lift, squared distances
+are multiplied by \(8\), and points of \(I\) within squared distance \(H\)
+of \(T\) correspond bijectively to points of the lifted ideal within
+squared distance \(8H\) of the lifted target.
+
+\begin{lemma}
+\label{lem:principal-crt}
+Let \(d\) be a power of two, \(I=(g)\lhd R_d\) with \(g\neq0\), and
+\(T\in R_d\).  Fix \(H\geq0\), choose an integer \(B\) with \(B^2>4H\),
+and set \(D:=2d\).  Let \(\iota_d:R_d\to S_D\) copy the
+degree-\(<d\) representative, and define
+\[
+ G:=(1-X^d)\iota_d(g)+B(1+X^d),
+ \qquad
+ \widehat T:=2(1-X^d)\iota_d(T).
+\]
+Then \(J:=(G)\) is full rank, and
+\[
+ \|2(1-X^d)\iota_d(v)-\widehat T\|_2^2
+ =8\|v-T\|_2^2
+ \qquad(v\in I).
+\]
+Every \(w\in J\) satisfying
+\(\|w-\widehat T\|_2^2\leq8H\) arises uniquely in this way.
+\end{lemma}
+
+\begin{proof}
+For an arbitrary \(Q\in S_D\), write \(Q=p+X^dq\), where
+\(p,q\in\mathbb Z[X]\) have degree less than \(d\).  Put \(r:=p+q\) and
+\(z:=p-q\).  We view these degree-\(<d\)
+polynomials as elements of \(R_d\) in products with \(g\).  Equivalently,
+\begin{equation}
+\label{eq:q-rz-decomposition}
+ Q=\frac12\bigl((1+X^d)r+(1-X^d)z\bigr).
+\end{equation}
+If
+\(F:=GQ-\widehat T=F_0+X^dF_1\), direct expansion in \(R_d\) gives
+\begin{equation}
+\label{eq:principal-crt-distance}
+\begin{gathered}
+ F_0=Br+gz-2T,\qquad F_1=Br-(gz-2T),\\
+ \|F\|_2^2=\|F_0\|_2^2+\|F_1\|_2^2
+ =2\|gz-2T\|_2^2+2B^2\|r\|_2^2.
+\end{gathered}
+\end{equation}
+If \(r\neq0\), then the integer coefficient vector of \(r\)
+has squared norm at
+least one, so \eqref{eq:principal-crt-distance} is at least \(2B^2>8H\).
+Hence \(\|GQ-\widehat T\|_2^2\leq8H\) implies
+\(r=0\). Then \(q=-p\) and \(z=2p\). Substituting into
+\eqref{eq:q-rz-decomposition} gives
+\[
+ Q=\frac12(1-X^d)z=(1-X^d)p.
+\]
+Using \((1-X^d)(1+X^d)=0\) and
+\((1-X^d)^2=2(1-X^d)\), we first get
+\(GQ=2(1-X^d)\iota_d(g)p\).  By the definition of \(\iota_d(gp)\), the
+difference \(\iota_d(g)p-\iota_d(gp)\) is divisible by \(X^d+1\).  Since
+\((1-X^d)(X^d+1)=1-X^{2d}=0\) in \(S_D\), we obtain
+\[
+ GQ=2(1-X^d)\iota_d(gp),
+ \qquad
+\|GQ-\widehat T\|_2^2=8\|gp-T\|_2^2.
+\]
+Thus \(v=gp\) maps to \(2(1-X^d)\iota_d(v)\).  The coefficients
+of degrees \(0,\ldots,d-1\) in this image equal those of \(2v\), so \(v\) is
+uniquely determined.
+
+Over \(\Q\), the Chinese remainder theorem gives
+\[
+ S_D\otimes_{\Z}\Q
+ \cong \Q[X]/(X^d-1)\times\Q[X]/(X^d+1),
+ \qquad
+ G\longmapsto(2B,2g).
+\]
+Since \(d\) is a power of two, \(X^d+1\) is irreducible over \(\Q\), so
+\(\Q[X]/(X^d+1)\) is a field.  Both components are units: \(2B\) is a
+nonzero scalar in the first factor, and \(2g\neq0\) in the second.  Hence
+multiplication by \(G\) is invertible over \(\Q\), and \(J\) has full rank.
+\end{proof}
+
+\begin{theorem}
+\label{thm:cyclic-cvp}
+Exact decision-CVP for tuples
+\((D,G,\widehat T,\widehat\Delta)\), where \(D\) is a power of two,
+{\(G,\widehat T\in S_D\)}, \((G)\lhd S_D\) is full rank, and
+{\(\widehat\Delta\in\Z_{\geq0}\)}, is
+\(\NP\)-complete.  The lattice basis is computed from the
+\(D\) cyclic shifts of \(G\).  The reduction has squared-distance gap
+\(\widehat\Delta\) versus \(\widehat\Delta+32\).
+\end{theorem}
+
+\begin{proof}
+Apply Lemma~\ref{lem:principal-crt} to the instance from
+Theorem~\ref{thm:cyclotomic-cvp} with
+\[
+ H:=\Delta+4,
+ \qquad
+ B:=2\lceil\sqrt H\rceil+1,
+ \qquad
+ \widehat\Delta:=8\Delta.
+\]
+The closest squared distance equals \(\widehat\Delta\) in a YES instance and
+is at least \(\widehat\Delta+32\) in a NO instance.  All lifted data have
+polynomial encoding length.
+Membership in \(\NP\) follows as in
+Theorem~\ref{thm:cyclotomic-cvp}, using the cyclic shifts of \(G\) as a
+basis.
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:cyclic-cvp} settles one of Micciancio's open questions:
+exact Euclidean decision-CVP is \(\NP\)-hard on cyclic
+lattices~\cite{Micciancio2007}.
+The lift also gives \(\NP\)-hardness of
+exact search-CVP on the same cyclic ideals under polynomial-time Turing
+reductions.  Given a closest \(\widehat v\in J\), if
+\(\|\widehat v-\widehat T\|_2^2>\widehat\Delta\), the X3C instance is
+negative.  Suppose instead that
+\(\|\widehat v-\widehat T\|_2^2\leq\widehat\Delta\).
+Lemma~\ref{lem:principal-crt} then gives a unique \(v\in I\) with
+\(\widehat v=2(1-X^d)\iota_d(v)\). The coefficients of \(\widehat v\) in
+degrees \(0,\ldots,d-1\) are twice the corresponding coefficients of \(v\).
+Thus they determine \(\coeff(v)\). Solving
+\(\mathbf B_g\mathbf z=\coeff(v)\) now yields
+\(\mathbf z=\coeff(q)\). The coefficients of \(q\) at
+\(y^{2\alpha_k}\) give the exact cover.
+\end{remark}
