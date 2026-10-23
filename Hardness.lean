@@ -25,3 +25,4 @@ import Hardness.StrongBounds
 import Hardness.CVPP
 import Hardness.CertificateBound
 import Hardness.SearchToDecision
+import Hardness.Complexity.Smoke

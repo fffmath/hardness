@@ -16,3 +16,8 @@ rev = "v4.36.0-rc1"
 
 [[lean_lib]]
 name = "Hardness"
+
+[[require]]
+name = "complexitylib"
+git = "https://github.com/cslib-community/complexitylib"
+rev = "ba134c185f6b76f68bd31c3a6b89abe8afd0f3c6"
