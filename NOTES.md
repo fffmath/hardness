@@ -345,3 +345,115 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   to the general correctness proofs.
 - The project configuration, manifest, and toolchain were not modified;
   neither dependency updates nor cache downloads were used.
+
+## Round 5
+
+### T3 — explicit binary and unary encoding bounds (complete)
+
+- `StrongBounds.lean`: `valueBound q n = 262144*(q+n+1)^12` bounds
+  `penaltyBound (3*q) n`, every generator/target coefficient, the nonnegative
+  threshold, and dimension (`penaltyBound_le_valueBound`,
+  `compileX3C_coeff_le`, `compileX3C_target_le`, `compileX3C_threshold_le`,
+  `compileX3C_dim_le`). The coefficient and threshold `_bits` theorems give
+  the explicit logarithmic bound `19+12*Nat.size(q+n+1)`.
+- `inputLength` encodes q,n and three universe elements per indexed triple;
+  `outputLength` counts signed binary coefficients, threshold and dimension.
+  `compileX3C_outputLength_le` and `compileX3C_unaryLength_le` use the explicit
+  polynomial `encodingBound s = 8*(262144*(s+1)^12+1)^2`. The latter is the
+  numerical strong-hardness statement, without asserting a complexity class.
+- `Smoke.lean` is executable and excluded from `Hardness.lean`. No computable
+  twin is necessary: `compileX3C` itself evaluates. Its one-triple, repeated
+  triple, and q=2 uncovered-element examples print `(d, Δ, maxAbsCoeff,
+  outputLength, allBoundsHold)` as `(8,2116,92,73,true)`,
+  `(128,13454,164,580,true)`, `(16,2401,98,112,true)`; the one-triple verifier
+  returns `true`. Log: `/tmp/round5-smoke.log`.
+- `timeout 1500 lake build` succeeds (6690 jobs), logged in
+  `/tmp/round5-t3-build.log`. `/tmp/HardnessRound5Audit.lean` audits all eleven
+  public T3 theorems; `/tmp/round5-t3-axioms.log` contains only `propext`,
+  `Classical.choice`, `Quot.sound`.
+
+### T1 — fixed-family CVPP advice (complete)
+
+- `CVPP.lean`: `CVPPScheme` specifies arbitrary preprocessing and an exact
+  Bool decision procedure. `fixedBasisMatrix` is the fixed multiplication
+  matrix; `matrixLattice_fixedBasisMatrix` identifies its column lattice
+  with `Fixed.lattice`, and `fixedBasisMatrix_column` identifies its columns
+  with the existing actual basis.
+- `CVPPScheme.advice m` is total and depends only on m (using a zero-dimensional
+  default below three). `advice_def` is `rfl`; `advice_eq` gives its value
+  when m≥3. `advice_collection` and `advice_collections_eq` show that
+  preprocessing any mask's generator gives this identical advice.
+- `cvpp_advice_decides` and `cvpp_advice_decides_indexed` prove the set and
+  indexed X3C advice-decider equivalences, retaining repeated-triple inputs.
+  No complexity-class, runtime or advice-size hypothesis is introduced.
+- `timeout 1500 lake build` succeeds (6692 jobs), logged at
+  `/tmp/round5-t1-build.log`. The cumulative scratch axiom audit includes
+  all eight public T1 theorems (`/tmp/HardnessRound5Audit.lean`).
+
+### T2 — certificates for every nonsingular square basis (complete)
+
+- `CertificateBound.lean`: `certificateBound B t Δ` is explicitly
+  `n!*(1 + basisMagnitude B + targetMagnitude t + |Δ|)^n`, where the two
+  magnitudes are sums of absolute entries. `certificate_coeff_le` bounds
+  **every coordinate of the same supplied witness** for `det B ≠ 0`.
+  The proof uses integral `|z|≤z²`, a residual-coordinate bound, the identity
+  `cramer B (B*x) = det B • x`, `Matrix.det_le` on the column-updated matrix,
+  and `|det B|≥1`. This is a looser Cramer bound than the suggested adjugate
+  bound but is explicit and needs no restrictions on the target/threshold.
+- `cvp_iff_bounded_certificate`, `cvp_iff_finite_certificate`, and
+  `decideBoundedCVP_eq_true` give bounded witnesses, an explicit finite box,
+  and a computable exhaustive Bool decider. Dimension zero and negative
+  thresholds are included; no efficiency claim is made for exhaustive search.
+- `multiplicationMatrix_det_ne_zero` uses `Cyclotomic.mul_injective` and the
+  integral-domain matrix kernel criterion. Thus
+  `principal_cvp_iff_bounded_certificate` covers **all** nonzero principal
+  generators in power-of-two dimension. `x3c_general_bounded_certificate`
+  specializes it to X3C, while the previous `x3c_bounded_certificate`
+  retains its sharper zero/one witnesses.
+- `timeout 1500 lake build` succeeds (6698 jobs), with log
+  `/tmp/round5-t2-build.log`. All public T2 theorems have been added to the
+  cumulative `/tmp/HardnessRound5Audit.lean` axiom audit.
+
+### T8 — closest-vector oracle to exact-cover search and decision (complete)
+
+- `SearchToDecision.lean`: `ReductionData.selectionCoordinate` and
+  `decodeBits` read each indexed triple's odd coefficient, comparing it with
+  `2*P`. `decodeBits_encoded_product` proves recovery of every Boolean
+  assignment. `X3CInstance.decode` is a total computable vector-to-Finset
+  function, also on vectors outside the lattice or outside the threshold.
+- `decode_exactCoverEquivClosest` proves that this explicit decoder is the
+  inverse of the existing bijection. `decode_isExactCover_of_distance_eq`
+  and `decode_closest_isExactCover` give extraction at Δ and from any
+  minimizer on YES inputs. No oracle tie-breaking assumption is needed.
+- `ClosestVectorOracle` assumes lattice membership and minimality only.
+  `decode_oracle_isExactCover`, `x3c_iff_decode_oracle`, and
+  `x3c_iff_checkDecoded_oracle` supply the search result, the requested X3C
+  iff, and its executable Bool-check form. `IsExactCover` has a computable
+  decidability instance. The optional decision-oracle self-reduction is
+  not included; the requested closest-vector extraction is complete.
+- `timeout 1500 lake build` succeeds (6700 jobs), logged in
+  `/tmp/round5-t8-build.log`. All nine public T8 theorems are included in
+  the cumulative scratch axiom audit. `Smoke.lean` additionally evaluates
+  extraction for a singleton cover and for the second of two repeated triples.
+
+### Round 5 final validation
+
+- The cumulative `/tmp/HardnessRound5Audit.lean` runs `#print axioms` on
+  **all 42 new public theorems**. `/tmp/round5-axioms-verified.log` was
+  checked declaration by declaration: only `propext`, `Classical.choice`,
+  and `Quot.sound` occur. No `sorry`, new `axiom`, or `native_decide`
+  occurs in the library sources.
+- `timeout 600 lake env lean Hardness/Smoke.lean` succeeds. In addition to
+  the T3 tuples above it prints `({0},true)` and `({1},true)` for extraction
+  from the singleton and repeated-triple encoded covers, then `false` for
+  the NO instance's empty decoded set. `/tmp/round5-smoke.log` records this.
+- `/tmp/HardnessRound5CertificateSmoke.lean` tests the finite-box decider
+  with a unit basis, a nonsingular nonunit basis (thresholds zero and one),
+  and the zero-dimensional negative-threshold case. It prints
+  `true,false,true,false`, and checks the dimension-zero finite-certificate
+  equivalence. Log: `/tmp/round5-certificate-smoke.log`.
+- Final `timeout 1500 lake build` log: `/tmp/round5-build.log` (6700 jobs).
+  All four new proof modules are imported by `Hardness.lean`; `Smoke.lean`
+  remains separate. README main entry points are updated. All mandatory
+  T3/T1/T2/T8 work is complete; no T4/T5, dependency, configuration or
+  toolchain changes were made, and no git command was used.

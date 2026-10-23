@@ -21,3 +21,7 @@ import Hardness.Rational
 import Hardness.Canonical
 import Hardness.Certificates
 import Hardness.SizeBounds
+import Hardness.StrongBounds
+import Hardness.CVPP
+import Hardness.CertificateBound
+import Hardness.SearchToDecision

@@ -38,7 +38,22 @@ Main entry points:
   verifier and zero/one certificates for the produced instances
 - `Hardness.compileX3C`, `compileX3C_correct`, `compileX3C_size` – executable finite integer
   output with explicit dimension, coefficient and threshold bounds in q,n
+- `Hardness.compileX3C_coeff_bits`, `compileX3C_threshold_bits`,
+  `compileX3C_outputLength_le`, `compileX3C_unaryLength_le` – explicit logarithmic
+  bit bounds and polynomial binary/unary output lengths
+- `Hardness.CVPPScheme`, `cvpp_advice_decides`, `cvpp_advice_decides_indexed` –
+  abstract exact preprocessing gives fixed-family advice depending only on the universe size
+- `Hardness.certificate_coeff_le`, `cvp_iff_bounded_certificate`,
+  `cvp_iff_finite_certificate`, `decideBoundedCVP_eq_true` – explicit certificates
+  and finite exhaustive decision for every nonsingular square integer basis
+- `Hardness.principal_cvp_iff_bounded_certificate`, `x3c_general_bounded_certificate` –
+  general principal-ideal certificates and their X3C specialization
+
+- `Hardness.X3CInstance.decode`, `X3CInstance.decode_closest_isExactCover`,
+  `Hardness.x3c_iff_decode_oracle`, `x3c_iff_checkDecoded_oracle` – computable
+  cover extraction and X3C decision from any closest-vector oracle on the produced family
 
 Polynomial running time and complexity-class NP membership are not formalised. Certificate
-correctness and bounded witnesses for the produced instances are proved. See [NOTES.md](NOTES.md) for the full theorem ↔ paper mapping.
+correctness and explicit bounds for all nonsingular square integer bases are proved.
+See [NOTES.md](NOTES.md) for the full theorem ↔ paper mapping.
 The Lean code was written by Codex (prompts in `specs/`).
