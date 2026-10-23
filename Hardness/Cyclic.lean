@@ -1,4 +1,4 @@
-import Hardness.Quotient
+import Hardness.GeneralFullRank
 import Hardness.FullRank
 
 /-! # The principal cyclic lift
@@ -419,6 +419,19 @@ def multiplicationBasis {d : ℕ} (hd : 0 < d) (g : R d) (B : ℤ)
   let b := (Pi.basisFun ℤ (Fin (2 * d))).map e.toIntLinearEquiv
   exact (mulHom_range hd g B) ▸ b
 
+/-- Full rank for every nonzero power-of-two cyclotomic generator.
+The plus/minus block proof above needs only `B ≠ 0`. -/
+def principalMultiplicationBasis {d : ℕ} (hd : ∃ k, d = 2 ^ k)
+    (g : R d) (hg : g ≠ 0) (B : ℤ) (hB : B ≠ 0) :
+    Module.Basis (Fin (2 * d)) ℤ (lattice (power_two_pos hd) g B) :=
+  multiplicationBasis (power_two_pos hd) g B (Cyclotomic.mul_injective hd hg) hB
+
+/-- In particular the paper's separation condition supplies a full basis. -/
+theorem principal_full_rank {d : ℕ} (hd : ∃ k, d = 2 ^ k)
+    (g : R d) (hg : g ≠ 0) (B H : ℤ) (hH : 0 ≤ H) (hB : 4 * H < B ^ 2) :
+    Nonempty (Module.Basis (Fin (2 * d)) ℤ (lattice (power_two_pos hd) g B)) := by
+  exact ⟨principalMultiplicationBasis hd g hg B (by intro h; subst B; norm_num at hB; omega)⟩
+
 /-- Transfer any integral lower bound through the separated lift. -/
 theorem lower_bound {d : ℕ} (hd : 0 < d) (g T : R d) (B H : ℤ)
     (hB : 4 * H < B ^ 2)
@@ -492,7 +505,7 @@ def cyclicTarget (I : X3CInstance) : R (2 * (x3cToCVP I).d) :=
 def cyclicBasis (I : X3CInstance) :
     Module.Basis (Fin (2 * (x3cToCVP I).d)) ℤ I.cyclicLattice :=
   Cyclic.multiplicationBasis I.cvp_dimension_pos (x3cToCVP I).g I.cyclicPenalty
-    I.reductionData.mul_injective (by
+    (Cyclotomic.mul_injective (x3cToCVP I).power_two (x3cToCVP I).g_ne_zero) (by
       have hp := I.cyclicPenalty_sq_gt
       have hΔ := (x3cToCVP I).Δ_nonneg
       intro hz

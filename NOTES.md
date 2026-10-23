@@ -104,14 +104,61 @@ All names below are in namespace `Hardness` unless qualified otherwise.
   and `smallEquiv` prove the factor-eight norm identity and unique
   small-point correspondence of Lemma `lem:principal-crt`.
   `Cyclic.lattice` is the coefficient preimage of `Ideal.span {toRing G}`.
-  `multiplicationBasis` proves full rank assuming injectivity of the
-  original multiplication map and B≠0; `X3CInstance.cyclicBasis` supplies
-  both hypotheses for the compiler's actual generator. `penalty` is
+  `multiplicationBasis` retains its general injectivity-based interface.
+  `principalMultiplicationBasis` and `principal_full_rank` remove that
+  hypothesis for every nonzero power-of-two cyclotomic generator, using
+  the integral plus/minus block argument and B≠0 (in particular H≥0,
+  B²>4H). `X3CInstance.cyclicBasis` now uses the general domain theorem. `penalty` is
   exactly 2 ceil(sqrt(H)) + 1, with H=Delta+4 in `cyclicPenalty`.
   `x3cToCyclicCVP`, `x3c_cyclic_power_two`, `x3c_cyclic_correct`,
   `x3c_cyclic_yes_gap`, and `x3c_cyclic_no_gap` give the mathematical
   reduction in `thm:cyclic-cvp`, with dimension 2d and squared-distance
   gap 8 Delta versus 8 Delta+32.
+
+- `GeneralFullRank.lean`: `Cyclotomic.pow_two_cyclotomic` identifies
+  X^(2^k)+1 with Φ_(2·2^k) over every commutative ring, including k=0.
+  `modulus_irreducible`, `modulus_irreducible_rat`, and `quotRing_isDomain`
+  prove integral/rational irreducibility and the actual integral quotient's
+  domain structure. `Cyclotomic.mul_injective` applies to every nonzero
+  generator. `principalMultiplicationEquiv`, `principalMultiplicationBasis`,
+  its `_apply` column formula, and `principal_full_rank` give the general
+  multiplication basis of `pre.tex`, without a supplied injectivity proof.
+- `ModuleSIVP.lean`: `ModuleSIVP.K` is literally
+  ℚ[X]/(X^d+1), with its proved field instance. `scalarMap_injective`
+  embeds the actual integral quotient via the two coefficient bases.
+  `Independent` is field-linear independence of the two embedded vectors;
+  `independent_iff` proves equivalence with nonzero integral determinant.
+  `normSq`, `vectorNormSq`, and `coefficientVector` use ordinary integral
+  coefficients, with `vectorNormSq_eq_coefficients` identifying the 2d norm.
+  `completion` is the actual R_d-submodule {(Qa,Ta+gb)} (and hence has an
+  underlying additive subgroup). `completionBasis` and
+  `completionBasis_columns` prove freeness and identify (Q,T),(0,g).
+  `SecondMinimumSq`, `ExactSecondMinimumSq`, and `ModuleSIVPInstance`
+  formalize `def:module-sivp`, including explicit basis and nonnegative
+  threshold. `exists_minimumDistance` proves attainment by well-ordering
+  integral squared norms. `sqNorm_one_monomial` handles both signs, and
+  `normSq_one_unit_isometry` proves the integral unit and isometry facts.
+  `module_completion` is `lem:module-completion`: given an attained minimum
+  δ, the second minimum is exactly Q²+δ, with both attainment and a universal
+  bound. `PrincipalCVPInstance.module_exact` connects it to the existing
+  coefficient CVP predicate. `completionScale` is exactly
+  1+ceilSqrt(max(‖T‖²,‖g‖²)); its strict bounds are proved.
+  `x3cToModuleSIVP`, `x3c_module_sivp_yes`, `x3c_module_sivp_no`, and
+  `x3c_module_sivp_correct` prove the reduction correctness in
+  `thm:module-sivp`, with Γ=Q²+Δ and squared gap Γ versus Γ+4.
+- `Fixed.lean`: `Fixed.Triple m` is the powerset-card-3 subtype, and
+  `triple_card`/`enumeration` give exactly `m.choose 3` columns.
+  `system` is (U_m,1,μ_C). `HasExactCover` uses selected subcollections
+  of the input set of triples and counts each element once.
+  `cover_iff_feasible` and `hasExactCover_iff_hasSolution` prove the
+  combinatorial equivalence, for arbitrary m (not just multiples of 3).
+  For m≥3, `baseData`, `generator`, `lattice`, and `basis` depend only on m;
+  `data` changes only the mask. `generator_independent` uses the existing
+  `generator_mask_independent`; `lattice_independent` identifies the ideals,
+  and `basis_columns_independent` identifies all multiplication columns.
+  `fixed_family_correct`, `fixed_family_yes`, and `fixed_family_no`
+  prove the mathematical content of `thm:fixed-family`, including full rank
+  and the Δ_C versus Δ_C+4 gap. Collections here are sets of triples.
 
 ## Round 2 changes and size
 
@@ -125,17 +172,33 @@ used to select the prime. The singleton case still has c=0.
 The ring connection is now proved, rather than an informal interpretation
 of the coefficient model. No ring structure is postulated on the vectors:
 the additive bijection and multiplication compatibility connect them directly
-to Mathlib's quotient ring. Irreducibility and canonical-embedding norm
-scaling remain outside this development. The compiler's full-rank theorem
-continues to use its proved norm estimate, which also supplies the cyclic
-lift's full-rank proof. The cyclic dimension is exactly twice the
-cyclotomic dimension, and its squared distances are multiplied by eight.
+to Mathlib's quotient ring. Round 3 adds irreducibility and general full rank;
+canonical-embedding norm scaling remains outside this development. The original
+compiler-specific full-rank proof via norm estimates is retained as an
+independent result. The cyclic lift now also uses the general domain proof.
+The cyclic dimension is exactly twice the cyclotomic dimension, and its
+squared distances are multiplied by eight.
 
-Remaining scope: full rank for an arbitrary nonzero power-of-two
-cyclotomic generator, using only irreducibility rather than a supplied
-injectivity proof, is not derived here. The generic cyclic basis theorem
-states that injectivity hypothesis explicitly; it is discharged for every
-output of this reduction. There are no remaining `sorry` placeholders.
+## Round 3 changes and remaining scope
+
+General full rank, the module-SIVP completion and reduction, and the fixed
+masked-family combinatorial reduction are now proved. All new files are
+imported by `Hardness.lean`. The dimension-one case is included in the
+power-of-two and module theorems. Cyclic full rank needs no supplied
+injectivity proof for nonzero power-of-two generators.
+
+The module development works in the genuine integral quotient pairs,
+embedded injectively in the genuine rational quotient field pairs. Thus its
+independence predicate is over K_d, rather than over ℤ or ℚ. Norms refer to
+the coefficient embedding throughout. Exact minima assert both attainment
+and the lower bound for every independent pair.
+
+Remaining scope: canonical-embedding norm scaling; rational targets or
+arbitrary rational module bases beyond these integral completion instances;
+complexity classes, NP membership, machine runtime, CVPP, P/poly and
+Karp–Lipton. The fixed family uses sets of triples; no separate indexed
+repeated-triple-to-set conversion is formalized. There are no remaining
+`sorry` placeholders.
 
 `W_le`, `weight_le`, `cross_card`, and `t_norm` give additional size and norm
 calculations. No complexity class, NP-completeness, or machine runtime
@@ -144,7 +207,17 @@ mathematical dimension bounds.
 
 ## Proof audit
 
-- `lake build` succeeds with the specified toolchain and existing Mathlib.
+- `timeout 900 lake build` succeeds with the specified toolchain and existing Mathlib.
+- Round 3's `/tmp/HardnessRound3Audit.lean` runs `#print axioms` on all
+  new main full-rank, cyclic full-rank, field embedding/determinant, basis,
+  minimum/completion, X3C module correctness/gap, and fixed-family theorems
+  (64 declarations, including the basis constructors). All 64 reports contain
+  only `propext`, `Classical.choice`, and `Quot.sound`, and no `sorryAx`.
+  The audit completed with exit code 0 using the pinned Lean executable and
+  the existing library paths; `/tmp/round3-axioms-verified.log` records the
+  results. Loading was delayed by filesystem page reads, so the completed
+  isolated run used a 900-second cap. `/tmp/round3-build.log` records the
+  successful final full build.
 - There are **no remaining `sorry` placeholders** and no new `axiom`
   declarations anywhere in the library.
 - Round 2's `/tmp/HardnessRound2Audit.lean` runs `#print axioms` on the
