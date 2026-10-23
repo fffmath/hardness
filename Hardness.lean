@@ -16,3 +16,8 @@ import Hardness.GeneralFullRank
 import Hardness.Cyclic
 import Hardness.ModuleSIVP
 import Hardness.Fixed
+import Hardness.FixedIndexed
+import Hardness.Rational
+import Hardness.Canonical
+import Hardness.Certificates
+import Hardness.SizeBounds
