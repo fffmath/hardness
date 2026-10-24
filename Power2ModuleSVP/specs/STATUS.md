@@ -753,3 +753,248 @@ Precisely what remains between these lemmas and `thm:spectral-seed`:
 Root import integration remains the dispatcher's task. In particular,
 importing only the identity module `SineKernelProof` does not import the
 final theorem; use `SineKernelProofDecomposition`.
+
+## Coloring (p2s-color)
+
+**Partial implementation; the deterministic partial-coloring hypothesis is
+not discharged.** Added nine Lean modules, without modifying the committed
+`PartialColoring.lean`, the root imports, Lake configuration, or another
+job's Lean sources:
+
+- `PartialColoringAlg.lean`: rational dot products, rejection, orthogonal
+  projection, and exact minimum-score column selection.
+- `PartialColoringAlgProjector.lean`: materialized rational projector tables
+  and agreement with the semantic projector.
+- `PartialColoringAlgWalk.lean`: the actual total rational partial-coloring
+  list program, including input checks, normalization, Taylor initialization,
+  heavy-row sorting, constraints, direction, cube truncation, grid updates,
+  and a cubic fuel bound.
+- `PartialColoringAlgInvariants.lean`: cube preservation, fixed-coordinate
+  preservation, small-row preservation, and monotonicity of the sign count.
+- `PartialColoringAlgBounds.lean`: cube discrepancy, deletion of large
+  thresholds, normalization, and extraction of constant 34 from terminal
+  weights, hence constant 68 for original rows.
+- `PartialColoringAlgCorrect.lean`: entropy accounting for prepared signed
+  rows, explicit remaining trajectory/native hypotheses, and conditional
+  correctness of the concrete program.
+- `PartialColoringAlgRuntime.lean`: native multitape certificates for
+  canonical rational primitives and input checks in the existing encoding.
+- `ColoringAux.lean`, `Coloring.lean`: the explicit full-coloring recursion,
+  its list interface and semantic proof, and a separate native-time boundary.
+
+All partial-walk definitions and the following exports are in namespace
+`Power2ModuleSVP.PartialColoringAlg`. The actual executable is
+`partialColor : PartialColoringInput -> List Rat`.
+
+`project_orthogonal`, `project_eq_self`, `project_idempotent`, and
+`project_selfAdjoint` handle arbitrary constraint lists, including zero and
+dependent rows. `projectorTable_spec` and `cachedColumns_eq` identify the
+cached table with that projector. The executable walk uses the cached table;
+it does not repeatedly expand the recursive semantic projector.
+`bestColumn_min` proves minimum Rayleigh score among all nonzero candidates.
+`normalize_bounds` proves squared length strictly above 1/4 and at most one.
+`walk_cube`, `walk_fixed`, and `walk_small_row` are unconditional invariants.
+
+The precise conditional correctness exports are:
+
+```lean
+partialColor_correct_of_trajectory
+  (h : PartialColoringTrajectoryHypothesis) :
+  PartialColoringCorrect partialColor
+
+deterministicPartialColoring_of_trajectory_and_native
+  (h : PartialColoringTrajectoryHypothesis)
+  (hN : PartialColoringNativeHypothesis) :
+  DeterministicPartialColoringHypothesis
+```
+
+`PartialColoringCorrect` expands to the original framed-list equality and
+`PartialColoringSpec`, with the original premises and discrepancy constant
+68. `PartialColoringTrajectoryHypothesis` has exactly three fields for the
+concrete `run`: half-coordinate progress; terminal weights below two; and
+an exponential lower bound with coefficient `33 + 8*stepSize^2`. Its input
+contract includes normalized row lengths, retained threshold bounds, the
+starting cube, and entropy budget `r/32`. Neither discrepancy nor a machine
+certificate is assumed in those fields. `PartialColoringNativeHypothesis`
+is the still-unproved full native certificate for `partialColor`.
+
+Namespace-`Power2ModuleSVP` exports `fullColor`, `FullColoringSpec`,
+`fullColor_spec`, `fullColoring_of_partialCorrect`, and
+`fullColoring_exists_of`. Given any semantically correct partial program,
+`fullColor_spec` proves the actual list program returns signs with
+row discrepancy at most `(240*c_i + 2400)*sqrt(r)*coloringRowSup(V_i)`.
+`coloringRowSup` is the coefficient maximum norm, including dimension zero.
+The implementation retains exactly `r - r/2` selected sign coordinates,
+and the proved active dimension is exactly `r/2`. The entropy lemma uses
+a rational `2/5` bound for the exponential decrease, so odd dimensions are
+covered. The concrete specialization is
+`fullColor_partialColor_spec_of_trajectory` in the partial-walk namespace.
+
+`FullColoringNativeHypothesis F` separately states the native certificate
+for `fullColor F`; `fullColor_algorithm_of_partialCorrect` packages that
+certificate with the proved semantics. Polynomial time for one arbitrary
+partial program does not alone control denominator growth through the full
+recursion. No unconditional full-coloring runtime theorem is claimed.
+
+In namespace `Power2ModuleSVP.ColoringRuntime`, proved native certificates
+include canonical numerator/denominator extraction, `divInt_polytime`,
+`neg_polytime`, `add_polytime`, `sub_polytime`, `mul_polytime`, `inv_polytime`,
+`div_polytime`, `le_polytime`, `lt_polytime`, `nearestSign_polytime`,
+`validInput_polytime`, and `malformedFallback_polytime`.
+`divInt_bits_le` bounds the canonical result's numerator/denominator binary
+sizes by those of the two supplied integers, with one extra bit for zero
+inputs. The total partial program checks list shapes, cube membership and
+nonnegative thresholds before entering the walk. The real entropy budget
+is a theorem premise and is never tested by the executable.
+
+Audit of `lem:partial-color` and `thm:full-color`: no counterexample to either
+statement or to constant 68 was found. The extraction proof certifies that
+68 follows from the stated terminal estimates. Two implementation details
+are explicit. Norm scales use a rational ceiling square root with the same
+strict factor-two guarantee, rather than requiring dyadic scales. Also,
+initial weights are rounded on a half-mesh: an upper enclosure with error
+half a mesh plus that rounding fits within one mesh. A same-mesh rounding
+of an approximate value alone would not ensure that allowance near a grid
+boundary. `roundUp_half_enclosure` proves the corrected local rule. The
+Taylor remainder needed to instantiate its enclosure premise is still open.
+
+Remaining substantive work:
+
+1. Prove the nonterminal subspace dimension, the projector trace/Rayleigh
+   bound, positive and truncated-step progress, and the terminal half count.
+2. Prove the initial Taylor enclosure, global rounded potential bounds,
+   heavy-row terminal weight bound, and accumulated exponential lower bound.
+   These discharge the three trajectory fields; they are not proved here.
+3. Supply projector/direction determinant bit bounds; additive coordinate
+   denominator bounds; native square-root, floor/grid, Taylor, sort and
+   bounded-loop certificates; and assemble the full partial-program time
+   certificate. Arithmetic certificates alone do not discharge it.
+4. Bound intermediate encodings across the full-coloring recursion and
+   certify that program, then instantiate the concrete seed coloring calls.
+
+Validation: all eight semantic modules have successful individual
+single-module `lake build Power2ModuleSVP.<Module>` checks without warnings.
+The native primitives module checks without warnings using `lake env lean`
+with a job-local compiled dependency overlay. An initial Lake attempt to
+build its missing dependency artifacts failed at the read-only external
+artifact cache; subsequent dependency compilation was confined to this
+job's scratch directory. No dependency source was edited. Nine executed
+exact-rational examples all returned true: ordinary/dependent projectors,
+normalization, positive/negative grid rounding, one walk step, both list
+programs' small cases, and rejection of an outside-cube input. Twenty
+principal-export axiom audits report only `propext`, `Classical.choice`, and
+`Quot.sound`. No unfinished proof or new axiom occurs. Own scratch was
+removed after checking. Root import integration remains with the dispatcher.
+
+## Flat seed assembly (p2s-seedmain)
+
+Delivered a **conditional assembly**, not a completed construction of the
+rational preprocessing routines. In particular, the remaining premises are
+stronger than the kernel and partial-coloring hypotheses alone. No concrete
+`FlatSeedFrontend` satisfying those premises is constructed here, and the
+spectral seed family premise in the module completeness theorem is not yet
+discharged.
+
+New files (all in namespace `Power2ModuleSVP`):
+
+- `SeedAlgorithm.lean`: the total two-coloring list program `seed A F`, its
+  assembly routine, exact output length, unconditional sign coefficients,
+  and valid indexing of both halves of every odd Laurent frequency pair.
+- `SeedAlgorithmRuntime.lean`: native multitape polynomial-time composition
+  for this program, given certificates for the rational frontend and the
+  supplied coloring routine. The certificate covers every raw unary degree,
+  malformed coloring outputs and arbitrary background words. Encoded output
+  length is also polynomially bounded.
+- `FlatSeedTaylor.lean`: smoothness from the existing Laurent representation;
+  finite Taylor propagation using the proved Bernstein inequality; a
+  geometric majorant and remainder estimate giving the constant 5900.
+- `FlatSeedRounding.lean`: real/rational row transfer (including starting-point
+  error), closed-quadrant sampling coverage, the complete finite entropy
+  budget for integer thresholds `12 + ell`, and rational error absorption
+  giving the constant `5281 + 240*ell`. Precision
+  `1 / (2^20 * (N+1)^2)` suffices for this second rounding. The empty first
+  coloring problem is handled explicitly.
+- `FlatSeedBounds.lean`: the two complex-norm alternatives, rotation and
+  appended-tail losses, and cutoff arithmetic at exponent 512.
+- `FlatSeedMain.lean`: precise remaining preparation contracts, the sampled
+  jet estimate derived from rational row enclosures and full coloring, the
+  all-circle lower bound, the root-only spectral theorem and uniform family
+  assembly. It imports the existing kernel and coloring interfaces unchanged.
+
+Principal exports:
+
+```lean
+seed (A : FlatSeedFrontend) (F : PartialColoringInput -> List Rat) : Nat -> List Int
+seed_length A F d : (seed A F d).length = d
+seed_signs A F d : Signs (IdealCVP.ofList (d := d) (seed A F d))
+seed_polytime A hAt F hFt :
+  ComputableTidilyInPolyTime (seed A F) encUnary (encList encIntBin)
+seed_spectral A hA hK F hF (hd : Dyadic d) (hlarge : 2^512 <= d) :
+  SpectralSeed d (IdealCVP.ofList (d := d) (seed A F d))
+spectralSeedFamily_of_fullColor A hA hAt hK F hF hFt : SpectralSeedFamilyHypothesis
+spectralSeedFamily_of A hA hAt hK hP hT : SpectralSeedFamilyHypothesis
+```
+
+`seed_circle_lower` proves the stronger all-circle inequality. The root-only
+statement then uses the proved fact that a root of `X^d+1` has unit norm.
+`flatSeed_sample_jets` derives the finite jet bounds; the preparation
+contract supplies exact row identities and rational enclosures, rather than
+assuming those discrepancy bounds or the final spectral inequality.
+
+**Exact remaining ingredient hypotheses in `spectralSeedFamily_of`:**
+
+1. `SineKernelDecompositionHypothesis` (`hK`), exactly as in `SineKernel.lean`.
+2. `DeterministicPartialColoringHypothesis` (`hP`), exactly as in
+   `PartialColoring.lean`. The proved `fullColor_spec` supplies the semantic
+   full-coloring theorem from its algorithm contract.
+3. `FullColoringRuntimeHypothesis` (`hT`): a native polynomial-time
+   certificate for `fullColor P` from the partial program's certificate and
+   correctness. This is separate from the proved full-coloring semantics.
+4. `FlatSeedPreparationHypothesis A` (`hA`), which requires four explicit
+   per-degree contracts above the dyadic cutoff:
+   - `FlatSeedGeometryHypothesis A D`: rational input identity and entropy;
+     parameter/grid/interval construction, the interval-count bound,
+     folding to the first quadrant, the cosine lower margin off the marked
+     intervals and the even sine bound. Existing Rudin--Shapiro and interval
+     lemmas do not yet construct a frontend satisfying this contract.
+   - `FlatSeedIntervalRoundingHypothesis A D`: the reflected kernel identity,
+     the actual second-input identity, and its cube/threshold/entropy
+     conditions after the first full coloring. The concrete first matrix,
+     transcendental enclosures and first coefficient-rounding estimate are
+     still to be connected here.
+   - `FlatSeedDerivativeRoundingHypothesis D`: exact normalized derivative-row
+     identities, matrix and starting-point rational enclosures, and the
+     degree/global/reflection facts for the odd-part error. The discrepancy
+     loss and Taylor propagation from these data are proved.
+   - `FlatSeedCoefficientHypothesis A D`: the exact Laurent evaluation
+     identity for the executable background/odd-word assembly, with a unit
+     rotation and a tail of norm at most three. Coefficient signs and list
+     indexing are proved, but this algebraic identity remains a premise.
+5. `FlatSeedFrontendRuntimeHypothesis A` (`hAt`): three uniform native-machine
+   certificates, for `background`, `intervalInput`, and `coefficientInput`.
+   Rational sampling/enclosure/marking programs and their bit bounds have not
+   been implemented by this job. No runtime certificate for `seed` itself is
+   assumed: it is derived from these three certificates and coloring time.
+
+Alternatively `spectralSeedFamily_of_fullColor` accepts one supplied full
+coloring routine with `FullColoringCorrect F` and its native certificate;
+this bypasses items 2 and 3, retaining the preparation and kernel premises.
+
+Validation: individual module builds and the final single-target
+`lake build Power2ModuleSVP.FlatSeedMain` succeeded. The six owned modules
+have no warnings in the final build. Fourteen principal-export axiom audits
+report only `propext`, `Classical.choice`, and `Quot.sound`. Eight kernel
+computed examples check empty/small outputs, negative odd-pair assembly,
+integer/rational normalization, and odd-coordinate indexing. No unfinished
+proof or new axiom occurs in the delivered files. Own scratch was removed.
+No root file, Lake configuration, existing library source or other job's
+Lean file was edited.
+
+Audit: no new mathematical error was found in the portions proved. The
+empty-interval case must use zero first-coloring rows as well as zero
+columns, since positive many exponential terms cannot fit a zero entropy
+budget; `seedIntervalRows` records this branch. The manuscript already
+separates that case. The major remaining issue is formalization scope,
+not a claimed paper defect: the rational frontend and its analytic/algebraic
+bridges above still require construction. These conditional exports must
+not be reported as an unconditional proof of `thm:spectral-seed`.
