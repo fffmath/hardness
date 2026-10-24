@@ -6,10 +6,10 @@ by Jiaqi Liu, Yansong Feng and Yanbin Pan.
 | Subproject | Paper | Lean root | Status |
 |---|---|---|---|
 | [`IdealCVP/`](IdealCVP/README.md) | *Exact CVP Is NP-Complete for Principal Cyclotomic Ideals*, arXiv:2608.23828 (ePrint 2026/1793) | `IdealCVP.lean`, modules `IdealCVP.*` | complete: sorry-free, axiom-clean NP-completeness |
-| [`Rank2ModuleSVP/`](Rank2ModuleSVP/README.md) | *SVP Is NP-Hard for Some Rank-2 Cyclotomic Modules* (v2, odd primes q; v1 arXiv:2609.01469) | `Rank2ModuleSVP.lean`, modules `Rank2ModuleSVP.*` | NP-completeness proved modulo the named hypothesis `WanPowerSumEstimates` (polytime map: see README) |
+| [`Rank2ModuleSVP/`](Rank2ModuleSVP/README.md) | *SVP Is NP-Hard for Some Rank-2 Cyclotomic Modules* (v2, odd primes q; v1 arXiv:2609.01469) | `Rank2ModuleSVP.lean`, modules `Rank2ModuleSVP.*` | done: `Rank2ModuleSVP.moduleSVP_npComplete_of`, NP-complete given the sole named hypothesis `WanPowerSumEstimates` |
 
 Each subproject folder contains its `paper/` (PDF + LaTeX source), `README.md`, `NOTES.md`
-(paper ↔ Lean map) and `specs/` (plans, Codex prompts, status log). `Rank2ModuleSVP` imports
+(paper ↔ Lean map) and `specs/` (plans and status log; the per-round Codex prompts are kept in git history only). `Rank2ModuleSVP` imports
 the shared infrastructure from `IdealCVP` (lattice norms, X3C, Sidon sets, complexity encodings,
 NP certificate bounds) rather than duplicating it.
 

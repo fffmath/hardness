@@ -1,9 +1,10 @@
 import Rank2ModuleSVP.Reduction
 import Rank2ModuleSVP.ReductionMap
+import Rank2ModuleSVP.ReductionMapPoly
 import Rank2ModuleSVP.MembershipCert
 
 /-! Paper v2 Theorem 1.1: semantic correctness of the total reduction and
-NP-completeness conditional on its polynomial-time implementation certificate. -/
+NP-completeness of rank-2 module SVP, given only `WanPowerSumEstimates`. -/
 
 namespace Rank2ModuleSVP
 noncomputable section
@@ -184,6 +185,17 @@ theorem moduleSVP_npComplete_of_polytime (hWan : WanPowerSumEstimates)
       IdealCVP.encX3C encSVP) : NPComplete encSVP ModuleSVPLang := by
   refine ⟨moduleSVP_mem_NP, IdealCVP.x3c_npHard.trans ?_⟩
   exact ⟨ReductionMap.reductionMap mainK0 mainC0, hpoly, reductionMap_correct hWan⟩
+
+/-- **Paper v2 Theorem 1.1.** Decision-SVP on rank-2 modules over `ℤ[ζ_q]` (q odd prime) is
+NP-complete, assuming only the named point-count estimate `WanPowerSumEstimates`. -/
+theorem moduleSVP_npComplete_of (hWan : WanPowerSumEstimates) :
+    NPComplete encSVP ModuleSVPLang :=
+  moduleSVP_npComplete_of_polytime hWan (reductionMap_polytime mainK0 mainC0)
+
+/-- X3C many-one reduces to rank-2 module SVP in polynomial time (given `WanPowerSumEstimates`). -/
+theorem x3c_polyTimeReducible_moduleSVP (hWan : WanPowerSumEstimates) :
+    PolyTimeReducible IdealCVP.encX3C encSVP IdealCVP.X3CLang ModuleSVPLang :=
+  reductionMap_polyTimeReducible_of_correct mainK0 mainC0 (reductionMap_correct hWan)
 
 end
 end Rank2ModuleSVP

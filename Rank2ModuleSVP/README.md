@@ -19,7 +19,9 @@ reductions from X3C.
 | Thm 5.2 exact X3C encoding | `exact_X3C_encoding` | `Reduction.lean` |
 | Total map correctness, X3C ↔ SVP | `reductionMap_correct (hWan) (x)` | `Main.lean` |
 | Outputs satisfy the SVP promises | `reductionMap_wellFormed` | `Main.lean` |
-| NP-completeness | `moduleSVP_npComplete_of_polytime (hWan) (hpoly)` | `Main.lean` |
+| Polynomial-time map | `ReductionMap.reductionMap_polytime` | `ReductionMapPoly.lean` |
+| X3C ≤ₚ SVP | `x3c_polyTimeReducible_moduleSVP (hWan)` | `Main.lean` |
+| **Theorem 1.1** | `moduleSVP_npComplete_of (hWan : WanPowerSumEstimates) : NPComplete encSVP ModuleSVPLang` | `Main.lean` |
 
 The only named mathematical hypothesis is `WanPowerSumEstimates` (`Wan.lean`, passed explicitly; it
 needs Weil/Deligne-strength point-count bounds, see `notes/weil-bound-research.md`). The

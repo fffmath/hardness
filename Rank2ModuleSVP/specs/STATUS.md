@@ -67,3 +67,10 @@
 - r7-assembly DONE: Main.lean — mainK0/mainC0, reductionMap_correct (hWan), reductionMap_wellFormed,
   moduleSVP_npComplete_of_polytime (hWan, hpoly). Cor 1.2 not formalised (no search-SVP interface).
 - r7-polytime RUNNING: ReductionMapPoly.lean, reductionMap_polytime.
+- r7-polytime DONE: ReductionMapPoly.lean, `ReductionMap.reductionMap_polytime` (all K0 C0, unconditional).
+## FINAL
+- `Rank2ModuleSVP.moduleSVP_npComplete_of (hWan : WanPowerSumEstimates) : NPComplete encSVP ModuleSVPLang`
+  and `x3c_polyTimeReducible_moduleSVP`; axioms propext, Classical.choice, Quot.sound only.
+- Sole named hypothesis: WanPowerSumEstimates. Cor 1.2 (search / Turing) not formalised.
+- Cleanup: per-round prompts (specs/phase*), stale v1 notes, IdealCVP/Smoke.lean removed (git history).
+  Paths to /tmp logs and job dirs above are historical and no longer exist.

@@ -1,3 +1,5 @@
+> **Superseded.** This is the round-1 plan for paper v1 (q ≡ 3 mod 4, Gauss-sum checker). The formalisation targets paper v2; see `v2_diff.md`, `STATUS.md` and `../README.md`.
+
 # Rank2ModuleSVP — formalisation plan
 
 Paper: Liu–Feng–Pan, *SVP Is NP-Hard for Some Rank-2 Cyclotomic Modules*, arXiv:2609.01469

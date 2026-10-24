@@ -164,4 +164,4 @@ Polynomial running time, NP membership, and NP-completeness are formalised using
 complexitylib native multitape TM API. Certificate correctness and explicit bounds for all
 solvable rectangular integer systems, including singular matrices, are also proved.
 See [NOTES.md](NOTES.md) for the full theorem ↔ paper mapping.
-The Lean code was written by Codex (prompts in `specs/`).
+The Lean code was written by Codex (per-round prompts are in git history; `specs/` keeps the status log and research notes).
