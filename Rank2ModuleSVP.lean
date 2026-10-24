@@ -4,6 +4,13 @@ import Rank2ModuleSVP.SparsePolynomial
 import Rank2ModuleSVP.GaussSum
 import Rank2ModuleSVP.Problem
 import Rank2ModuleSVP.Descent
+import Rank2ModuleSVP.CheckerAux
+import Rank2ModuleSVP.Checker
+import Rank2ModuleSVP.Wan
+import Rank2ModuleSVP.Completions
+import Rank2ModuleSVP.Descent2
+import Rank2ModuleSVP.RobustCenter
+import Rank2ModuleSVP.BennettPeikert
 
 /-! # Rank2ModuleSVP
 
