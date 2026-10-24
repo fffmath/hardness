@@ -47,3 +47,7 @@ import Hardness.Complexity.X3CEnumerate
 import Hardness.Complexity.SatToX3CSemantic
 import Hardness.Complexity.SatToX3C
 import Hardness.Complexity.CyclicProblem
+import Hardness.Complexity.ModuleProblem
+import Hardness.Complexity.PPolyReduction
+import Hardness.Complexity.FixedCompiler
+import Hardness.Complexity.CVPPClass

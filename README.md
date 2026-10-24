@@ -11,6 +11,23 @@ The library is sorry-free and adds no axioms. If the toolchain artifact cache is
 
 Main entry points:
 
+- `Hardness.polyTimeReducible_X3C_FixedCVPP`, `Hardness.fixedCVPP_npHard` –
+  the certified reduction to one principal ideal per unary universe size, using
+  all ordered triples and a presence mask. `Hardness.FixedFast.generator_independent`
+  proves that only the target and threshold depend on the input collection.
+- `Hardness.PH_eq_SigmaP_two_of_fixedCVPP` – polynomial circuits for that fixed
+  CVPP family imply `NP ⊆ P/poly` and `PH = Σ₂`. The universe-indexed
+  polynomial-advice preprocessing version is
+  `Hardness.PH_eq_SigmaP_two_of_polyCVPP`; see `Hardness/Complexity/CVPPClass.lean`.
+- `Cslib.Circuits.Boolean.PPoly.of_polyTimeReducible` – closure under native
+  polynomial-time reductions, including variable output lengths and arbitrary
+  source encodings, in `Hardness/Complexity/PPolyReduction.lean`.
+- `Hardness.moduleSIVP_npComplete` – unconditional NP-completeness for the
+  polynomial-time recognizable subclass of module-SIVP with explicit triangular
+  bases `(Q,T),(0,g)`, nonzero `g`, and `Q = 1 + ‖T‖² + ‖g‖²`.
+  `Hardness/Complexity/ModuleProblem.lean` bridges the list language to the actual
+  second successive minimum and `ModuleSIVPInstance.Yes`, reusing proved CVP
+  certificate bounds. General rank-two basis membership is not asserted.
 - `Hardness.principalCVP_npComplete` – **unconditional** complexitylib NP-completeness
   for exact principal cyclotomic CVP with signed binary integer data
 - `Hardness.principalCVP_mem_NP` – unconditional NP membership for exact principal

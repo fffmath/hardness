@@ -34,3 +34,9 @@ Times Asia/Shanghai (UTC+8).
 - session id: 01a16b2e-d23e-7772-80ec-39486b4e134d (resume with `codex exec resume <id> -c sandbox_mode='"workspace-write"' -`)
 - Planned after: round 9 = Module-SIVP NPComplete (class level); round 10 = CVPP ⇒ NP ⊆ P/poly ⇒ PH = Σ₂.
 - Result: x3c_npComplete (ExactThreeSAT→X3C, native polytime), principalCVP_npHard_via_X3C, principalCyclicCVP_npHard. Cyclic NP membership open. Axioms clean.
+
+## Round 8 commit: bd3448f
+## Round 9 (DONE) — Module-SIVP NPComplete; CVPP ⇒ NP ⊆ P/poly ⇒ PH = Σ₂; cyclic membership (optional)
+- prompt: specs/phase9_prompt.md; log: /workspace/hardness_codex_r9.log
+session id: 01a16b4a-27c5-7041-8d68-d8ce50435650
+- Result: moduleSIVP_npComplete (separated triangular subclass = image of paper's completion), Hardness.PPoly.of_polyTimeReducible, np_subset_ppoly_of_fixedCVPP, PH_eq_SigmaP_two_of_fixedCVPP, PH_eq_SigmaP_two_of_polyCVPP. Cyclic NP membership still open (singular cyclic generators). Axioms clean, 7168 jobs.

@@ -9,6 +9,9 @@ Round 7 closes the compiler runtime obligation with a certified cubic list
 compiler and proves unconditional NP-completeness.
 Round 8 proves list X3C NP-complete, discharges the paper's X3C route, and
 certifies the principal cyclic CVP hardness lift.
+Round 9 proves NP-completeness for a recognized triangular module-SIVP subclass
+and the fixed-family CVPP Karp–Lipton corollary, including universe-indexed
+polynomial preprocessing advice.
 
 ## Files and theorem names
 
@@ -873,3 +876,146 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   hypotheses. Item 5's decision problem, correctness, runtime, and NP-hardness
   are complete; NP membership for arbitrary cyclic generators is skipped as
   allowed, with the missing certificate-bound obligation stated above.
+
+## Round 9 — module-SIVP and fixed-family CVPP
+
+### A — separated triangular module-SIVP (complete)
+
+- `Complexity/ModuleProblem.lean` defines `ModuleSIVPInput` with unary d,
+  four signed-binary coefficient lists giving both coordinates of both basis
+  vectors, and signed-binary Γ; `encModuleSIVP` encodes every field.
+- **Scope restriction:** well-formed inputs are the polynomial-time recognizable
+  subclass `(Q,T),(0,g)`, with d a power of two, all list lengths equal to d,
+  nonzero g, nonnegative Γ, and `Q = 1 + ‖T‖² + ‖g‖²`.
+  `moduleScale_bounds` proves positivity and both strict separation inequalities.
+  The scale is computed using binary sums and products, without a potentially
+  exponential unary square-root search. This is a larger valid scale than the
+  paper's `completionScale`; `module_completion` applies unchanged.
+- `ModuleSIVPLang` is defined by the actual `ModuleSIVP.SecondMinimumSq` in the
+  genuine quotient module, with independence over the genuine rational quotient
+  field. `ModuleSIVPInput.toInstance`, `basis_columns`, and
+  `moduleSIVPLang_iff_instance` identify both stored columns with a free
+  rank-two basis and bridge to `ModuleSIVPInstance.Yes`.
+- `separated_secondMinimum_iff` proves the exact equivalence to principal CVP
+  with squared threshold `Γ-Q²`, also for negative thresholds. `moduleToCVP`
+  rejects malformed bases and gives a total native polynomial-time reduction.
+  `moduleSIVP_mem_NP` uses NP's proved closure under that reduction and the
+  existing Cramer/bit-bound CVP membership theorem. Thus the certificate is one
+  R-multiplier b, giving the independent pair `(Q,T-gb),(0,g)`, whose
+  determinant is the well-formedness-guaranteed nonzero element Qg. Independence
+  therefore follows uniformly for this certificate shape. No bound for
+  arbitrary module-basis coefficients is assumed. `moduleSIVP_bounded_certificate`
+  explicitly gives this integer-list certificate, its Cramer coefficient bound,
+  and its framed binary encoding bound in the polynomial-size derived CVP input.
+- `completeCVP`, `poly_completeCVP`, `compileModuleFast`, and
+  `polyTimeReducible_Masked_ModuleSIVP` give the actual list completion and native
+  runtime proof, including a malformed-input NO fallback. `moduleSIVP_npHard`
+  and `moduleSIVP_npComplete : NPComplete encModuleSIVP ModuleSIVPLang` have no
+  correctness, runtime, certificate-size, or hardness hypotheses.
+- Full checkpoint build passes (7164 jobs), `/tmp/round9-A-build3.log`, using
+  `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`.
+  The module and the independently completed P/poly reduction-closure module
+  are imported by `Hardness.lean`. General rank-two module-SIVP NP membership
+  is not asserted; the headline explicitly concerns the subclass above.
+
+### B — fixed-family CVPP and Karp–Lipton (complete)
+
+- `Complexity/FixedCompiler.lean` defines `FixedFast.triples m`, the list of
+  all m³ ordered triples (including degenerate tuples). `FixedFast.system m ts`
+  has their fixed incidence columns and all-one rhs; the mask tests tuple
+  presence in ts. Valid X3C lists can enable only genuine triples. Repeated
+  input tuples are identified; different orderings remain different columns,
+  and an exact cover cannot select overlapping copies.
+- `masked_hasSolution_iff_cover`, `cover_image_iff`, `masked_image_cover_iff`,
+  and `tripleSystem_correct` prove the finite-set bridge, including repeated
+  columns. `FixedFast.system_correct` identifies solutions with list X3C for
+  every valid input, including q=0 and empty collections.
+- `fixedGen m` is the actual cubic compiler generator of the base system on
+  this universal list. `FixedFast.data_withMask` and `generator_independent`
+  prove coefficient-list equality for every collection, using the existing
+  mathematical `generator_mask_independent`; no factorization or change to
+  `compileFast` is required. `dimension_independent`,
+  `fixed_dimension_power_two`, and `fixedGen_ne_zero` supply the ambient
+  dimension and full-rank promises. This ordered-triple family differs from
+  the prime-search powerset enumeration in `Fixed.lean`; it realizes the
+  permitted alternative with native list runtime certificates.
+- `FixedCVPP : Set (ℕ × (List ℤ × ℤ))` uses unary m, signed-binary target
+  coefficients and threshold, and actual distance to the principal ideal
+  generated by `fixedGen m`. Wrong target length is NO. `x3cToFixedCVPP` uses
+  `Fast.compile` on the masked universal system, with a negative-threshold
+  fallback for malformed triples. `polyTimeReducible_X3C_FixedCVPP` and
+  `fixedCVPP_npHard` are unconditional. Runtime uses `FixedFast.poly_system`
+  and the already certified cubic compiler, with no unary loops on binary
+  element labels. The reduction's native runtime proof is complete.
+- `Complexity/PPolyReduction.lean` proves
+  `Cslib.Circuits.Boolean.PPoly.of_polyTimeReducible` for arbitrary encoded
+  problems, without assuming efficient source or target decoders. It packages
+  circuits for **all output lengths up to a polynomial bound** with the
+  existing `familyAdvice`, uniformly evaluates the appropriate circuit, uses
+  `PPoly.exists_of_polyTime`, and hardwires the advice with `PPoly.of_advice`.
+  Both advice length and runtime are proved polynomial; variable output
+  lengths are fully handled.
+- `Complexity/CVPPClass.lean` proves `np_subset_ppoly_of_fixedCVPP` and
+  `PH_eq_SigmaP_two_of_fixedCVPP` by the unconditional X3C hardness chain,
+  the new closure theorem, and complexitylib's Karp–Lipton theorem.
+- The preprocessing form is also complete: `fixedCVPP_ppoly_of_preprocessing`
+  and `PH_eq_SigmaP_two_of_polyCVPP` take arbitrary advice `a m` of polynomial
+  length and a native polynomial-time decider `D (a m,t,Δ)` correct for every
+  query. Since unary m is at most the encoded input length n, the length-n
+  advice table contains `a 0, …, a n`. `cvppAdviceTable_polyBounded` proves its
+  framed size bound; `Decoder.bits.list` and a unary lookup supply the native
+  query runtime. Preprocessing time need not be computable or bounded. No
+  unproved P/poly closure or advice-index alignment hypothesis is introduced.
+- Full B checkpoint build passes (7168 jobs), `/tmp/round9-B-build8.log`,
+  with `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`.
+  Both new B modules and the generic P/poly closure module are imported by
+  `Hardness.lean`; README entry points cover the reduction and both corollaries.
+
+### C — arbitrary principal cyclic CVP membership (not completed)
+
+- No change is made to `PrincipalCyclicCVP`, which still admits zero and
+  singular generators in the actual quotient by X^(2d)-1. Its unconditional
+  Round 8 NP-hardness theorem remains available.
+- The missing obligation is a polynomial-bit integer preimage certificate for
+  arbitrary rank-deficient cyclic multiplication lattices. The existing
+  `certificate_coeff_le` / `CertificateBits` path requires a nonsingular square
+  basis; full rank of the separated reduction outputs does not cover arbitrary
+  cyclic inputs (already 1+X in ℤ[X]/(X²-1) is singular). A native cyclic
+  verifier and its coefficient/ring bridge must then be connected to that
+  general bound. `principalCyclicCVP_npComplete` is not asserted, and no
+  certificate-size hypothesis or axiom is introduced in its place.
+
+### Round 9 final validation
+
+- The final full build succeeds (7168 jobs), `/tmp/round9-B-build8.log`, with
+  the prescribed writable cache and 1500-second timeout. All four new modules
+  are exported by `Hardness.lean`; README main entry points are updated.
+- `/tmp/HardnessRound9AllAudit.lean` passes under
+  `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 900 lake env lean`;
+  `/tmp/round9-all-audit-smoke.log` records exit status zero. It checks the
+  exact headline types and prints axioms for **all 87 new named public
+  declarations**, including definitions, bridges, bounds, runtime certificates,
+  the generic reduction closure, and both PH collapse forms. A declaration-by-
+  declaration check against `/tmp/round9-audit-names.txt` confirms that every
+  report contains only `propext`, `Classical.choice`, `Quot.sound`.
+- The combined smoke check prints universal triple counts
+  `[(0,0),(1,1),(2,8),(3,27)]`; duplicate identical tuples enable one mask bit,
+  while two orderings enable two. It evaluates identical generators for two
+  masks on m=1. The empty X3C input produces `(0,[2,22],484)` and a malformed
+  zero-universe input produces `(0,[],-1)`. The length-3 advice-table example
+  has 16 framed bits. Kernel proofs check the empty-universe YES instance,
+  a repeated-triple YES instance, nonempty-universe/empty-collection NO, and
+  malformed-triple NO through the actual fixed-CVPP reduction.
+- `/tmp/HardnessRound9AAudit.lean` independently passes,
+  `/tmp/round9-A-audit.log`: the module-SIVP headlines and certificate/basis
+  bridges have only the standard axioms. Executable well-formedness checks
+  accept a valid one-dimensional separated basis and reject a zero generator
+  and the malformed fallback; the CVP/module round-trip is evaluated, and a
+  concrete module YES instance is proved in the kernel.
+- A scan of `Hardness.lean` and all `Hardness/**/*.lean` finds no `sorry`,
+  custom `axiom`, or `native_decide`. No git command, dependency update, cache
+  download, Lake configuration, manifest, or toolchain edit was used.
+- Round 9 A is complete for the stated recognizable triangular subclass.
+  B is complete, including P/poly reduction closure and the universe-indexed
+  preprocessing form. C remains open at the rank-deficient certificate bound
+  described above; no unfinished Lean declaration is left in the library.
