@@ -52,3 +52,7 @@ import Hardness.Complexity.PPolyReduction
 import Hardness.Complexity.FixedCompiler
 import Hardness.Complexity.CVPPClass
 import Hardness.Complexity.SeparatedCyclic
+import Hardness.GeneralModule
+import Hardness.Complexity.GeneralModule
+import Hardness.IntegerPreimage
+import Hardness.Complexity.GeneralCyclic

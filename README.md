@@ -25,7 +25,9 @@ complexitylib's native multitape-TM notions (`NP`, `NPHard`, `NPComplete`, `Poly
 | `Hardness.principalCVP_npHard_via_X3C` | The paper's route to principal CVP hardness: X3C → principal CVP | `Hardness/Complexity/SatToX3C.lean` |
 | `Hardness.principalCyclicCVP_npComplete` | `NPComplete encCVP SeparatedPrincipalCyclicCVP`: cyclic ℤ[X]/(X^{2d}−1), separated generators | `Hardness/Complexity/SeparatedCyclic.lean` |
 | `Hardness.principalCyclicCVP_npHard` | NP-hardness for arbitrary principal cyclic CVP | `Hardness/Complexity/CyclicProblem.lean` |
+| `Hardness.principalCyclicCVPGeneral_npComplete` | `NPComplete encCVP PrincipalCyclicCVP`: arbitrary principal cyclic generators, including singular and zero generators | `Hardness/Complexity/GeneralCyclic.lean` |
 | `Hardness.moduleSIVP_npComplete` | `NPComplete encModuleSIVP ModuleSIVPLang`: rank-2 module-SIVP, triangular-basis subclass | `Hardness/Complexity/ModuleProblem.lean` |
+| `Hardness.moduleSIVPGeneral_npComplete` | `NPComplete encModuleSIVP ModuleSIVPGeneral`: arbitrary independent rank-2 integral cyclotomic bases | `Hardness/Complexity/GeneralModule.lean` |
 | `Cslib.Circuits.Boolean.PPoly.of_polyTimeReducible` | P/poly is closed under polynomial-time reductions | `Hardness/Complexity/PPolyReduction.lean` |
 | `Hardness.np_subset_ppoly_of_fixedCVPP` | P/poly circuits for the fixed CVPP family ⇒ NP ⊆ P/poly | `Hardness/Complexity/CVPPClass.lean` |
 | `Hardness.PH_eq_SigmaP_two_of_fixedCVPP` | The same hypothesis ⇒ PH = Σ₂ (Karp–Lipton) | `Hardness/Complexity/CVPPClass.lean` |
@@ -42,21 +44,23 @@ Below the complexity layer sit the paper's mathematical results:
 
 ### Remaining gaps
 
-1. **Module-SIVP for arbitrary bases.** NP membership is proved only for the triangular subclass
-   `(Q,T),(0,g)` with `Q = 1+‖T‖²+‖g‖²`. That subclass is the image of the paper's completion,
-   so hardness holds as stated. NP membership for general independent rank-2 bases is not
-   formalised.
-2. **Cyclic CVP with singular generators.** NP membership is proved only for the
-   polynomial-time-recognisable separated generators `(g+B e₀, −g+B e₀)`, which contain the
-   reduction's image. It is not formalised for arbitrary, possibly singular, generators of
-   ℤ[X]/(X^{2d}−1); that would need integer-solution size bounds for rank-deficient systems.
-3. **CVPP is stated in a non-uniform form.** The corollary assumes P/poly circuits, or
+1. **CVPP is stated in a non-uniform form.** The corollary assumes P/poly circuits, or
    poly-size advice plus a poly-time decider, for the fixed family. Preprocessing time is
    unbounded, which matches the paper's corollary.
-4. **Not formalised:** approximate (gap) versions beyond the exact +4 / +32 squared-distance gaps.
+2. **Not formalised:** approximate (gap) versions beyond the exact +4 / +32 squared-distance gaps.
 
 ## Detailed entry points
 
+- `Hardness.principalCyclicCVPGeneral_mem_NP`, `principalCyclicCVPGeneral_npComplete` –
+  NP membership and completeness for the original arbitrary-generator cyclic language.
+  `Hardness.exists_bounded_integer_preimage` supplies an explicit bound for every
+  solvable rectangular integer system; `exists_integer_preimage_bits` proves polynomial
+  bit size without a rank promise. The cyclic list verifier and quotient bridge are
+  in `Hardness/Complexity/GeneralCyclic.lean`.
+- `Hardness.moduleSIVPGeneral_npComplete` – NP-completeness for every independent
+  rank-two integral cyclotomic basis, with all four basis-coordinate lists stored
+  explicitly. The determinant recognizer agrees with field independence and
+  nonsingularity of the integer monomial-translate matrix.
 - `Hardness.polyTimeReducible_X3C_FixedCVPP`, `Hardness.fixedCVPP_npHard` –
   the certified reduction to one principal ideal per unary universe size, using
   all ordered triples and a presence mask. `Hardness.FixedFast.generator_independent`
@@ -73,7 +77,9 @@ Below the complexity layer sit the paper's mathematical results:
   bases `(Q,T),(0,g)`, nonzero `g`, and `Q = 1 + ‖T‖² + ‖g‖²`.
   `Hardness/Complexity/ModuleProblem.lean` bridges the list language to the actual
   second successive minimum and `ModuleSIVPInstance.Yes`, reusing proved CVP
-  certificate bounds. General rank-two basis membership is not asserted.
+  certificate bounds. `Hardness.moduleSIVPGeneral_npComplete` extends this to arbitrary
+  independent rank-two bases, with four integral ring multipliers and a native
+  polynomial-time determinant/norm verifier in `Hardness/Complexity/GeneralModule.lean`.
 - `Hardness.principalCVP_npComplete` – **unconditional** complexitylib NP-completeness
   for exact principal cyclotomic CVP with signed binary integer data
 - `Hardness.principalCVP_mem_NP` – unconditional NP membership for exact principal
@@ -95,8 +101,8 @@ Below the complexity layer sit the paper's mathematical results:
   native verifier runtime, nonsingularity, and polynomial certificate bound.
   The existing `compileCyclicFast` reduction has its image in this subclass.
 - `Hardness.principalCyclicCVP_npHard` – unconditional hardness for the actual
-  cyclic quotient, via `compileCyclicFast`; NP membership for arbitrary cyclic
-  generators is not claimed
+  cyclic quotient, via `compileCyclicFast`; combined with the general membership
+  theorem in `principalCyclicCVPGeneral_npComplete`
 - `Hardness.maskedSys_npHard` – unconditional ExactThreeSAT → masked Boolean systems
   hardness, including repeated literals and degenerate/malformed inputs
 - `Hardness.compileFast_correct` – total list compiler using cubic Sidon positions,
@@ -153,6 +159,6 @@ Below the complexity layer sit the paper's mathematical results:
 
 Polynomial running time, NP membership, and NP-completeness are formalised using the pinned
 complexitylib native multitape TM API. Certificate correctness and explicit bounds for all
-nonsingular square integer bases are also proved.
+solvable rectangular integer systems, including singular matrices, are also proved.
 See [NOTES.md](NOTES.md) for the full theorem ↔ paper mapping.
 The Lean code was written by Codex (prompts in `specs/`).

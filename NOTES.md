@@ -1122,3 +1122,150 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   `/tmp/round10-C-build4.log`, after the documentation and final source scan.
   Round 10 C is complete for the stated restriction; the optional general
   cyclic and general Module-SIVP extensions are deferred as described above.
+
+## Round 11 — general module-SIVP and arbitrary cyclic membership
+
+### 1 — general independent module bases (complete)
+
+- `GeneralModule.lean` defines `ModuleSIVP.basisMap`, its actual integral
+  range `basisSpan`, and `generalBasis`. `basisMap_injective_iff` uses the
+  proved integral quotient domain and `independent_iff` for the genuine
+  rational quotient field. `generalBasis_columns` identifies both supplied
+  columns. `pairEquiv` gives contiguous ordinary integer coefficient
+  coordinates, and `generalMatrix` is the 2d-by-2d matrix of that map.
+  `generalMatrix_columns` identifies its columns with the monomial translates
+  y^i b₁, y^i b₂. `generalMatrix_det_iff` proves nonsingularity exactly when
+  the supplied columns are K_d-independent.
+- `Complexity/GeneralModule.lean` defines `ModuleSIVPGeneral` on the existing
+  `ModuleSIVPInput` and `encModuleSIVP`. The native polynomial-time recognizer
+  checks power-of-two d, all four lengths, Γ≥0, and the nonzero negacyclic
+  determinant. `listIndependent_iff` and `moduleGeneral_basis_criteria`
+  connect this executable check with field independence and integer matrix
+  nonsingularity. `generalInstance`, `generalInstance_columns`, and
+  `moduleSIVPGeneral_iff_instance` bridge to `ModuleSIVPInstance.Yes` and
+  `SecondMinimumSq` on the actual integral span.
+- Certificates are two length-2d lists, comprising four integral ring
+  multipliers. `moduleProduct` recomputes the vectors using `negacyclicMul`;
+  `moduleGeneralVerifier` checks both norms and their determinant.
+  `moduleGeneral_iff_exists_check` proves completeness and soundness, and
+  `poly_moduleGeneralVerifier` supplies the native multitape-TM runtime proof.
+  Explicit composition avoids expensive repeated runtime-proof searches.
+- `moduleSIVPGeneral_bounded_certificate` applies `certificate_coeff_le`
+  separately to both short vectors with target zero. For
+  A=1+the four squared coefficient norms, matrix entries are bounded by dA.
+  `moduleBoundInput` has dimension n=2d and constant generator n*d*A, so its
+  basis magnitude n²*d*A dominates the general matrix magnitude.
+  `moduleBoundInput_dominates` and `cvpCertificateBound_bits` bound both
+  coefficient lists; the pair framing is covered by
+  `moduleWitnessPolynomial = 3*witnessPolynomial+1`. The auxiliary input is
+  polynomial-time computable, so composition gives a polynomial bound in the
+  original encoded input size. No certificate-size premise is assumed.
+- `triangular_generalWellFormed`, `triangular_basisSpan`, and
+  `moduleSIVPGeneral_triangular` prove that the old triangular subclass has
+  the same module and threshold, with determinant Qg≠0. `moduleToGeneral`
+  is identity on that recognized subclass and maps malformed inputs to the
+  fixed NO input. `moduleSIVPGeneral_mem_NP`, `moduleSIVPGeneral_npHard`, and
+  `moduleSIVPGeneral_npComplete` are unconditional.
+- Full milestone build succeeds (7176 jobs), `/tmp/round11-module-build2.log`,
+  using the prescribed writable cache and 1500-second timeout. Both new
+  modules are exported by `Hardness.lean`; README's final summary now includes
+  the general-basis headline and removes that membership gap.
+- `/tmp/HardnessRound11ModuleAudit.lean` audits all 71 new public declarations,
+  including the headline, basis/matrix bridges, bound, and runtime proofs.
+  `/tmp/round11-module-axioms.log` is checked declaration by declaration:
+  only `propext`, `Classical.choice`, and `Quot.sound` occur.
+- `/tmp/HardnessRound11ModuleSmoke.lean` passes,
+  `/tmp/round11-module-smoke3.log`. Kernel proofs establish YES for a
+  nontriangular d=1 basis and a nonconstant d=2 basis, and NO for a dependent
+  d=2 basis. Recognition returns `[true,true,false,false,false,false]` on
+  those first three cases, negative Γ, wrong length, and non-power-of-two d.
+  Certificate checks return `[true,false,false,true]` on valid, dependent,
+  short-list, and nonconstant-basis certificates. The nontriangular example
+  is rejected by the old triangular recognizer, confirming the extension.
+
+### 2a — arbitrary-rank integer preimages (complete)
+
+- `IntegerPreimage.lean` proves `exists_bounded_integer_preimage` for every
+  rectangular integer matrix M and every right hand side v having an integer
+  solution, with no rank or nonsingularity promise. The explicit bound is
+  `integerPreimageBound M v = T^(16*(n+1)^2)`, where
+  `T = 2+m+n+Σᵢⱼ|Mᵢⱼ|+Σᵢ|vᵢ|` and n is the number of columns.
+- The HNF-free proof selects an independent real column subfamily spanning
+  all columns (`exists_independent_columns`). Its integral Gram matrix
+  CᵀC is nonsingular (`gram_det_ne_zero`). `gram_adjugate_projector` proves
+  C adj(CᵀC) Cᵀ w = det(CᵀC) w for every w in that column space.
+  Consequently D eⱼ minus the corresponding embedded adjugate column is an
+  integer kernel vector of M. `exists_preimage_reduced` subtracts multiples
+  of these vectors so every nonpivot coordinate is a remainder modulo D.
+  `preimage_pivot_equation` supplies the remaining Gram system, and the
+  existing Cramer theorem bounds its pivot coordinates. Rank zero is included.
+- `exists_small_integer_preimage` exposes the uniform T bound;
+  `exists_integer_preimage_bits` gives at most
+  `L*(16*(n+1)^2)+1` magnitude bits when dimensions and absolute entries of
+  M,v are at most 2^L. This is polynomial in the ordinary encoded matrix size.
+  Independent columns are chosen over ℝ only to use the positive definite
+  Gram theorem; every kernel correction and final certificate is integral.
+  No real arithmetic is used by the verifier.
+- The full intermediate milestone build succeeds (7196 jobs),
+  `/tmp/round11-integer-milestone-build.log`, using the prescribed command.
+  `Hardness.lean` exports the generic theorem. The cyclic-language verifier
+  and its input-size bridge are the next milestone.
+
+### 2b — arbitrary principal cyclic CVP (complete)
+
+- `Complexity/GeneralCyclic.lean` defines executable `cyclicMul` and its
+  native polynomial-time runtime certificate. `Cyclic.toRing_convolution`
+  proves that it computes multiplication in the actual quotient by
+  X^(2d)-1. `Cyclic.generalMultiplicationMatrix` is the ordinary integral
+  cyclic convolution matrix; no nonsingularity check or promise is imposed.
+- `cyclicGeneralVerifier` checks the power-of-two half-dimension, both
+  stored list lengths, multiplier length 2d, and the squared distance.
+  `principalCyclicCVP_iff_exists_check` proves its exact equivalence with
+  the unchanged `PrincipalCyclicCVP`, including arbitrary targets, signed
+  thresholds, and singular/zero generators. `poly_cyclicGeneralVerifier`
+  is a native multitape-TM runtime certificate. Explicit arithmetic and
+  lookup composition is used for the convolution's innermost loop.
+- `cyclicGeneral_preimage_bounds` bounds dimensions, multiplication-matrix
+  entries, and a short lattice point by 2^L, with L=4*(N+1) and
+  N=|encCVP x|. A short point has coefficient magnitudes at most the sum
+  of a target coefficient magnitude and |Δ|. Applying
+  `exists_integer_preimage_bits` replaces any multiplier by an integer
+  multiplier for the same lattice point with at most
+  `64*(N+1)*(2*N+1)^2+1` magnitude bits per coefficient.
+  `principalCyclicCVPGeneral_bounded_certificate` includes all sign and
+  list-framing costs in the explicit quartic
+  `cyclicGeneralWitnessPolynomial`. No preimage-size hypothesis is assumed.
+- `principalCyclicCVPGeneral_mem_NP : PrincipalCyclicCVP ∈ NP encCVP` and
+  `principalCyclicCVPGeneral_npComplete : NPComplete encCVP PrincipalCyclicCVP`
+  are unconditional, using the existing `principalCyclicCVP_npHard`.
+  The old separated-language headlines remain valid under their original names.
+- Full milestone build succeeds (7198 jobs),
+  `/tmp/round11-general-cyclic-build.log`, using the prescribed command.
+  `Hardness.lean` exports the new module. README's final summary includes both
+  general completeness theorems and removes both former NP-membership gaps.
+
+### Round 11 final validation
+
+- `/tmp/HardnessRound11AllAudit.lean` prints axioms for all 112 new public
+  declarations across the four new modules, including every headline,
+  generic preimage theorem, algebraic bridge, bound, recognizer, and runtime
+  certificate. `/tmp/round11-all-axioms.log` is checked against the exact
+  declaration list `/tmp/round11-all-audit-names.txt`: only `propext`,
+  `Classical.choice`, and `Quot.sound` occur.
+- `/tmp/HardnessRound11CyclicSmoke.lean` passes,
+  `/tmp/round11-cyclic-smoke4.log`. It checks the exact general NP and
+  NP-completeness types, proves YES for G=1+X (singular), G=0 (rank zero),
+  and G=1+X² in dimension four, and proves NO for G=1+X with target (1,0)
+  and threshold zero. It also instantiates the generic theorem for zero
+  and rectangular matrices. A one-step cyclic shift returns `[4,1,2,3]`.
+  Verifier results are `[true,true,false,true,true,false,false,false]` for
+  small and large representatives of the same singular YES point, a
+  singular NO point, zero generator, higher-dimensional singular generator,
+  negative threshold, malformed generator length, and short certificate.
+- A scan of `Hardness.lean` and all `Hardness/**/*.lean` finds no `sorry`,
+  custom `axiom`, or `native_decide`. No git command, dependency update,
+  cache download, Lake configuration, manifest, or toolchain edit was used.
+- Both Round 11 goals are complete, without named certificate, runtime,
+  correctness, rank, or hardness hypotheses on the NP-completeness headlines.
+- Final full rebuild succeeds (7198 jobs), `/tmp/round11-final-build.log`,
+  with `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`.

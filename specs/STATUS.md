@@ -46,3 +46,10 @@ session id: 01a16b4a-27c5-7041-8d68-d8ce50435650
 - prompt: specs/phase10_prompt.md; log: /workspace/hardness_codex_r10.log
 - session id: 01a16b7b-e3c2-7f50-a9ea-2b2dd7c58483
 - Result: principalCyclicCVP_npComplete (SeparatedPrincipalCyclicCVP). General Module-SIVP / singular cyclic membership deferred. README final summary written. PROJECT WRAPPED UP — nothing in flight.
+
+## Round 10 commit: 12733aa
+## Round 11 (DONE) — general Module-SIVP membership + general cyclic CVP membership
+- prompt: specs/phase11_prompt.md; log: /workspace/hardness_codex_r11.log; PID 1075581
+- session id: 01a16b94-839b-7bb0-94fe-a9dd56423248
+- On interruption: check pgrep; if log stalls >30 min, kill and resume session with nudge. After: build/audit/commit/push.
+- Result: moduleSIVPGeneral_npComplete, principalCyclicCVPGeneral_npComplete (original PrincipalCyclicCVP, singular generators included), exists_bounded_integer_preimage. 7198 jobs, axioms clean. Nothing in flight.
