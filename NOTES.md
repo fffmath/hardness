@@ -7,6 +7,8 @@ norm. Rounds 1–5 establish the mathematical reductions and certificate bounds.
 Round 6 adds native complexitylib NP membership and SAT-to-masked hardness.
 Round 7 closes the compiler runtime obligation with a certified cubic list
 compiler and proves unconditional NP-completeness.
+Round 8 proves list X3C NP-complete, discharges the paper's X3C route, and
+certifies the principal cyclic CVP hardness lift.
 
 ## Files and theorem names
 
@@ -705,3 +707,169 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   prime-search reference's dimension; both are valid power-of-two reductions.
   No git command, dependency update, cache download, configuration, manifest,
   or toolchain edit was used.
+
+## Round 8 — list X3C and the paper's complexity route
+
+### Item 1 — list problem and mathematical bridge (complete)
+
+- `Complexity/X3CList.lean` defines `X3CTriple`, `X3CList`, `encX3CTriple`,
+  `encX3C`, `X3CList.WellFormed`, `X3CList.HasExactCover`, and `X3CLang`.
+  The universe parameter q is unary; triple labels are binary naturals.
+  Out-of-range labels and triples with repeated elements are NO. Repeated
+  triples retain their indices and have independent selection bits.
+- `X3CList.toInstance`, `X3CList.hasExactCover_iff_toInstance`, and
+  `x3cList_mem_iff` bridge positive q and positive list length to the existing
+  `X3CInstance.HasExactCover`. `x3cList_empty_mem` and `x3cList_zero_mem`
+  explicitly handle q=0 and empty lists: the empty universe/empty collection
+  is YES; an empty collection on a nonempty universe is NO.
+- Full build passes (7040 jobs), `/tmp/round8-item1-build.log`, with the
+  prescribed writable cache and 1500-second timeout. The module is imported
+  by `Hardness.lean`.
+
+### Item 2 — Boolean-list verifier and NP membership (complete)
+
+- `Complexity/X3CVerifier.lean` defines `X3CList.check`: validate all triples,
+  require one selection bit per indexed triple, and count selected incidences
+  at each universe element. `X3CList.check_eq` and `x3cLang_iff_exists_check`
+  prove the exact specification, including all malformed and empty cases.
+- `X3CList.poly_check` is a native multitape TM runtime certificate, using
+  unary universe loops and binary comparisons of element labels. Explicit
+  compositions in `poly_validTriple` avoid expanding nested decision instances.
+- `x3c_mem_NP : X3CLang ∈ NP encX3C` uses `Decoder.bool.list` and an encoded
+  certificate bound `3*N`, where N is the input's encoded length. The witness
+  API supplies framing and padding. No witness-size or runtime assumption.
+- Item 2 full checkpoint passes (7042 jobs), `/tmp/round8-item2-build.log`;
+  `Hardness.lean` imports the verifier module.
+
+### Item 4 — list X3C incidence compiler (reduction complete)
+
+- `Complexity/X3CToCVP.lean` defines `X3CList.incidenceSystem`, with all-true
+  rhs and mask, `x3cToMasked`, and `compileX3CList = compileFast ∘ x3cToMasked`.
+  `X3CList.incidenceSystem_correct`, `x3cToMasked_correct`, and
+  `compileX3CList_correct` prove both directions for every list input.
+  Invalid triples map to a fixed inconsistent system. Empty universe/collection
+  cases pass through the existing certified padding compiler.
+- `poly_x3cToMasked`, `poly_compileX3CList`, and
+  `polyTimeReducible_X3C_CVP` certify the actual programs in complexitylib.
+  `principalCVP_npHard_of_X3CList` is the list analogue of the old paper-route
+  interface; its explicit premise is `NPHard encX3C X3CLang`.
+- Full build passes (7044 jobs), `/tmp/round8-item4-build.log`.
+  The reduction itself has no hypotheses. The unconditional paper-route
+  hardness headline still requires Item 3's X3C hardness proof.
+
+### Item 3 — ExactThreeSAT to X3C and NP-completeness (complete)
+
+- `Complexity/ExactCoverGadget.lean` proves a direct degree-three exact-cover
+  gadget. `ExactCoverGadget.triple_card` proves that every output column is
+  a genuine three-element set; `ExactCoverGadget.correct` proves both
+  directions. If a positive exact-one system has M rows and T incidences,
+  the gadget has 3M+9T universe elements and 7T indexed triples.
+- There are three copies r=0,1,2 of each source equation. An occurrence e
+  has selected columns x(e,r), unselected columns y(e,r), and one shared
+  column z(e). The three private node types impose x+y=1, x_next+y=1,
+  and y+z=1. Thus x=z is independent of r and constant around each original
+  variable's occurrence cycle. Empty occurrence cycles need no output
+  columns; the recovered variable can be false. `rotation_constant`,
+  `internal_equations`, and `original_equation` establish these facts.
+- `finiteTripleList_correct` gives a general semantic finite-family bridge.
+  `ExactCoverGadget.semanticList_correct` and
+  `satToX3CSemantic_correct` retain a correctness-only reference using
+  `Fintype.equivFin`. These reference definitions are **not** used in the
+  certified runtime chain.
+- `Complexity/X3CEnumerate.lean` defines explicit duplicate-free, exhaustive
+  occurrence/port/node/column enumerations. `enumeratedTripleList_correct`
+  proves the list encoding via node `idxOf`, preserving indexed columns.
+- `Complexity/SatToX3C.lean` implements `X3CFast.reduce` entirely with lists
+  and unary arithmetic. `X3CFast.reduce_correct` connects its actual output
+  to the finite gadget via `edges_eq`, `ports_eq`, `nodes_eq`, `columns_eq`,
+  and `triple_eq`. Natural tuple labels distinguish all node types.
+  Predecessors are computed by a bounded subtraction/conditional, not a
+  finite-type search. All output triples are validated by the general bridge.
+- `satToX3C_correct`, `poly_satToX3C`, and
+  `polyTimeReducible_ExactThreeSAT_X3C` give the total native Karp reduction.
+  Malformed CNFs use the existing inconsistent system; empty CNFs use its
+  dummy equation. Binary SAT variable labels never bound enumeration loops.
+  `X3CFast.poly_reduce` uses explicit typed maps and composition, with the
+  proposition-conditional theorem `ite_decide` for tuple construction.
+- `x3c_npHard` and `x3c_npComplete : NPComplete encX3C X3CLang` have **no
+  hypotheses**. `principalCVP_npHard_via_X3C` now discharges Item 4's
+  list-level paper route through `x3c_npComplete` and
+  `polyTimeReducible_X3C_CVP`. The older proof-carrying-instance interface
+  `principalCVP_npHard_of_X3C` remains an independent general theorem.
+- Item 3 / unconditional Item 4 full checkpoint passes (7052 jobs),
+  `/tmp/round8-item3-build.log`. Direct check:
+  `/tmp/round8-sat-x3c-check6.log`. All seven new core modules are imported
+  by `Hardness.lean`.
+- Reference credit: Jeffery Wade Hughes Jr., *sundogcert: A machine-checked
+  3SAT <= 3DM <= X3C <= syndrome-decoding hardness chain in Lean 4*,
+  Apache-2.0, https://github.com/humiliati/sundogcert, DOI
+  10.5281/zenodo.20711227. The supplied clone's `SATReduction*.lean`,
+  `VarWheel.lean`, `ClauseGadget.lean`, and `MatchingNPHard.lean` were consulted
+  for the wheel/consistency and tagged-universe approach. No module is imported
+  from that repository. Our three-copy positive-equation gadget avoids its
+  clause/garbage 3DM construction; its explicit list enumeration and native
+  runtime proofs are developed here for the pinned toolchain.
+
+### Item 5 — principal cyclic CVP (hardness complete; membership skipped)
+
+- `Complexity/CyclicProblem.lean` defines `PrincipalCyclicCVP` with the actual
+  ideal `Ideal.span {Cyclic.toRing g}` in ℤ[X]/(X^(2d)-1), using `encCVP`.
+  Its first coordinate stores the half-dimension d in unary; both lists have
+  length 2d, and d must be a power of two. Integer data remain signed binary.
+  Arbitrary cyclic generators, including zero and singular ones, are admitted.
+- `CyclicFast.compile` lifts the existing cubic compiler's coefficients with
+  G=(g+B,-g+B) in contiguous blocks (B added only to the constant coordinate),
+  T-hat=(2T,-2T), and squared threshold 8Δ. Its B is exactly
+  `Cyclic.penalty (Δ+4)`; `CyclicFast.H_eq`, `B_eq`, `gCoeff_eq`, `TCoeff_eq`,
+  and `compile_eq` give the pointwise bridge. The dimension is doubled.
+- `compileCyclicFast_correct`, `poly_compileCyclicFast`, and
+  `polyTimeReducible_Masked_CyclicCVP` prove the total native reduction, with
+  malformed systems mapped to an explicit negative-threshold NO instance.
+  `principalCyclicCVP_npHard` is unconditional. The direct module check passes,
+  `/tmp/round8-cyclic-check4.log`.
+- NP membership and `principalCyclicCVP_npComplete` are **not asserted**.
+  `Cyclic.principalMultiplicationBasis` supplies a full-rank basis for the
+  separated lifts, but arbitrary input cyclic generators can be singular.
+  An NP certificate bound for those arbitrary rank-deficient multiplication
+  lattices, and its native verifier/bit-bound bridge, remain to be supplied.
+  The hardness language is not narrowed to produced nonsingular instances.
+- Item 5 full checkpoint passes (7054 jobs), `/tmp/round8-item5-build.log`;
+  the cyclic module is imported by `Hardness.lean`.
+
+### Round 8 final validation
+
+- Final full build passes (7054 jobs), `/tmp/round8-item5-build.log`, with
+  `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`.
+- `/tmp/HardnessRound8AllAudit.lean` runs `#print axioms` on all **182** new
+  named public declarations, including every new headline, bridge, program,
+  enumeration, and runtime certificate. `/tmp/round8-all-axioms.log` was
+  matched declaration by declaration against the generated name list and the
+  whitelist: only `propext`, `Classical.choice`, `Quot.sound` occur.
+  The exact unconditional headline types are also checked by the smoke files.
+- `/tmp/HardnessRound8Smoke.lean` passes, `/tmp/round8-smoke2.log`.
+  Eight X3C certificate checks return
+  `[true,false,false,true,false,false,true,false]`, covering the empty
+  universe, nonempty universe with no triples, invalid zero-universe labels,
+  valid singleton, degenerate triple, out-of-range triple, and repeated
+  triples selected once/twice. SAT-gadget outputs `(q,n,valid,accept)` are
+  `(4,7,true,true)` for empty CNF, `(41,84,true,true)` for each repeated-literal
+  example, `(48,98,true,true)` for labels 37/700, and `(1,0,true,false)` for
+  a malformed clause. The compiler output list lengths equal their dimensions
+  for empty, empty-NO, singleton-YES and malformed X3C inputs.
+- `/tmp/HardnessRound8CyclicSmoke.lean` passes,
+  `/tmp/round8-cyclic-smoke.log`. It proves acceptance of the empty system's
+  cyclic output. For empty, singleton, blocked-mask and malformed systems,
+  `(source d,half-d,|G|,|T-hat|,Δ,cyclic Δ)` is respectively
+  `(2,2,4,4,484,3872)`, `(128,128,256,256,3202,25616)`,
+  `(128,128,256,256,1602,12816)`, `(1,1,2,2,-1,-1)`.
+  This checks doubled coefficient dimension, factor-eight thresholds, and
+  the explicit negative-threshold malformed fallback.
+- A source scan of `Hardness/**/*.lean` finds no `sorry`, custom `axiom`, or
+  `native_decide`. README main entry points cover X3C completeness, the
+  discharged paper route, and cyclic hardness with the membership limitation.
+  No git command, dependency update, cache download, Lake configuration,
+  manifest, or toolchain edit was used.
+- Round 8 Items 1–4 are complete without runtime, correctness, or hardness
+  hypotheses. Item 5's decision problem, correctness, runtime, and NP-hardness
+  are complete; NP membership for arbitrary cyclic generators is skipped as
+  allowed, with the missing certificate-bound obligation stated above.

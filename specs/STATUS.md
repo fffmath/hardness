@@ -28,3 +28,9 @@ Times Asia/Shanghai (UTC+8).
 - X3C NP-completeness in complexitylib terms (3SAT → 3DM → X3C, polytime) to match the paper's source problem.
 - Module-SIVP NP-hardness via the same list-compiler pattern; fixed-family CVPP ⇒ P/poly ⇒ PH = Σ₂
   (complexitylib has PPoly / Karp–Lipton).
+
+## Round 8 (DONE)  — X3C NP-completeness + paper route + cyclic (if cheap)
+- prompt: specs/phase8_prompt.md; log: /workspace/hardness_codex_r8.log
+- session id: 01a16b2e-d23e-7772-80ec-39486b4e134d (resume with `codex exec resume <id> -c sandbox_mode='"workspace-write"' -`)
+- Planned after: round 9 = Module-SIVP NPComplete (class level); round 10 = CVPP ⇒ NP ⊆ P/poly ⇒ PH = Σ₂.
+- Result: x3c_npComplete (ExactThreeSAT→X3C, native polytime), principalCVP_npHard_via_X3C, principalCyclicCVP_npHard. Cyclic NP membership open. Axioms clean.

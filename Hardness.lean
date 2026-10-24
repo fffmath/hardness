@@ -39,3 +39,11 @@ import Hardness.Complexity.CompileFastBridge
 import Hardness.Complexity.CompileFastPolyTime
 import Hardness.Complexity.CompilePolyTime
 import Hardness.Complexity.NPComplete
+import Hardness.Complexity.X3CList
+import Hardness.Complexity.X3CVerifier
+import Hardness.Complexity.X3CToCVP
+import Hardness.Complexity.ExactCoverGadget
+import Hardness.Complexity.X3CEnumerate
+import Hardness.Complexity.SatToX3CSemantic
+import Hardness.Complexity.SatToX3C
+import Hardness.Complexity.CyclicProblem

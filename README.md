@@ -15,6 +15,17 @@ Main entry points:
   for exact principal cyclotomic CVP with signed binary integer data
 - `Hardness.principalCVP_mem_NP` – unconditional NP membership for exact principal
   cyclotomic CVP, with binary integer data and an explicit polynomial certificate-bit bound
+- `Hardness.x3c_npComplete` – unconditional complexitylib NP-completeness of list X3C;
+  `encX3C` uses unary q and binary labels, with malformed triples rejected
+- `Hardness.satToX3C_correct`, `Hardness.poly_satToX3C` – a direct, certified
+  ExactThreeSAT → exact-one equations → three-element exact-cover gadget
+- `Hardness.compileX3CList_correct`, `Hardness.polyTimeReducible_X3C_CVP` – the
+  paper's incidence-matrix route, using the certified cubic compiler
+- `Hardness.principalCVP_npHard_via_X3C` – unconditional principal CVP hardness
+  through `x3c_npComplete`, discharging the list version of the paper's route
+- `Hardness.principalCyclicCVP_npHard` – unconditional hardness for the actual
+  cyclic quotient, via `compileCyclicFast`; NP membership for arbitrary cyclic
+  generators is not claimed
 - `Hardness.maskedSys_npHard` – unconditional ExactThreeSAT → masked Boolean systems
   hardness, including repeated literals and degenerate/malformed inputs
 - `Hardness.compileFast_correct` – total list compiler using cubic Sidon positions,
@@ -24,7 +35,7 @@ Main entry points:
   complete the unconditional hardness chain
 - `Hardness.compileList_correct` – the original prime-search reference compiler;
   its former conditional headline is retained as
-  `Hardness.principalCVP_npComplete_of_compilePoly`. See NOTES.md, Round 7.
+  `Hardness.principalCVP_npComplete_of_compilePoly`. See NOTES.md, Rounds 7–8.
 
 - `Hardness.x3cToCVP` – the X3C → principal cyclotomic CVP reduction (ℤ[y]/(y^d+1), d a power of two)
 - `Hardness.x3c_correct`, `x3c_yes_gap` (min dist² = Δ), `x3c_no_gap` (dist² ≥ Δ+4),
