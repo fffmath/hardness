@@ -1203,3 +1203,130 @@ both signs of grid rounding, ordinary/zero/dependent projector stages, and
 negative floor/ceiling. Final compilation needs no scratch dependency
 overlay. No external dependency source or artifact was modified. Own scratch
 was removed after validation. Root integration remains with the dispatcher.
+
+## Flat seed frontend (p2s-frontend)
+
+**Partial completion.** A concrete `Power2ModuleSVP.flatFrontend` is now
+implemented. The original interval-rounding and coefficient contracts are
+proved for its canonical analytic interpretation. There is still no
+unconditional theorem `FlatSeedPreparationHypothesis flatFrontend`.
+The remaining obligations are explicitly named below; neither they nor the
+uniform spectral seed family are claimed to have been discharged.
+
+Added ten files, without editing previously finished Lean files, the root,
+Lake configuration, or another job's sources:
+
+- `FlatFrontendParameters.lean`: bounded largest-odd-stage search; rational
+  parameter, height, and grid definitions; admissibility at the cutoff,
+  maximality, both gamma bounds, block containment and even-part size premises.
+- `FlatFrontendWords.lean`: structurally recursive integer RS word pairs,
+  exact agreement with the existing polynomial coefficients, stable prefixes,
+  and the executable shifted background word.
+- `FlatFrontendTaylor.lean`: rational complex Taylor pairs, sine/cosine
+  factorial remainders, finite arctangent sums, and the Machin pi enclosure.
+- `FlatFrontendProgram.lean`: explicit precisions, rational square root,
+  reflected cosine samples, forward Chebyshev evaluation, inclusive marking,
+  one-pass run merging, kernel rows, derivative rows and coefficient
+  recomputation. Defines the three fields of `flatFrontend`.
+- `FlatFrontendRational.lean`: clipping and floor-square-root enclosures,
+  starting-point bounds, and the first coloring's entropy budget.
+- `FlatFrontendCoefficients.lean`: exact centered coefficient pairing,
+  Laurent evaluation identity, unit rotation, and three-term tail bound.
+- `FlatFrontendDerivatives.lean`: exact all-order odd sine jets, normalized
+  derivative-row identity and entry bound, trigonometric degree, global sum
+  bounds and one common first-quadrant folding map.
+- `FlatFrontendInputs.lean`: actual framed-list identities, both rectangular
+  shapes, both cube and threshold conditions, and both entropy budgets.
+- `FlatFrontendEnclosures.lean`: exact Chebyshev evaluator specification and
+  combined Taylor/Machin remainder for rational multiples of pi.
+- `FlatFrontendMain.lean`: canonical `analyticData`, two original contracts
+  without further analytic premises, and explicit remaining preparation data.
+
+All executable routines use only natural/integer/rational arithmetic and
+lists. Real functions, integrals, polynomials used for interpretation, and
+angle folding occur only in specifications/proofs. Precision is explicit:
+`precision N = 128 + 64*log2(N+1)` and
+`taylorOrder N = 128*(N+1)^2 + precision N`. No claim that these choices
+already satisfy every required per-degree error inequality is made.
+The first threshold is an integer square-root expression using a proved
+`log 2 <= 7/10` bound; it is 29 at `N/J = 2^66`. The second thresholds are
+`12 + ell`. The recomputed starting point is clipped to `[-4/5,4/5]`;
+clipping does not increase its error relative to a point in that interval.
+
+Principal contract exports, in namespace `Power2ModuleSVP.FlatFrontend`:
+
+```lean
+interval_contract
+  (I : SeedKernelIntervals (seedN d) (intervalCount d)) :
+  FlatSeedIntervalRoundingHypothesis flatFrontend (analyticData d I)
+
+coefficient_contract_dyadic
+  (I : SeedKernelIntervals (seedN d) (intervalCount d))
+  (hd : Dyadic d) (hlarge : 4 <= d) :
+  FlatSeedCoefficientHypothesis flatFrontend (analyticData d I)
+
+derivative_contract
+  (I : SeedKernelIntervals (seedN d) (intervalCount d))
+  (hN : 0 < seedN d) (hE : EnclosureHypothesis I) :
+  FlatSeedDerivativeRoundingHypothesis (analyticData d I)
+
+geometry_contract (G : GeometryCertificate d) :
+  FlatSeedGeometryHypothesis flatFrontend (analyticData d G.kernelIntervals)
+
+preparation_of (h : PreparationHypothesis) :
+  FlatSeedPreparationHypothesis flatFrontend
+```
+
+`assembled_evaluation` proves the coefficient identity at every degree
+`4*N+4`, independently of intervals and rounding. `derivativeRow_identity`
+proves the exact normalized sampled derivative formula at every derivative
+order. `sin_cos_taylor_error`, `arctan_taylor_error`, `pi_taylor_error`,
+`sqrtApprox_spec`, and `phaseTaylor_pi_error` give certified primitive
+remainders, rather than assuming an oracle for elementary functions.
+
+**Exact remaining list:**
+
+1. Construct `GeometryCertificate d` for each dyadic degree above the
+   cutoff. Its interval endpoints must be precisely `scanCells`' output.
+   Verify the `SeedKernelIntervals` width, gap and axis-clearance fields,
+   `intervalCount d * 2^66 <= seedN d`, the complementary cosine margin,
+   and the `6*sqrt(N)` even-part bound. This still requires identifying the
+   actual background's pair sums/differences with the proved RS parts,
+   proving that the rational grid is ordered and sufficiently accurate,
+   and assembling the sampling, seven-cell, symmetry and component-count
+   lemmas for these parameters. The continuous component-count and wave
+   lemmas from the previous jobs themselves need no replacement.
+2. Prove `EnclosureHypothesis.fractional_bound`: after the actual first
+   full-coloring specification, every real kernel coefficient has absolute
+   value at most `3/4`. Include the rational kernel-entry transfer and the
+   integer-threshold variant's numerical margin.
+3. Prove `EnclosureHypothesis.fractional_error`: the executable endpoint-sum
+   recomputation is within `seedRoundingError N` of that real coefficient.
+   The clipping transfer has already been proved.
+4. Prove `EnclosureHypothesis.derivative_error`: every actual rational
+   derivative entry is within `seedRoundingError N` of `derivativeRow`.
+   The exact row identities, norm bounds, Taylor/Machin primitive remainder
+   formulas and subsequent derivative/Taylor assembly are already proved.
+5. Supply the three native-machine certificates in
+   `FlatSeedFrontendRuntimeHypothesis flatFrontend`, including intermediate
+   bit bounds. This is separate from the semantic preparation obligation
+   and remains for the later runtime job.
+
+`PreparationHypothesis` requires exactly a geometry certificate and those
+three enclosure fields uniformly above the cutoff. It does not assume the
+final spectral inequality, coloring correctness, or frontend runtime.
+No change to the existing `FlatSeedMain` contracts was found necessary.
+No mathematical error in the examined manuscript argument was established;
+the remaining gaps listed here concern the unfinished formal connections.
+
+Validation: individual single-module checks and the aggregate single-target
+`lake build Power2ModuleSVP.FlatFrontendMain` succeeded. All ten modules
+are imported by that target. The only remaining own-file build messages
+are module-system compatibility warnings caused by importing the existing
+non-module assembly alongside Mathlib module imports. Twenty-two principal
+export axiom audits report only `propext`, `Classical.choice`, and
+`Quot.sound`. Eight exact executable checks returned true (RS shapes,
+background signs/lengths, empty first input, threshold 29, floor square root,
+Taylor values, pi approximation and phase rotation). No unfinished proof or
+new axiom occurs in these sources. Job-local scratch was removed after the
+final checks. Root import integration remains with the dispatcher.
