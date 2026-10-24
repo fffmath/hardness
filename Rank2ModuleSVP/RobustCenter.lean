@@ -1,6 +1,6 @@
 import Rank2ModuleSVP.Descent2
 import Rank2ModuleSVP.Sparse
-import Mathlib.Order.Filter.AtTopBot.Basic
+import Rank2ModuleSVP.SparsePolynomial
 
 /-! The robust centre, in integral coefficients and finite-field polynomials. -/
 set_option backward.isDefEq.respectTransparency false
@@ -12,35 +12,99 @@ open scoped BigOperators
 open Polynomial
 variable {q : ℕ} [NeZero q]
 
-/-- Largest integer `k` with `(2k)^1000 ≤ q`. -/
-def descentParameter (q : ℕ) : ℕ :=
-  (Finset.range (q+1)).filter (fun k => (2*k)^1000 ≤ q) |>.max'
-    ⟨0, by simp⟩
+/-- An explicit threshold sufficient for the support inequalities in Theorem 3.7. -/
+def sepK0 : ℕ := 100
 
-theorem descentParameter_spec (q : ℕ) : (2*descentParameter q)^1000 ≤ q := by
-  have hm := Finset.max'_mem
-    ((Finset.range (q+1)).filter (fun k : ℕ => (2*k)^1000 ≤ q)) ⟨0, by simp⟩
-  exact (Finset.mem_filter.mp hm).2
+/-- Separation needs only the linear lower bound `q ≥ 2k`. -/
+def sepC0 : ℕ := 1
 
-theorem le_descentParameter (q r : ℕ) (hr : (2*r)^1000 ≤ q) :
-    r ≤ descentParameter q := by
-  apply Finset.le_max'
-  apply Finset.mem_filter.mpr
-  refine ⟨Finset.mem_range.mpr ?_, hr⟩
-  have hh := (Nat.le_self_pow (by decide : 1000 ≠ 0) (2*r)).trans hr
-  omega
+/-- The prescribed binary weight in v2, with `k` chosen first. -/
+def sepWeight (k : ℕ) : ℕ := 21 * k / 20
 
-theorem descentParameter_large (hq : 200^1000 ≤ q) :
-    100 ≤ descentParameter q := le_descentParameter q 100 (by simpa using hq)
-
-theorem descentParameter_le_half (q : ℕ) : 2*descentParameter q ≤ q :=
-  (Nat.le_self_pow (by decide) _).trans (descentParameter_spec q)
-
-/-- The prescribed binary weight. -/
-def descentWeight (q : ℕ) : ℕ := 201 * descentParameter q / 200
-
-/-- The centre in equation `robust-center`, with parameters made explicit. -/
+/-- The centre in v2 equation (11), allowing an arbitrary integral weight. -/
 def robustCenter (k h : ℕ) : IntegerRing q := (h : IntegerRing q) + (pi : IntegerRing q)^(k/2)
+
+/-- The centre for the prescribed v2 weight. -/
+def sepCenter (k : ℕ) : IntegerRing q := robustCenter k (sepWeight k)
+
+/-- The explicit integral polynomial representing the centre. -/
+def robustCenterPolynomial (k h : ℕ) : ℤ[X] := C (h : ℤ) + (1-X)^(k/2)
+
+/-- Its degree-`<q` coefficient vector (under the degree hypothesis below). -/
+def robustCenterCoeffs (k h : ℕ) : Coeff ℤ q :=
+  fun a => (robustCenterPolynomial k h).coeff a.val
+
+/-- V2 Lemma 3.5(i), including the squared coefficient norm bound.
+The averaging proof works for every element, without a smallness assumption. -/
+theorem sparse_tools_i_v2 (v : IntegerRing q) :
+    ∃ z : Coeff ℤ q, classOf z = v ∧
+      (q : ℤ) * IdealCVP.sqNorm z ≤ 2 * normSq v ∧
+      (q : ℤ) * supportCard z ≤ 2 * normSq v := by
+  classical
+  obtain ⟨z, rfl⟩ := classOf_surjective v
+  let row (a : ZMod q) : ℤ := ∑ b, (z b-z a)^2
+  have hsum : ∑ a, (q : ℤ) * row a ≤ ∑ _a : ZMod q, 2 * coeffNormSq z := by
+    rw [← Finset.mul_sum]
+    have he : (∑ a, row a) = 2 * coeffNormSq z := by
+      unfold row
+      rw [Finset.sum_comm, ← two_mul_coeffNormSq]
+    rw [he]
+    simp [Finset.card_univ, ZMod.card]
+  obtain ⟨a, _, ha⟩ := Finset.exists_le_of_sum_le Finset.univ_nonempty hsum
+  let x : Coeff ℤ q := fun b => z b-z a
+  refine ⟨x, ?_, ?_, ?_⟩
+  · simpa only [x, sub_eq_add_neg] using classOf_add_constant z (-z a)
+  · simpa only [normSq_classOf, IdealCVP.sqNorm, x, row] using ha
+  · rw [normSq_classOf]
+    exact (mul_le_mul_of_nonneg_left (supportCard_le_sqNorm x)
+      (Nat.cast_nonneg q)).trans ha
+
+/-- V2 Lemma 3.5(ii), including the exact norm of the first shell. -/
+theorem second_shell_v2 (w : IntegerRing q) (hw : w ≠ 0) :
+    (IsSignedMonomial w ∧ normSq w = (q : ℤ)-1) ∨ 2*(q : ℤ)-4 ≤ normSq w := by
+  rcases second_shell w hw with h | h
+  · exact Or.inl ⟨h, normSq_signedMonomial h⟩
+  · exact Or.inr h
+
+/-- A degree bound ensures that no coefficient wraps around modulo `q`. -/
+theorem robustCenterPolynomial_natDegree_le (k h : ℕ) :
+    (robustCenterPolynomial k h).natDegree ≤ k/2 := by
+  apply (natDegree_add_le _ _).trans
+  apply max_le
+  · simp
+  · exact (natDegree_pow_le).trans (by
+      have hd : (1-X : ℤ[X]).natDegree ≤ 1 :=
+        (natDegree_sub_le _ _).trans (by simp)
+      simpa using Nat.mul_le_mul_left (k/2) hd)
+
+/-- The explicit vector recovers the entire centre polynomial. -/
+theorem coefficientPolynomial_robustCenterCoeffs (k h : ℕ) (hkq : k/2 < q) :
+    coefficientPolynomial (robustCenterCoeffs (q := q) k h) = robustCenterPolynomial k h := by
+  exact coefficientPolynomial_of_degree_lt _
+    ((robustCenterPolynomial_natDegree_le k h).trans_lt hkq)
+
+/-- The vector represents the centre in the integral cyclotomic quotient. -/
+theorem classOf_robustCenterCoeffs (k h : ℕ) (hkq : k/2 < q) :
+    classOf (robustCenterCoeffs (q := q) k h) = robustCenter k h := by
+  rw [← cyclotomicEval_coefficientPolynomial,
+    coefficientPolynomial_robustCenterCoeffs k h hkq]
+  simp [robustCenterPolynomial, robustCenter, pi]
+
+/-- Evaluating the explicit representative at `X = 1` gives coefficient sum `h`. -/
+theorem sum_robustCenterCoeffs (k h : ℕ) (hk : 2 ≤ k) (hkq : k/2 < q) :
+    ∑ a, robustCenterCoeffs (q := q) k h a = (h : ℤ) := by
+  have hm : k/2 ≠ 0 := by omega
+  have he := congrArg (Polynomial.eval (1 : ℤ))
+    (coefficientPolynomial_robustCenterCoeffs (q := q) k h hkq)
+  simpa [coefficientPolynomial, robustCenterPolynomial, eval_finsetSum, hm] using he
+
+/-- Equation (11), with its prescribed v2 weight and exact coefficient sum. -/
+theorem sepCenter_representative (k : ℕ) (hk : sepK0 ≤ k) (hkq : 2*k ≤ q) :
+    classOf (robustCenterCoeffs (q := q) k (sepWeight k)) = sepCenter k ∧
+      ∑ a, robustCenterCoeffs (q := q) k (sepWeight k) a = (sepWeight k : ℤ) := by
+  have hk100 : 100 ≤ k := hk
+  exact ⟨classOf_robustCenterCoeffs k (sepWeight k) (by omega),
+    sum_robustCenterCoeffs k (sepWeight k) (by omega) (by omega)⟩
 
 /-- Scalar multiplication of all integral coefficients scales the squared norm. -/
 theorem coeffNormSq_mul_int (z : Coeff ℤ q) (t : ℤ) :
@@ -133,6 +197,10 @@ theorem idealDistanceSq_le (I : Ideal (IntegerRing q)) (v a : IntegerRing q)
 section Prime
 variable [Fact q.Prime]
 
+/-- V2 Lemma 3.6: the order of vanishing at one is smaller than the support. -/
+theorem sparse_tools_ii_v2 (f : (ZMod q)[X]) (hf : f ≠ 0) (hd : f.natDegree < q) :
+    f.rootMultiplicity 1 < f.support.card := sparse_tools_ii f hf hd
+
 /-- Sparse multiplicity forces the first congruence in the robust-centre proof
     to be an equality of polynomials. -/
 theorem robust_sparse_polynomial (k m : ℕ) (hm : m ≤ k)
@@ -145,7 +213,7 @@ theorem robust_sparse_polynomial (k m : ℕ) (hm : m ≤ k)
     have h2 : (X-1 : (ZMod q)[X])^m ∣ W*(1-X)^m := by
       rw [show (1-X : (ZMod q)[X]) = -(X-1) by ring, neg_pow]
       exact dvd_mul_of_dvd_right (dvd_mul_left _ _) _
-    convert dvd_add h1 h2 using 1 <;> ring
+    convert dvd_add h1 h2 using 1; ring
   by_contra hn
   have hne : E-C h*W ≠ 0 := sub_ne_zero.mpr hn
   have hd : (E-C h*W).natDegree < q := by
@@ -181,18 +249,19 @@ theorem robust_polynomial_contradiction (k m : ℕ) (hm : m ≤ k)
 
 /-- Robust-centre separation, with explicit finite numerical bounds.
     This pointwise form implies the squared distance bound for the ideal. -/
-theorem robust_center_explicit (k h : ℕ) (hk : 100 ≤ k) (hkq : k ≤ q-1)
+theorem robust_center_explicit (k h : ℕ) (hk : sepK0 ≤ k) (hkq : k ≤ q-1)
     (hq : 4 ≤ q) (w e : IntegerRing q) (hw : w ≠ 0) (hwn : normSq w ≤ 3*q)
     (he : e-w*robustCenter k h ∈ ramifiedIdeal k) :
-    (2*k*q : ℤ) < 100*normSq e := by
+    (2*k*q : ℤ) < 10*normSq e := by
+  have hk100 : 100 ≤ k := hk
   by_contra hbad
-  have hen : 100*normSq e ≤ (2*k*q : ℤ) := le_of_not_gt hbad
+  have hen : 10*normSq e ≤ (2*k*q : ℤ) := le_of_not_gt hbad
   obtain ⟨ze, hze, hse⟩ := sparse_representative e
   obtain ⟨zw, hzw, hsw⟩ := sparse_representative w
   have hqpos : (0 : ℤ) < q := by exact_mod_cast NeZero.pos q
-  have hse' : 25*supportCard ze ≤ k := by
+  have hse' : 5*supportCard ze ≤ 2*k := by
     have hq0 : (0 : ℤ) ≤ q := le_of_lt hqpos
-    have hh : (q : ℤ)*(25*supportCard ze) ≤ (q : ℤ)*k := by nlinarith
+    have hh : (q : ℤ)*(5*supportCard ze) ≤ (q : ℤ)*(2*k) := by nlinarith
     have hh' := (mul_le_mul_iff_right₀ hqpos).mp hh
     exact_mod_cast hh'
   have hsw' : supportCard zw ≤ 6 := by
@@ -214,39 +283,45 @@ theorem robust_center_explicit (k h : ℕ) (hk : 100 ≤ k) (hkq : k ≤ q-1)
     (residuePolynomial_natDegree_lt ze) (residuePolynomial_natDegree_lt zw)
     (h : ZMod q) hW0 (by omega) (by omega) hcong
 
-/-- Paper `robust-center`: for all sufficiently large primes, every point in
-    the relevant ideal coset has squared norm strictly above `L/100`.
-    The universal bound is the exact squared-distance formulation needed by
-    the later soundness argument. -/
-theorem robust_center (hq : 200^1000 ≤ q) (w e : IntegerRing q)
-    (hw : w ≠ 0) (hwn : normSq w ≤ 3*q)
-    (he : e-w*robustCenter (descentParameter q) (descentWeight q) ∈
-      ramifiedIdeal (descentParameter q)) :
-    (2*descentParameter q*q : ℤ) < 100*normSq e := by
-  have hk := descentParameter_large hq
-  have hhalf := descentParameter_le_half q
-  apply robust_center_explicit _ _ hk (by omega) (by omega) w e hw hwn he
+/-- Theorem 3.7 in coset form. The separation proof is independent of the weight. -/
+theorem robust_center (k h : ℕ) (hk : sepK0 ≤ k) (hkq : 2*k ≤ q)
+    (w e : IntegerRing q) (hw : w ≠ 0) (hwn : normSq w ≤ 3*q)
+    (he : e-w*robustCenter k h ∈ ramifiedIdeal k) :
+    (2*k*q : ℤ) < 10*normSq e := by
+  have hk100 : 100 ≤ k := hk
+  exact robust_center_explicit k h hk (by omega) (by omega) w e hw hwn he
 
-/-- The same separation with an explicit ideal element subtracted from `wc`. -/
-theorem robust_center_sub_ideal (hq : 200^1000 ≤ q) (w a : IntegerRing q)
-    (hw : w ≠ 0) (hwn : normSq w ≤ 3*q)
-    (ha : a ∈ ramifiedIdeal (descentParameter q)) :
-    (2*descentParameter q*q : ℤ) <
-      100*normSq (w*robustCenter (descentParameter q) (descentWeight q)-a) := by
-  apply robust_center hq w _ hw hwn
-  convert (ramifiedIdeal (descentParameter q)).neg_mem ha using 1 <;> abel
+/-- Pointwise form of v2 Theorem 3.7: `10 ‖wc-a‖² > 2kq`. -/
+theorem robust_center_sub_ideal (k h : ℕ) (hk : sepK0 ≤ k) (hkq : 2*k ≤ q)
+    (w a : IntegerRing q) (hw : w ≠ 0) (hwn : normSq w ≤ 3*q)
+    (ha : a ∈ ramifiedIdeal k) :
+    (2*k*q : ℤ) < 10*normSq (w*robustCenter k h-a) := by
+  apply robust_center k h hk hkq w _ hw hwn
+  convert (ramifiedIdeal k).neg_mem ha using 1; abel
 
-/-- The squared-distance statement of paper `robust-center`. -/
-theorem robust_center_distance (hq : 200^1000 ≤ q) (w : IntegerRing q)
-    (hw : w ≠ 0) (hwn : normSq w ≤ 3*q) :
-    (2*descentParameter q*q : ℤ) <
-      100*(idealDistanceSq (ramifiedIdeal (descentParameter q))
-        (w*robustCenter (descentParameter q) (descentWeight q)) : ℤ) := by
-  obtain ⟨a, ha, he⟩ := idealDistanceSq_attained
-    (ramifiedIdeal (descentParameter q))
-    (w*robustCenter (descentParameter q) (descentWeight q))
+/-- Squared ideal distance form of v2 Theorem 3.7, with arbitrary weight. -/
+theorem robust_center_distance (k h : ℕ) (hk : sepK0 ≤ k) (hkq : 2*k ≤ q)
+    (w : IntegerRing q) (hw : w ≠ 0) (hwn : normSq w ≤ 3*q) :
+    (2*k*q : ℤ) <
+      10*(idealDistanceSq (ramifiedIdeal k) (w*robustCenter k h) : ℤ) := by
+  obtain ⟨a, ha, he⟩ := idealDistanceSq_attained (ramifiedIdeal k) (w*robustCenter k h)
   rw [he]
-  exact robust_center_sub_ideal hq w a hw hwn ha
+  exact robust_center_sub_ideal k h hk hkq w a hw hwn ha
+
+/-- V2 Theorem 3.7 with explicit constants and `h = ⌊21k/20⌋`.
+The theorem holds for every prime in this range, with no congruence restriction. -/
+theorem separation_v2 (k : ℕ) (hk : sepK0 ≤ k) (hq : (2*k)^sepC0 ≤ q)
+    (w : IntegerRing q) (hw : w ≠ 0) (hwn : normSq w ≤ 3*q) :
+    ∀ a ∈ ramifiedIdeal k, (2*k*q : ℤ) < 10*normSq (w*sepCenter k-a) := by
+  have hkq : 2*k ≤ q := by simpa [sepC0] using hq
+  intro a ha
+  exact robust_center_sub_ideal k (sepWeight k) hk hkq w a hw hwn ha
+
+/-- V2 Theorem 3.7 as the attained squared ideal distance `> L/10`. -/
+theorem separation_distance_v2 (k : ℕ) (hk : sepK0 ≤ k) (hq : (2*k)^sepC0 ≤ q)
+    (w : IntegerRing q) (hw : w ≠ 0) (hwn : normSq w ≤ 3*q) :
+    (2*k*q : ℤ) < 10*(idealDistanceSq (ramifiedIdeal k) (w*sepCenter k) : ℤ) := by
+  exact robust_center_distance k (sepWeight k) hk (by simpa [sepC0] using hq) w hw hwn
 
 end Prime
 end

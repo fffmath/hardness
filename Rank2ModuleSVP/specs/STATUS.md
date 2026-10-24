@@ -44,3 +44,15 @@
 - r4-cert RUNNING (MembershipCert.lean, unconditional NP membership).
 
 ## RETARGET to paper v2 (see specs/v2_diff.md)
+- Round 5 (v2) RUNNING: r2m-p5-checker (Checker*, GaussSum), r2m-p5-counting (Completions, Asymptotics*, Admissible), r2m-p5-separation (RobustCenter, Separation). Prompts phase5_*.md.
+## Round 4/5 result (v2)
+- r4-cert: **moduleSVP_mem_NP : ModuleSVPLang ∈ NP encSVP unconditional** (B(N) = (N+1)·16·(2N+1)²+1).
+- r5-checker: integral v2 checker g, V = 6Σζ^α, Q = 128W⁴h, U = Q + g²; Lemma 4.2; Thm 4.3
+  (checker_score_bounds, 0 ≤ R < κ/8); checker_lower / checker_upper_of_clean / threshold_integral.
+  GaussSum removed (no q ≡ 3 mod 4 anywhere in the checker).
+- r5-counting: v2 regime k ≥ cntK0 = 10^8, q ≥ (2k)^1000: Thm 3.4 (uniform_completions_div, error < 1/4),
+  ratio bound, abstract Thm 4.4 admissible_representative (hWan explicit). v1 parameters removed.
+- r5-separation: Thm 3.7 separation_distance_v2 (dist² > L/10, k ≥ 100, q ≥ 2k), c = h + π^{⌊k/2⌋}.
+- Full build 7239 jobs OK, axioms clean. PrimesThreeModFourDyadic dropped (v2 uses Bertrand).
+## Round 6 RUNNING: r2m-p6-reduction (Reduction*.lean: Cor 4.5, module, Lemma 5.1, Thm 5.2),
+   r2m-p6-map (Problem odd-prime, Membership update, ReductionMap*: computable map, Bertrand prime scan, polytime).

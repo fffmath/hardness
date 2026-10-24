@@ -1,4 +1,4 @@
-import Rank2ModuleSVP.GaussSum
+import Rank2ModuleSVP.PrimeCyclotomic
 import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 import Mathlib.RingTheory.Ideal.Quotient.Operations
 
@@ -145,13 +145,17 @@ theorem inner_symm (v w : Cyclotomic R q) : inner v w = inner w v := by
     inner (u+v) w = inner u w + inner v w := by simp [inner, add_mul]
 
 @[simp] theorem inner_neg_left (v w : Cyclotomic R q) :
-    inner (-v) w = -inner v w := by simp [inner, _root_.neg_mul, _root_.mul_neg]
+    inner (-v) w = -inner v w := by
+  rw [inner, _root_.neg_mul, trace_neg]
+  rfl
 
 @[simp] theorem inner_add_right (u v w : Cyclotomic R q) :
     inner u (v+w) = inner u v + inner u w := by simp [inner, mul_add]
 
 @[simp] theorem inner_neg_right (v w : Cyclotomic R q) :
-    inner v (-w) = -inner v w := by simp [inner, _root_.neg_mul, _root_.mul_neg]
+    inner v (-w) = -inner v w := by
+  rw [inner, conjugate_neg, _root_.mul_neg, trace_neg]
+  rfl
 
 /-- Multiplication and conjugation are adjoint for the canonical form. -/
 theorem inner_adjoint (u v w : Cyclotomic R q) :
@@ -242,8 +246,7 @@ theorem normSq_one : normSq (1 : RationalRing q) = (q : ℚ)-1 := by
   rw [← hm, monomial_eq_classOf, normSq_classOf, coeffNormSq_eq]
   simp
 
-/-- Extension of scalars, used to transport the already proved integral
-Gauss-sum identities. -/
+/-- Extension of scalars from the integral coefficient quotient. -/
 def rationalize : IntegerRing q →+* RationalRing q :=
   Ideal.Quotient.lift _
     ((Ideal.Quotient.mk (cyclotomicIdeal : Ideal (Cyclic ℚ q))).comp
@@ -267,15 +270,19 @@ def rationalize : IntegerRing q →+* RationalRing q :=
   simp only [conjugate_classOf, rationalize_classOf]
   rfl
 
-variable [Fact q.Prime]
+@[simp] theorem rationalize_monomial (a : ZMod q) :
+    rationalize (monomial a : IntegerRing q) = (monomial a : RationalRing q) := by
+  rw [monomial_eq_classOf, rationalize_classOf, monomial_eq_classOf]
+  congr 1
+  funext b
+  split_ifs <;> norm_num
 
-def thetaQ : RationalRing q := rationalize (theta (q := q))
-
-theorem conjugate_thetaQ (hq : q % 4 = 3) : conjugate (thetaQ (q := q)) = -thetaQ := by
-  simpa [thetaQ, ← rationalize_conjugate] using congrArg rationalize (conjugate_theta hq)
-
-theorem thetaQ_sq (hq : q % 4 = 3) : thetaQ (q := q)^2 = -(q : RationalRing q) := by
-  simpa [thetaQ] using congrArg rationalize (theta_sq hq)
+@[simp] theorem normSq_rationalize (z : IntegerRing q) :
+    normSq (rationalize z) = ((normSq z : ℤ) : ℚ) := by
+  obtain ⟨x, rfl⟩ := classOf_surjective z
+  simp only [rationalize_classOf, normSq_classOf, coeffNormSq_eq]
+  push_cast
+  rfl
 
 end Rational
 
@@ -366,147 +373,64 @@ theorem isUnit_of_norm_expanding (u : RationalRing q)
   change u*v = 1 at hv
   exact ⟨⟨u,v,hv,by simpa only [mul_comm] using hv⟩,rfl⟩
 
-section U
-variable [Fact q.Prime]
+/-- The positive integral checker multiplier, extended to the rational quotient. -/
+def positiveChecker (Q : ℚ) (g : RationalRing q) : RationalRing q :=
+  Q • 1 + g^2
 
-/-- Paper eq. checker-U. -/
-def U (p : RationalRing q) : RationalRing q :=
-  1 + (1/(q : ℚ)) • (thetaQ*p)
-
-private theorem skew_product (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) : conjugate (thetaQ*p) = -(thetaQ*p) := by
-  rw [conjugate_mul, conjugate_thetaQ hq, hp, _root_.neg_mul]
-
-theorem thetaQ_norm_mul (hq : q % 4 = 3) (z : RationalRing q) :
-    normSq (thetaQ*z) = (q : ℚ)*normSq z := by
-  rw [← inner_self, inner_adjoint]
-  have he : conjugate (thetaQ (q := q))*(thetaQ*z) = (q : ℚ) • z := by
-    rw [conjugate_thetaQ hq]
-    calc
-      -thetaQ*(thetaQ*z) = -(thetaQ^2)*z := by ring
-      _ = (q : ℚ) • z := by rw [thetaQ_sq hq, Algebra.smul_def]; simp only [map_natCast, neg_neg]
-  rw [he, inner_smul_right, inner_self]
-
-theorem U_norm_exact (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) (y : RationalRing q) :
-    normSq (U p*y) = normSq y + (1/(q : ℚ))*normSq (p*y) := by
-  have hc : inner y (thetaQ*p*y) = 0 := by
-    have he := inner_adjoint (thetaQ*p) y y
-    rw [skew_product hq p hp, _root_.neg_mul, inner_neg_right,
-      inner_symm (thetaQ*p*y) y] at he
-    linarith
-  rw [U, add_mul, one_mul, smul_mul_assoc, normSq_add,
-    inner_smul_right, hc, normSq_smul]
-  rw [mul_assoc, thetaQ_norm_mul hq]
-  have hq0 : (q : ℚ) ≠ 0 := by exact_mod_cast NeZero.ne q
-  field_simp <;> ring
-
-theorem U_mul_conjugate (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) :
-    U p*conjugate (U p) = 1+(1/(q : ℚ)) • (p^2) := by
-  have hq0 : (q : ℚ) ≠ 0 := by exact_mod_cast NeZero.ne q
-  have hs : ((1/(q : ℚ)) • (thetaQ*p))^2 =
-      -(1/(q : ℚ)) • (p^2) := by
-    rw [smul_pow, mul_pow, thetaQ_sq hq]
-    rw [show -(q : RationalRing q)*p^2 = (-(q : ℚ)) • (p^2) by
-      rw [Algebra.smul_def]; simp only [map_neg, map_natCast]]
-    rw [smul_smul]
-    congr 1
-    field_simp <;> ring
-  rw [U, conjugate_add, conjugate_one, conjugate_smul, skew_product hq p hp,
-    smul_neg]
-  calc
-    (1+(1/(q : ℚ)) • (thetaQ*p))*(1+ -((1/(q : ℚ)) • (thetaQ*p))) =
-        1-((1/(q : ℚ)) • (thetaQ*p))^2 := by ring
-    _ = _ := by rw [hs, neg_smul]; ring
-
-theorem U_norm_expanding (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) (y : RationalRing q) :
-    normSq y ≤ normSq (U p*y) := by
-  rw [U_norm_exact hq p hp]
-  exact le_add_of_nonneg_right (mul_nonneg (by positivity) (normSq_nonneg _))
-
-theorem U_isUnit (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) : IsUnit (U p) :=
-  isUnit_of_norm_expanding (U p) (U_norm_expanding hq p hp)
-
-/-- A chosen inverse, justified by finite-dimensional injectivity. -/
-def inverseU (hq : q % 4 = 3) (p : RationalRing q) (hp : conjugate p = p) :
-    RationalRing q := ↑((U_isUnit hq p hp).unit⁻¹)
-
-@[simp] theorem U_mul_inverseU (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) : U p*inverseU hq p hp = 1 := by
-  exact (U_isUnit hq p hp).mul_val_inv
-
-/-- Eq. checker-V, using a proved inverse rather than an assumed field. -/
-def V (hq : q % 4 = 3) (p : RationalRing q) (hp : conjugate p = p)
-    (D : RationalRing q) : RationalRing q :=
-  -(1/(q : ℚ)) • (conjugate (inverseU hq p hp)*D)
-
-theorem conjugateU_mul_V (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) (D : RationalRing q) :
-    conjugate (U p)*V hq p hp D = -(1/(q : ℚ)) • D := by
-  rw [V, mul_smul_comm, ← mul_assoc, ← conjugate_mul, U_mul_inverseU,
-    conjugate_one, one_mul]
-
-/-- The inverse construction satisfies the denominator equation in the paper. -/
-theorem V_denominator (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) (D : RationalRing q) :
-    ((q : RationalRing q)-thetaQ*p)*V hq p hp D = -D := by
-  have hq0 : (q : ℚ) ≠ 0 := by exact_mod_cast NeZero.ne q
-  have hd : ((q : ℚ) • conjugate (U p)) = (q : RationalRing q)-thetaQ*p := by
-    rw [U, conjugate_add, conjugate_one, conjugate_smul, skew_product hq p hp,
-      smul_add, smul_smul]
-    rw [show (q : ℚ)*(1/(q : ℚ)) = 1 by field_simp, one_smul]
-    rw [Algebra.smul_def]
-    simp only [map_natCast, mul_one]
-    ring
-  rw [← hd, smul_mul_assoc, conjugateU_mul_V, smul_smul,
-    show (q : ℚ)*(-(1/(q : ℚ))) = -1 by field_simp]
-  simp
-
-theorem checker_value_norm (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) (D y : RationalRing q) :
-    normSq (U p*y-V hq p hp D) = normSq y+(1/(q : ℚ))*normSq (p*y)+
-      (2/(q : ℚ))*inner y D+normSq (V hq p hp D) := by
-  rw [normSq_sub, U_norm_exact hq p hp, inner_adjoint,
-    conjugateU_mul_V hq p hp, inner_smul_right]
+/-- Self-adjointness converts the cross term to a squared norm. -/
+theorem inner_sq_mul (g y : RationalRing q) (hg : conjugate g = g) :
+    inner y (g^2*y) = normSq (g*y) := by
+  rw [← inner_self (g*y), inner_adjoint, hg]
+  congr 1
   ring
 
-theorem conjugateU_norm_expanding (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) (y : RationalRing q) :
-    normSq y ≤ normSq (conjugate (U p)*y) := by
-  calc
-    normSq y = normSq (conjugate y) := (normSq_conjugate y).symm
-    _ ≤ normSq (U p*conjugate y) := U_norm_expanding hq p hp _
-    _ = normSq (conjugate (U p)*y) := by
-      rw [← normSq_conjugate (U p*conjugate y), conjugate_mul, conjugate_conjugate]
+/-- Lemma 4.2's exact identity, proved in the quotient coefficient model. -/
+theorem positiveChecker_norm_exact (Q : ℚ) (g y : RationalRing q)
+    (hg : conjugate g = g) :
+    normSq (positiveChecker Q g*y) =
+      Q^2*normSq y + 2*Q*normSq (g*y) + normSq (g^2*y) := by
+  rw [positiveChecker, add_mul, smul_mul_assoc, one_mul, normSq_add,
+    normSq_smul, inner_smul_left, inner_sq_mul g y hg]
+  ring
 
-theorem V_norm_bound (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) (D : RationalRing q) (W : ℚ)
-    (hD : ∀ w : RationalRing q, normSq (D*w) ≤ W^2*normSq w)
-    (w : RationalRing q) :
-    normSq (V hq p hp D*w) ≤ (W/(q : ℚ))^2*normSq w := by
-  have hh := conjugateU_norm_expanding hq p hp (V hq p hp D*w)
-  rw [← mul_assoc, conjugateU_mul_V, smul_mul_assoc, normSq_smul] at hh
-  have hb := mul_le_mul_of_nonneg_left (hD w) (sq_nonneg (-(1/(q : ℚ))))
-  calc
-    normSq (V hq p hp D*w) ≤ (-(1/(q : ℚ)))^2*normSq (D*w) := hh
-    _ ≤ (-(1/(q : ℚ)))^2*(W^2*normSq w) := hb
-    _ = _ := by ring
-
-
-theorem U_ne_zero (hq : q % 4 = 3) (p : RationalRing q)
-    (hp : conjugate p = p) : U p ≠ 0 := by
-  intro hz
-  have hh := U_norm_expanding hq p hp 1
-  rw [hz, zero_mul, normSq_one] at hh
-  have h0 : normSq (0 : RationalRing q) = 0 := (normSq_eq_zero_iff _).mpr rfl
-  rw [h0] at hh
-  have hq1 : (1 : ℚ) < q := by exact_mod_cast (Fact.out : q.Prime).one_lt
+theorem positiveChecker_norm_lower (Q : ℚ) (hQ : 0 ≤ Q)
+    (g y : RationalRing q) (hg : conjugate g = g) :
+    Q^2*normSq y ≤ normSq (positiveChecker Q g*y) := by
+  rw [positiveChecker_norm_exact Q g y hg]
+  have := normSq_nonneg (g^2*y)
+  have := mul_nonneg (show 0 ≤ 2*Q by positivity) (normSq_nonneg (g*y))
   linarith
 
-end U
+theorem positiveChecker_value_norm (Q : ℚ) (g v y : RationalRing q)
+    (hg : conjugate g = g) :
+    normSq (positiveChecker Q g*y-v) =
+      Q^2*normSq y + 2*Q*(normSq (g*y)-inner y v) + normSq (g^2*y-v) := by
+  have he : positiveChecker Q g*y-v = Q • y + (g^2*y-v) := by
+    simp [positiveChecker, add_mul, smul_mul_assoc]
+    ring
+  rw [he, normSq_add, normSq_smul, inner_smul_left]
+  have hi : inner y (g^2*y-v) = normSq (g*y)-inner y v := by
+    rw [sub_eq_add_neg, inner_add_right, inner_neg_right, inner_sq_mul g y hg]
+    ring
+  rw [hi]
+  ring
+
+/-- Squared triangle inequality with a convenient factor two. -/
+theorem normSq_sub_le_two (v w : RationalRing q) :
+    normSq (v-w) ≤ 2*normSq v+2*normSq w := by
+  have h := inner_young 1 (by norm_num) v (-w)
+  simp only [one_mul, inv_one, inner_neg_right, normSq_neg] at h
+  rw [normSq_sub]
+  linarith
+
+/-- A weighted squared triangle bound suited to Q = 128 W⁴ h. -/
+theorem normSq_sub_le_three_halves (v w : RationalRing q) :
+    normSq (v-w) ≤ (3/2 : ℚ)*normSq v+3*normSq w := by
+  have h := inner_young (1/2) (by norm_num) v (-w)
+  simp only [inner_neg_right, normSq_neg] at h
+  norm_num at h
+  rw [normSq_sub]
+  linarith
 
 /-- A model-independent version of the paper's stability estimate. The two
 premises are precisely the multiplier bounds proved for U and V. -/

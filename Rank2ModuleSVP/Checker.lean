@@ -409,19 +409,10 @@ theorem E_eq_zero_of_clean (p : IdealCVP.SidonPositions I.n) (x : Coeff ℚ q)
     · exact hd e f hr
   simp only [hz, hs, Finset.sum_const_zero, mul_zero, add_zero]
 
-/-- Eq. checker-baseline. -/
-def B₀ (h : ℕ) (V : RationalRing q) : ℚ :=
-  (h : ℚ)*(q-h)+normSq V+2*(W I)*h-2*(3*I.q)+
-    (2*(h : ℚ)*(W I)-4*h^2*(W I)^2)/q
-
-/-- The paper's quadratic polynomial p, without requiring separated exponents
-for the algebraic identities. -/
+/-- The rational image of the v2 quadratic checker g (retaining the useful
+legacy name p). No separation hypothesis is needed for the algebraic identities. -/
 def p (s : IdealCVP.SidonPositions I.n) : RationalRing q :=
   ∑ e : Incidence I, (monomial (d I s e)+monomial (-d I s e))
-
-/-- The linear checker numerator, eq. checker-V. -/
-def D (s : IdealCVP.SidonPositions I.n) : RationalRing q :=
-  (-3 : ℚ) • ∑ j : Fin I.n, monomial (s.α j : ZMod q)
 
 /-- The incidence row sum (Aξ)ᵢ. -/
 def rowValue (s : IdealCVP.SidonPositions I.n) (x : Coeff ℚ q)
@@ -551,26 +542,6 @@ theorem p_conjugate (s : IdealCVP.SidonPositions I.n) :
   funext e
   exact add_comm _ _
 
-theorem D_norm_bound (s : IdealCVP.SidonPositions I.n) (w : RationalRing q) :
-    normSq (D I s*w) ≤ (W I : ℚ)^2*normSq w := by
-  rw [D, smul_mul_assoc, normSq_smul]
-  have hh := normSq_sum_monomial_mul_le (Finset.univ : Finset (Fin I.n))
-    (fun j => (s.α j : ZMod q)) w
-  have hW : (W I : ℚ) = 3*(I.n : ℚ) := by exact_mod_cast incidence_count I
-  rw [hW]
-  simp only [Finset.card_univ, Fintype.card_fin] at hh
-  nlinarith
-
-theorem linear_checker_inner (s : IdealCVP.SidonPositions I.n) (x : Coeff ℚ q) :
-    inner (classOf x) (D I s) =
-      -(q : ℚ)*(∑ i, rowValue I s x i)+(∑ a, x a)*(W I) := by
-  rw [D, inner_smul_right, inner_sum_right]
-  simp_rw [inner_classOf_monomial]
-  rw [rowValue_sum, incidence_selection_sum, incidence_count]
-  simp only [Finset.sum_sub_distrib, ← Finset.mul_sum, Finset.sum_const,
-    Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, Nat.cast_mul, Nat.cast_ofNat]
-  ring
-
 theorem binary_norm_rational (x : Coeff ℚ q) (h : ℕ)
     (hx : ∀ a, x a = 0 ∨ x a = 1) (hh : ∑ a, x a = (h : ℚ)) :
     normSq (classOf x) = (h : ℚ)*(q-h) := by
@@ -582,86 +553,295 @@ theorem binary_norm_rational (x : Coeff ℚ q) (h : ℕ)
   rw [hs, hh]
   ring
 
-variable [Fact q.Prime]
+/-- Section 4.2: the integral, self-conjugate quadratic checker. -/
+def g (s : IdealCVP.SidonPositions I.n) : IntegerRing q :=
+  ∑ e : Incidence I, (monomial (d I s e)+monomial (-d I s e))
 
-/-- Paper lem. checker-U-properties in the canonical coefficient model. -/
-theorem checker_U_properties (hq : q % 4 = 3) (s : IdealCVP.SidonPositions I.n) :
-    U (p (q := q) I s)*conjugate (U (p (q := q) I s)) = 1+(1/(q : ℚ)) • ((p (q := q) I s)^2) ∧
-    U (p (q := q) I s) ≠ 0 ∧ IsUnit (U (p (q := q) I s)) ∧
-    ∀ y : RationalRing q, normSq y ≤ normSq (U (p (q := q) I s)*y) := by
-  exact ⟨U_mul_conjugate hq _ (p_conjugate I s),
-    U_ne_zero hq _ (p_conjugate I s), U_isUnit hq _ (p_conjugate I s),
-    U_norm_expanding hq _ (p_conjugate I s)⟩
+/-- Section 4.2: the integral linear checker. -/
+def V (s : IdealCVP.SidonPositions I.n) : IntegerRing q :=
+  6 * ∑ j : Fin I.n, monomial (s.α j : ZMod q)
 
-/-- The actual checker denominator is inverted by a proved unit. -/
-def checkerV (hq : q % 4 = 3) (s : IdealCVP.SidonPositions I.n) : RationalRing q :=
-  V hq (p (q := q) I s) (p_conjugate I s) (D I s)
+/-- The exact scale in paper v2, Section 4.2. -/
+def Q (h : ℕ) : ℕ := 128*(W I)^4*h
 
-theorem checker_V_norm_bound (hq : q % 4 = 3) (s : IdealCVP.SidonPositions I.n)
-    (w : RationalRing q) :
-    normSq (checkerV I hq s*w) ≤ ((W I : ℚ)/(q : ℚ))^2*normSq w :=
-  V_norm_bound hq (p (q := q) I s) (p_conjugate I s) (D I s) (W I)
-    (D_norm_bound I s) w
+/-- The v2 checker is integral and works for every odd prime. -/
+def U (s : IdealCVP.SidonPositions I.n) (h : ℕ) : IntegerRing q :=
+  (Q I h : IntegerRing q) + (g I s)^2
 
-/-- Paper thm. checker-score, with the paper's baseline and error term. -/
-theorem checker_score (hq : q % 4 = 3) (s : IdealCVP.SidonPositions I.n)
+def gQ (s : IdealCVP.SidonPositions I.n) : RationalRing q := rationalize (g I s)
+def VQ (s : IdealCVP.SidonPositions I.n) : RationalRing q := rationalize (V I s)
+def UQ (s : IdealCVP.SidonPositions I.n) (h : ℕ) : RationalRing q :=
+  rationalize (U I s h)
+
+@[simp] theorem gQ_eq_p (s : IdealCVP.SidonPositions I.n) :
+    gQ (q := q) I s = p I s := by simp [gQ, g, p]
+
+@[simp] theorem VQ_eq (s : IdealCVP.SidonPositions I.n) :
+    VQ (q := q) I s = (6 : ℚ) • ∑ j : Fin I.n, monomial (s.α j : ZMod q) := by
+  rw [show (6 : ℚ) = ((6 : ℕ) : ℚ) by norm_num,
+    Nat.cast_smul_eq_nsmul, nsmul_eq_mul]
+  simp only [VQ, V, map_mul, map_ofNat, map_sum, rationalize_monomial, Nat.cast_ofNat]
+
+theorem UQ_eq (s : IdealCVP.SidonPositions I.n) (h : ℕ) :
+    UQ (q := q) I s h = positiveChecker (Q I h) (p I s) := by
+  unfold UQ U positiveChecker
+  rw [map_add, map_natCast, map_pow, Nat.cast_smul_eq_nsmul, nsmul_eq_mul, mul_one]
+  rw [show rationalize (g (q := q) I s) = p I s from gQ_eq_p I s]
+
+theorem g_conjugate (s : IdealCVP.SidonPositions I.n) :
+    conjugate (g (q := q) I s) = g I s := by
+  classical
+  simp only [g, conjugate_sum, conjugate_add, conjugate_monomial, neg_neg]
+  congr 1
+  funext e
+  exact add_comm _ _
+
+theorem W_ge_three : 3 ≤ W I := by rw [incidence_count]; have := I.n_pos; omega
+
+theorem Q_pos (h : ℕ) (hh : 1 ≤ h) : 0 < Q I h := by
+  have := W_ge_three I
+  unfold Q
+  positivity
+
+/-- Lemma 4.2, exact self-adjoint identity for arbitrary elements of K. -/
+theorem checker_U_norm_exact (s : IdealCVP.SidonPositions I.n) (h : ℕ)
+    (y : RationalRing q) :
+    normSq (UQ I s h*y) = (Q I h : ℚ)^2*normSq y +
+      2*(Q I h : ℚ)*normSq (p I s*y) + normSq ((p I s)^2*y) := by
+  rw [UQ_eq]
+  exact positiveChecker_norm_exact _ _ _ (p_conjugate I s)
+
+/-- Lemma 4.2, U bound on all of K. -/
+theorem checker_U_norm_lower (s : IdealCVP.SidonPositions I.n) (h : ℕ)
+    (y : RationalRing q) :
+    (Q I h : ℚ)^2*normSq y ≤ normSq (UQ I s h*y) := by
+  rw [UQ_eq]
+  exact positiveChecker_norm_lower _ (Nat.cast_nonneg _) _ _ (p_conjugate I s)
+
+/-- The g bound uses exactly 2W monomial isometries. -/
+theorem checker_g_norm_bound (s : IdealCVP.SidonPositions I.n) (w : RationalRing q) :
+    normSq (p I s*w) ≤ (2*(W I : ℚ))^2*normSq w := by
+  classical
+  let a : Bool × Incidence I → ZMod q := fun t => if t.1 then d I s t.2 else -d I s t.2
+  have he : p (q := q) I s = ∑ t : Bool × Incidence I, monomial (a t) := by
+    simp [p, a, Fintype.sum_prod_type, Finset.sum_add_distrib, add_comm]
+  rw [he]
+  simpa [W, Fintype.card_prod] using normSq_sum_monomial_mul_le Finset.univ a w
+
+/-- Lemma 4.2, V bound on all of K; its total monomial weight is 6n = 2W. -/
+theorem checker_V_norm_bound (s : IdealCVP.SidonPositions I.n) (w : RationalRing q) :
+    normSq (VQ I s*w) ≤ (2*(W I : ℚ))^2*normSq w := by
+  rw [VQ_eq, smul_mul_assoc, normSq_smul]
+  have hh := normSq_sum_monomial_mul_le (Finset.univ : Finset (Fin I.n))
+    (fun j => (s.α j : ZMod q)) w
+  have hW : (W I : ℚ) = 3*(I.n : ℚ) := by exact_mod_cast incidence_count I
+  simp only [Finset.card_univ, Fintype.card_fin] at hh
+  rw [hW]
+  nlinarith
+
+/-- Lemma 4.2, integral U corollary. -/
+theorem checker_U_norm_lower_int (s : IdealCVP.SidonPositions I.n) (h : ℕ)
+    (y : IntegerRing q) :
+    (Q I h : ℤ)^2*normSq y ≤ normSq (U I s h*y) := by
+  have hh := checker_U_norm_lower I s h (rationalize y)
+  change (Q I h : ℚ)^2*normSq (rationalize y) ≤
+    normSq (rationalize (U I s h)*rationalize y) at hh
+  rw [← map_mul, normSq_rationalize, normSq_rationalize] at hh
+  exact_mod_cast hh
+
+/-- Lemma 4.2, integral V corollary. -/
+theorem checker_V_norm_bound_int (s : IdealCVP.SidonPositions I.n) (w : IntegerRing q) :
+    normSq (V I s*w) ≤ (2*(W I : ℤ))^2*normSq w := by
+  have hh := checker_V_norm_bound I s (rationalize w)
+  change normSq (rationalize (V I s)*rationalize w) ≤ _ at hh
+  rw [← map_mul, normSq_rationalize, normSq_rationalize] at hh
+  exact_mod_cast hh
+
+/-- The coefficient κ in Equations (17)--(18). -/
+def kappa (h : ℕ) : ℚ := 2*q/(Q I h)
+
+/-- The nonnegative remainder in Equation (17). -/
+def remainder (s : IdealCVP.SidonPositions I.n) (h : ℕ) (x : Coeff ℚ q) : ℚ :=
+  normSq ((p I s)^2*classOf x-VQ I s)/(Q I h : ℚ)^2
+
+/-- The baseline in paper v2, Equation (18), independent of x. -/
+def B₀ (h : ℕ) : ℚ :=
+  (h : ℚ)*(q-h) + kappa I (q := q) h *
+    (2*(W I)*h-2*(3*I.q)+(2*(h : ℚ)*(W I)-4*h^2*(W I)^2)/q)
+
+/-- The linear term in the v2 checker formula. -/
+theorem linear_checker_inner_v2 (s : IdealCVP.SidonPositions I.n) (x : Coeff ℚ q) :
+    inner (classOf x) (VQ I s) =
+      2*(q : ℚ)*(∑ i, rowValue I s x i)-2*(∑ a, x a)*(W I) := by
+  rw [VQ_eq, inner_smul_right, inner_sum_right]
+  simp_rw [inner_classOf_monomial]
+  rw [rowValue_sum, incidence_selection_sum, incidence_count]
+  simp only [Finset.sum_sub_distrib, ← Finset.mul_sum, Finset.sum_const,
+    Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, Nat.cast_mul, Nat.cast_ofNat]
+  ring
+
+/-- Theorem 4.3, Equation (17), with the explicit nonnegative E from (19). -/
+theorem checker_score (s : IdealCVP.SidonPositions I.n)
     (x : Coeff ℚ q) (h : ℕ) (hx : ∀ a, x a = 0 ∨ x a = 1)
-    (hh : ∑ a, x a = (h : ℚ)) :
-    normSq (U (p (q := q) I s)*classOf x-checkerV I hq s) =
-      B₀ I h (checkerV I hq s)+
-        2*(∑ i, (rowValue I s x i-1)^2)+E I s x := by
-  simp only [checkerV]
-  rw [checker_value_norm hq _ (p_conjugate I s), binary_norm_rational x h hx hh,
-    p_norm_correlations, correlations_decomposition I s x hx, linear_checker_inner]
-  unfold B₀
+    (hh : ∑ a, x a = (h : ℚ)) (hhpos : 1 ≤ h) :
+    normSq (UQ I s h*classOf x-VQ I s)/(Q I h : ℚ)^2 =
+      B₀ (q := q) I h + 2*kappa I (q := q) h*(∑ i, (rowValue I s x i-1)^2) +
+        kappa I (q := q) h*E I s x + remainder I s h x := by
+  rw [UQ_eq, positiveChecker_value_norm _ _ _ _ (p_conjugate I s),
+    binary_norm_rational x h hx hh, p_norm_correlations,
+    correlations_decomposition I s x hx, linear_checker_inner_v2]
+  unfold B₀ kappa remainder
   rw [hh]
   simp only [Finset.sum_sub_distrib, sub_sq, one_pow, mul_one,
     Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const,
     Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, Nat.cast_mul, Nat.cast_ofNat]
   have hq0 : (q : ℚ) ≠ 0 := by exact_mod_cast NeZero.ne q
-  field_simp <;> ring
+  have hQ0 : (Q I h : ℚ) ≠ 0 := by exact_mod_cast (Q_pos I h hhpos).ne'
+  field_simp
+  <;> ring
 
-/-- A clean exact cover attains the baseline. -/
-theorem checker_score_clean_cover (hq : q % 4 = 3)
-    (s : IdealCVP.SidonPositions I.n) (x : Coeff ℚ q) (h : ℕ)
+theorem remainder_nonneg (s : IdealCVP.SidonPositions I.n) (h : ℕ)
+    (x : Coeff ℚ q) : 0 ≤ remainder I s h x :=
+  div_nonneg (normSq_nonneg _) (sq_nonneg _)
+
+/-- Theorem 4.3's uniform strict remainder estimate. -/
+theorem remainder_lt (s : IdealCVP.SidonPositions I.n) (x : Coeff ℚ q) (h : ℕ)
     (hx : ∀ a, x a = 0 ∨ x a = 1) (hh : ∑ a, x a = (h : ℚ))
-    (hc : Clean I s x) (hcover : ∀ i, rowValue I s x i = 1) :
-    normSq (U (p (q := q) I s)*classOf x-checkerV I hq s) = B₀ I h (checkerV I hq s) := by
-  rw [checker_score I hq s x h hx hh, E_eq_zero_of_clean I s x hc]
-  simp [hcover]
+    (hhpos : 1 ≤ h) : remainder I s h x < kappa I (q := q) h/8 := by
+  have hW : (3 : ℚ) ≤ W I := by exact_mod_cast W_ge_three I
+  have hh' : (1 : ℚ) ≤ h := by exact_mod_cast hhpos
+  have hq : (0 : ℚ) < q := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne q)
+  have hQ : (0 : ℚ) < Q I h := by exact_mod_cast Q_pos I h hhpos
+  have hg := checker_g_norm_bound I s (p I s*classOf x)
+  have hg' := checker_g_norm_bound I s (classOf x)
+  rw [binary_norm_rational x h hx hh] at hg'
+  have hH : (h : ℚ)*(q-h) ≤ h*q := by nlinarith [sq_nonneg (h : ℚ)]
+  have hgg : normSq ((p I s)^2*classOf x) ≤ 16*(W I : ℚ)^4*h*q := by
+    have hm := mul_le_mul_of_nonneg_left hg' (sq_nonneg (2*(W I : ℚ)))
+    have hm' := mul_le_mul_of_nonneg_left hH (show 0 ≤ (2*(W I : ℚ))^4 by positivity)
+    rw [show (p (q := q) I s)^2*classOf x = p I s*(p I s*classOf x) by ring]
+    nlinarith [hg, hm, hm']
+  have hv := checker_V_norm_bound I s (1 : RationalRing q)
+  rw [mul_one, normSq_one] at hv
+  have hv' : normSq (VQ (q := q) I s) ≤ 4*(W I : ℚ)^2*q := by
+    nlinarith [sq_nonneg (W I : ℚ)]
+  have hb := normSq_sub_le_three_halves ((p I s)^2*classOf x) (VQ I s)
+  have hsmall : 12*(W I : ℚ)^2 < 8*(W I : ℚ)^4*h := by
+    have hW2 : (9 : ℚ) ≤ (W I : ℚ)^2 := by nlinarith
+    have hWh : (9 : ℚ) ≤ (W I : ℚ)^2*h := by
+      nlinarith [mul_le_mul_of_nonneg_left hh' (sq_nonneg (W I : ℚ))]
+    have hm := mul_lt_mul_of_pos_right (show (12 : ℚ) < 8*(W I : ℚ)^2*h by linarith)
+      (show 0 < (W I : ℚ)^2 by positivity)
+    nlinarith [hm]
+  have hnum : normSq ((p I s)^2*classOf x-VQ I s) < (q : ℚ)*(Q I h)/4 := by
+    have hm := mul_lt_mul_of_pos_right hsmall hq
+    have he : (Q I h : ℚ) = 128*(W I : ℚ)^4*h := by simp [Q]
+    rw [he]
+    nlinarith [hgg, hv', hb, hm]
+  unfold remainder kappa
+  apply (div_lt_iff₀ (sq_pos_of_pos hQ)).mpr
+  have he : (2*(q : ℚ)/(Q I h)/8)*(Q I h : ℚ)^2 = q*(Q I h)/4 := by
+    field_simp
+    <;> ring
+  rw [he]
+  exact hnum
 
-/-- Eq. global-stability-exact, with precisely ν = W/(qΓ). -/
-theorem checker_global_stability (hq : q % 4 = 3)
-    (s : IdealCVP.SidonPositions I.n) (Γ : ℚ) (hΓ : 0 < Γ)
-    (hν : 0 < (W I : ℚ)/((q : ℚ)*Γ))
-    (hν1 : (W I : ℚ)/((q : ℚ)*Γ) < 1) (y w : RationalRing q) :
-    (1-(W I : ℚ)/((q : ℚ)*Γ))*(normSq y+Γ^2*normSq w) ≤
-      normSq (U (p (q := q) I s)*y-checkerV I hq s*w)+Γ^2*normSq w := by
-  apply global_stability_exact _ _ _ _ Γ _ hν hν1
-    (U_norm_expanding hq _ (p_conjugate I s) y)
-  have hh := checker_V_norm_bound I hq s w
-  convert hh using 1
-  have hΓ0 : Γ ≠ 0 := ne_of_gt hΓ
-  field_simp <;> ring
+/-- Corollary 4.5's lower bound for every binary vector of weight h. -/
+theorem checker_lower (s : IdealCVP.SidonPositions I.n)
+    (x : Coeff ℚ q) (h : ℕ) (hx : ∀ a, x a = 0 ∨ x a = 1)
+    (hh : ∑ a, x a = (h : ℚ)) (hhpos : 1 ≤ h) :
+    B₀ (q := q) I h + 2*kappa I (q := q) h*(∑ i, (rowValue I s x i-1)^2) ≤
+      normSq (UQ I s h*classOf x-VQ I s)/(Q I h : ℚ)^2 := by
+  rw [checker_score I s x h hx hh hhpos]
+  have hE := mul_nonneg (show 0 ≤ kappa I (q := q) h by unfold kappa; positivity)
+    (E_nonneg_binary I s x hx)
+  have hR := remainder_nonneg I s h x
+  linarith
 
-/-- Eq. global-stability-exact for an arbitrary positive real Γ. -/
-theorem checker_global_stability_real (hq : q % 4 = 3)
-    (s : IdealCVP.SidonPositions I.n) (Γ : ℝ) (hΓ : 0 < Γ)
-    (hν : 0 < (W I : ℝ)/((q : ℝ)*Γ))
-    (hν1 : (W I : ℝ)/((q : ℝ)*Γ) < 1) (y w : RationalRing q) :
-    (1-(W I : ℝ)/((q : ℝ)*Γ))*(((normSq y : ℚ) : ℝ)+Γ^2*((normSq w : ℚ) : ℝ)) ≤
-      ((normSq (U (p (q := q) I s)*y-checkerV I hq s*w) : ℚ) : ℝ)+Γ^2*((normSq w : ℚ) : ℝ) := by
-  apply global_stability_exact_real _ _ _ _ Γ _ hν hν1
-    (U_norm_expanding hq _ (p_conjugate I s) y)
-  have hv : ((normSq (checkerV I hq s*w) : ℚ) : ℝ) ≤
-      ((W I : ℝ)/(q : ℝ))^2*((normSq w : ℚ) : ℝ) := by
-    have hh := (Rat.cast_le (K := ℝ)).mpr (checker_V_norm_bound I hq s w)
-    simpa only [Rat.cast_mul, Rat.cast_pow, Rat.cast_div, Rat.cast_natCast] using hh
-  convert hv using 1
-  have hΓ0 : Γ ≠ 0 := ne_of_gt hΓ
-  have hq0 : (q : ℝ) ≠ 0 := by exact_mod_cast NeZero.ne q
-  field_simp <;> ring
+/-- Corollary 4.5's upper bound for admissible representatives. -/
+theorem checker_upper_of_clean (s : IdealCVP.SidonPositions I.n)
+    (x : Coeff ℚ q) (h : ℕ) (hx : ∀ a, x a = 0 ∨ x a = 1)
+    (hh : ∑ a, x a = (h : ℚ)) (hhpos : 1 ≤ h) (hc : Clean I s x) :
+    normSq (UQ I s h*classOf x-VQ I s)/(Q I h : ℚ)^2 ≤
+      B₀ (q := q) I h + 2*kappa I (q := q) h*(∑ i, (rowValue I s x i-1)^2) + kappa I (q := q) h/8 := by
+  rw [checker_score I s x h hx hh hhpos, E_eq_zero_of_clean I s x hc]
+  have hR := remainder_lt I s x h hx hh hhpos
+  linarith
 
+/-- v2 terminology for the preserved correlation conditions (20). -/
+abbrev Admissible (s : IdealCVP.SidonPositions I.n) (x : Coeff ℚ q) : Prop := Clean I s x
+
+/-- Theorem 4.3, bundling Equation (17) and both remainder inequalities. -/
+theorem checker_score_bounds (s : IdealCVP.SidonPositions I.n)
+    (x : Coeff ℚ q) (h : ℕ) (hx : ∀ a, x a = 0 ∨ x a = 1)
+    (hh : ∑ a, x a = (h : ℚ)) (hhpos : 1 ≤ h) :
+    0 ≤ E I s x ∧
+    normSq (UQ I s h*classOf x-VQ I s)/(Q I h : ℚ)^2 =
+      B₀ (q := q) I h + 2*kappa I (q := q) h*(∑ i, (rowValue I s x i-1)^2) +
+        kappa I (q := q) h*E I s x + remainder I s h x ∧
+    0 ≤ remainder I s h x ∧ remainder I s h x < kappa I (q := q) h/8 :=
+  ⟨E_nonneg_binary I s x hx, checker_score I s x h hx hh hhpos,
+    remainder_nonneg I s h x, remainder_lt I s x h hx hh hhpos⟩
+
+/-- An explicit integer equal to Q²B₀. -/
+def baselineNumerator (h : ℕ) : ℤ :=
+  (Q I h : ℤ)^2*h*((q : ℤ)-h) +
+    2*q*(Q I h)*(2*(W I)*h-2*(3*I.q)) +
+    2*(Q I h)*(2*(h : ℤ)*(W I)-4*h^2*(W I)^2)
+
+/-- The integrality identity needed for the threshold S in Section 5. -/
+theorem baseline_scale_eq (h : ℕ) (hhpos : 1 ≤ h) :
+    (Q I h : ℚ)^2*B₀ (q := q) I h = (baselineNumerator (q := q) I h : ℚ) := by
+  have hq0 : (q : ℚ) ≠ 0 := by exact_mod_cast NeZero.ne q
+  have hQ0 : (Q I h : ℚ) ≠ 0 := by exact_mod_cast (Q_pos I h hhpos).ne'
+  unfold B₀ kappa baselineNumerator
+  push_cast
+  field_simp
+  <;> ring
+
+theorem baseline_integral (h : ℕ) (hhpos : 1 ≤ h) :
+    ∃ z : ℤ, (Q I h : ℚ)^2*B₀ (q := q) I h = z :=
+  ⟨baselineNumerator I h, baseline_scale_eq I h hhpos⟩
+
+/-- The second denominator cancellation needed for the integer threshold. -/
+theorem kappa_scale_eq (h : ℕ) (hhpos : 1 ≤ h) :
+    (Q I h : ℚ)^2*kappa I (q := q) h = 2*q*(Q I h) := by
+  have hQ0 : (Q I h : ℚ) ≠ 0 := by exact_mod_cast (Q_pos I h hhpos).ne'
+  unfold kappa
+  field_simp
+  <;> ring
+
+/-- Equation (17) applied directly to the integral checker value. -/
+theorem checker_score_int (s : IdealCVP.SidonPositions I.n)
+    (x : Coeff ℤ q) (h : ℕ) (hx : ∀ a, x a = 0 ∨ x a = 1)
+    (hh : ∑ a, x a = (h : ℤ)) (hhpos : 1 ≤ h) :
+    ((normSq (U I s h*classOf x-V I s) : ℤ) : ℚ)/(Q I h : ℚ)^2 =
+      B₀ (q := q) I h +
+        2*kappa I (q := q) h*(∑ i, (rowValue I s (fun a => (x a : ℚ)) i-1)^2) +
+        kappa I (q := q) h*E I s (fun a => (x a : ℚ)) +
+          remainder I s h (fun a => (x a : ℚ)) := by
+  have hx' : ∀ a, (x a : ℚ) = 0 ∨ (x a : ℚ) = 1 := by
+    intro a
+    rcases hx a with ha | ha <;> simp [ha]
+  have hh' : ∑ a, (x a : ℚ) = (h : ℚ) := by exact_mod_cast hh
+  have hs := checker_score I s (fun a => (x a : ℚ)) h hx' hh' hhpos
+  rw [← rationalize_classOf] at hs
+  change normSq (rationalize (U I s h)*rationalize (classOf x)-rationalize (V I s)) /
+    (Q I h : ℚ)^2 = _ at hs
+  rw [← map_mul, ← map_sub, normSq_rationalize] at hs
+  exact hs
+
+/-- The integer threshold numerator for any integral second-coordinate cost F. -/
+def thresholdNumerator (h : ℕ) (F : ℤ) : ℤ :=
+  baselineNumerator (q := q) I h + (Q I h : ℤ)^2*F + 2*q*(Q I h)
+
+/-- Section 5's S = Q²(B₀ + F + κ) is integral. -/
+theorem threshold_integral (h : ℕ) (hhpos : 1 ≤ h) (F : ℤ) :
+    ∃ S : ℤ, (Q I h : ℚ)^2*(B₀ (q := q) I h+(F : ℚ)+kappa I (q := q) h) = S := by
+  refine ⟨thresholdNumerator (q := q) I h F, ?_⟩
+  rw [mul_add, mul_add, baseline_scale_eq I h hhpos, kappa_scale_eq I h hhpos]
+  simp only [thresholdNumerator, Int.cast_add, Int.cast_mul, Int.cast_pow, Int.cast_natCast,
+    Int.cast_ofNat]
 
 end Correlations
 end
