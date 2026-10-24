@@ -18,6 +18,7 @@ import Rank2ModuleSVP.Membership
 import Rank2ModuleSVP.MembershipCert
 import Rank2ModuleSVP.Reduction
 import Rank2ModuleSVP.ReductionMap
+import Rank2ModuleSVP.Main
 
 /-! # Rank2ModuleSVP
 

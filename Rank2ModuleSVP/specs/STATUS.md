@@ -63,3 +63,7 @@
   semantics lemmas (m₁, m₂, S, q), fixed YES/NO instances, Bertrand prime scan, polytime pieces
   (primeScan, mapK, mapQ, threshold, sum/single lists). OPEN: full ComputableTidilyInPolyTime of the map.
 - Full build 7247 jobs OK, axioms clean, no sorry/axiom/native_decide.
+## Round 7 (final assembly)
+- r7-assembly DONE: Main.lean — mainK0/mainC0, reductionMap_correct (hWan), reductionMap_wellFormed,
+  moduleSVP_npComplete_of_polytime (hWan, hpoly). Cor 1.2 not formalised (no search-SVP interface).
+- r7-polytime RUNNING: ReductionMapPoly.lean, reductionMap_polytime.
