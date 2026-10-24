@@ -1,5 +1,31 @@
 # Power2ModuleSVP status
 
+**Current state (2026-10-25 06:45 UTC+8, local commits only, nothing pushed).**
+Working copy: /workspace/shared/projects/hardness. Build: `lake build Power2ModuleSVP`.
+
+Proved, 0 sorry, axioms only propext/Classical.choice/Quot.sound:
+- `coset_mem_NP`, `moduleSVP_mem_NP` (Membership.lean)
+- `coset_npHard`, `coset_npComplete : NPComplete encCoset CosetLang` (Main.lean), UNCONDITIONAL
+  (3SAT -> Sidon sparse source -> principal coset; separation fully proved in Norm*.lean).
+- `moduleSVP_npComplete_of (hJ : RigidAnchorFamilyHypothesis)` (Main.lean), `moduleReduction_gap`.
+- `rigidAnchorFamily_of_seed`, `moduleSVP_npComplete_of_seed (h : SpectralSeedFamilyHypothesis)`
+  (AnchorRepairPoly2.lean): repair semantics + native runtime done.
+- `spectralSeedFamily_of A hA hAt hK hP hT` (FlatSeedMain.lean): seed assembly conditional.
+  hK (sine kernel) proved (`sineKernelDecompositionHypothesis_holds`);
+  partial-coloring semantics proved (`partialColor_correct`, ColoringTrajectory.lean).
+
+Remaining for the unconditional `moduleSVP_npComplete`:
+1. Native TM certificates for partialColor / fullColor (`PartialColoringNativeHypothesis`,
+   `FullColoringRuntimeHypothesis`) -- job p2s-colornative.
+2. Concrete flat-seed frontend `A` with `FlatSeedPreparationHypothesis A` (geometry, interval
+   rounding, derivative rounding, coefficient identity) -- job p2s-frontend.
+3. `FlatSeedFrontendRuntimeHypothesis A` (native certificates of the frontend programs).
+
+Resume protocol: check `cx-status p2s-*`, `git status`, this file; prompts in /workspace/shared/jobs/_p2s.
+Historical sections below (per job) are kept for detail; the Phase-1 text further down is superseded.
+
+## Phase-1 notes (superseded)
+
 Phase: phase-one research and plan completed by `p2s-plan` on 2026-10-25;
 implementation is underway in other jobs. [PLAN.md](PLAN.md) specifies both
 languages, reusable APIs, every labelled proof dependency, proposed Lean
@@ -1000,3 +1026,92 @@ bridges above still require construction. These conditional exports must
 not be reported as an unconditional proof of `thm:spectral-seed`.
 - 54e53fa repair runtime + moduleSVP_npComplete_of_seed; 900e794 sine kernel/Rudin–Shapiro/components; 274b974 coloring algorithm (conditional).
 - Round 6 (06:20 UTC+8): p2s-seedmain (running since 05:25), p2s-traj (PartialColoringTrajectoryHypothesis), p2s-colornative (coloring TM certificates).
+- 37f21db: conditional flat-seed assembly. Round 6b (06:32 UTC+8): p2s-frontend (FlatFrontend*: concrete frontend + 4 preparation contracts).
+
+## Coloring trajectory (p2s-traj)
+
+**The original concrete partial-coloring trajectory contract is now proved,
+without a new hypothesis or a change to the executable walk.** Added eight
+modules, all in namespace `Power2ModuleSVP.PartialColoringAlg`:
+
+- `ColoringTrajectoryProjector.lean`: rational norm contraction, projector
+  trace at least dimension minus constraint-list length, column-square sums,
+  and the minimum-score trace estimate. Dependent and zero constraints are
+  included; no choice of an independent constraint basis is needed.
+- `ColoringTrajectoryGeometry.lean`: constraint counting from the entropy
+  bound, trace at least `r/4`, nonzero normalized direction and its quadratic
+  energy bound, truncation fixing a new coordinate, and full-step progress.
+- `ColoringTrajectoryInitial.lean`: Taylor-sum error, inverse and half-mesh
+  initialization enclosures, and the precision/mesh budget. In particular,
+  the implemented `initialWeight` lies between `exp(-lambda^2)` and that
+  value plus one mesh unit.
+- `ColoringTrajectoryProgress.lean`: consumed-step count, progress measure,
+  and unconditional half-coordinate termination for `run` under
+  `WalkPremises`. The measure is squared norm plus `Delta^2/4` times the
+  sign count. It proves `n*Delta^2/4 <= r + r*Delta^2/4` for actual steps.
+- `ColoringTrajectoryPotential.lean`: increment bounds, damping bounds,
+  cancellation of the linear update, control of the quadratic update,
+  nonnegative weights, and the initial and one-step potential bounds.
+- `ColoringTrajectoryUpper.lean`: the actual merge-sorted heavy-row bound,
+  protection of heavy rows, a remaining-fuel upper-weight invariant, and
+  terminal weights strictly below two.
+- `ColoringTrajectoryLower.lean`: the exponential lower bound per step,
+  telescoping displacement over exactly the consumed steps, and the terminal
+  coefficient `33 + 8*stepSize^2`.
+- `ColoringTrajectory.lean`: assembly and the unconditional partial/full
+  coloring semantic exports. Import this module to use the completed proof.
+
+Principal exports, with the original definitions and premises:
+
+```lean
+partialColoringTrajectory : PartialColoringTrajectoryHypothesis
+partialColor_correct : PartialColoringCorrect partialColor
+
+deterministicPartialColoring_of_native
+  (hN : PartialColoringNativeHypothesis) :
+  DeterministicPartialColoringHypothesis
+```
+
+The three component theorems are `run_terminal_half`,
+`run_terminal_weight_upper`, and `run_terminal_weight_lower`. For
+`hp : WalkPremises a x`, they respectively assert:
+
+```lean
+r <= 2 * signCoordinateCount (run a x).x
+forall i, ((run a x).w i : Real) < 2
+forall i,
+  Real.exp ((a i).threshold * (dot (a i).a ((run a x).x - x) : Real) -
+    (33 + 8 * (stepSize r : Real)^2) * ((a i).threshold : Real)^2)
+    <= ((run a x).w i : Real)
+```
+
+`partialColor_correct` supplies the original framed-list equality, cube,
+ceiling-half sign count, and discrepancy bound
+`68 * threshold_i * coloringRowNorm(V_i)`. It has no trajectory or native
+premise. `fullColor_partialColor_spec` also specializes the existing full
+recursion semantics unconditionally: the concrete program returns signs
+with discrepancy at most
+`(240*c_i + 2400)*sqrt(r)*coloringRowSup(V_i)` under the original cube,
+nonnegative-threshold and entropy premises.
+
+Audit of `lem:partial-color`: no new mathematical error was found. The
+Taylor implementation and rational truncation satisfy the original contract.
+For the final exponential estimate it is essential to count consumed steps
+using the progress measure, rather than use the larger programmed fuel
+budget. The latter alone would lose a factor two in the damping exponent.
+The Taylor remainder is proved without Stirling: compare a single Taylor
+term at `4s` with `exp(4s)` and use `8s <= L` to obtain the needed geometric
+decay. All descriptions here are independent paraphrases.
+
+Validation: all eight modules compiled successfully in single-module Lake
+builds; the final `lake build Power2ModuleSVP.ColoringTrajectory` has no
+warnings. Ten principal-export axiom audits report only `propext`,
+`Classical.choice`, and `Quot.sound`. There is no unfinished proof or new
+axiom in these files. No committed Lean source, root import, Lake
+configuration, existing library, or other job's Lean file was edited. Own
+scratch was removed after checking.
+
+Remaining work is the independent native-machine and bit-size certificate
+for `partialColor`, together with the full-recursion native bounds. Those
+remain in the existing native/runtime hypotheses; this job does not claim
+an unconditional polynomial-time certificate or change another job's files.
