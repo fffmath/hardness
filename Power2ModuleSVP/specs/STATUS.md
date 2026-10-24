@@ -1,6 +1,6 @@
 # Power2ModuleSVP status
 
-**Current state (2026-10-25 07:50 UTC+8, local commits only, nothing pushed).**
+**Current state (2026-10-25 08:10 UTC+8, local commits only, nothing pushed).**
 Working copy: /workspace/shared/projects/hardness. Build: `lake build Power2ModuleSVP`.
 
 Proved, 0 sorry, axioms only propext/Classical.choice/Quot.sound:
@@ -13,6 +13,11 @@ Proved, 0 sorry, axioms only propext/Classical.choice/Quot.sound:
 - `spectralSeedFamily_of A hA hAt hK hP hT` (FlatSeedMain.lean): seed assembly conditional.
   hK (sine kernel) proved (`sineKernelDecompositionHypothesis_holds`);
   partial-coloring semantics proved (`partialColor_correct`, ColoringTrajectory.lean).
+
+ASSEMBLED (MainAssembly.lean): `moduleSVP_npComplete_of_remaining
+  (hG : FlatFrontend.MarkedRunGeometryHypothesis) (hN : FullColoringNativeHypothesis partialColor) :
+  NPComplete encSVP ModuleSVPLang` -- standard axioms only. These two are the ONLY remaining inputs
+  (PartialColoringNativeHypothesis is not needed on the AUDIT2 route, though useful for hN).
 
 Remaining for the unconditional `moduleSVP_npComplete`:
 1. Native TM certificates for partialColor / fullColor (`PartialColoringNativeHypothesis`,
