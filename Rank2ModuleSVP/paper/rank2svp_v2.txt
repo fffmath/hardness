@@ -1,0 +1,1436 @@
+SVP Is NP-Hard for Some Rank-2 Cyclotomic Modules
+
+
+                          Jiaqi Liu     Yansong Feng        Yanbin Pan
+                        State Key Laboratory of Mathematical Sciences,
+                  Academy of Mathematics and Systems Science, Beijing, China
+                          {ljqi,fengyansong,panyanbin}@amss.ac.cn
+
+
+
+
+                                             Abstract
+      Let q be an odd prime. Let ζq be a primitive qth root of unity, and put K = Q(ζq ), with
+  ring of integers OK = Z[ζq ]. As q ranges over odd primes, we prove that the decision version of
+  the Shortest Vector Problem (SVP) in the canonical ℓ2 -norm is NP-complete on full-rank free
+                    2
+  submodules of OK     by giving a deterministic polynomial-time many-one reduction from Exact
+  Cover by 3-Sets (X3C). The module rank is fixed at two. The main obstacle is closure under the
+  action of OK . A module containing a nonzero vector also contains every scalar multiple of that
+  vector by a nonzero element of OK , and some of these multiples may be shorter.
+      Three ideas overcome this obstacle. First, we map the Bennett–Peikert Reed–Solomon lattice
+  to a principal cyclotomic ideal and use Wan’s point-count estimates to prove that a coset of this
+  ideal contains many binary coefficient representatives. Second, we construct a checker whose
+  canonical squared norm encodes the X3C equations, with a controlled nonnegative error term.
+  Third, the checker and a second module coordinate combine with a separation bound for ideal
+  cosets to rule out short vectors in NO instances. Each constructed instance consists of an odd
+  prime q, two integral generators whose 2 × 2 generator matrix has nonzero determinant, and
+  an integer squared threshold. The construction also gives NP-hardness of search-SVP under
+  deterministic polynomial-time Turing reductions with at most one oracle call.
+1    Introduction
+A lattice L ⊆ Rm is the set of all integer linear combinations of linearly independent vectors. Given
+a basis of L, the decision shortest vector problem (SVP) asks whether the lattice contains a nonzero
+vector of squared norm at most a given threshold. Its search version asks for a shortest nonzero
+lattice vector. In 1981, Van Emde Boas asked whether exact SVP is NP-hard [vEB81]. Later,
+Ajtai’s breakthrough result established that exact Euclidean SVP is NP-hard under randomized
+reductions [Ajt98]. For Euclidean SVP on lattices of rank n, later randomized reductions established
+hardness of √ approximation within a factor of 1 + n−ε for every fixed ε > 0 [CN98], within any fixed
+factor in (1, 2) [Mic01], and within every constant factor [Kho05, Mic12]. Stronger randomized-time
+assumptions yield superconstant and almost-polynomial factors [Kho05, HR12].
+    However, a deterministic NP-hardness proof for exact Euclidean SVP remained open for decades.
+Along one route, Hair and Sahai used probabilistically checkable proofs (PCPs) to obtain deter-
+ministic hardness for ℓp -norms with p > 2 [HS26b]. They also proved approximation hardness in
+the ℓp -norm for every fixed 1 ≤ p < ∞ under a subexponential-time assumption [HS26a]. In two
+recent preprints, Wan proved deterministic hardness for every constant approximation
+                                                                               √               factor in
+the Euclidean norm [Wan26a], extending an earlier result for factors below 2, including the exact
+problem [Wan26c].
+    At an intuitive level, Micciancio’s local-density program asks for an explicit lattice L and a coset
+t + L containing many points of norm strictly below λ1 (L) [Mic01, Mic12]. The minimum of L
+protects the soundness gap, while the abundance of short coset points allows the reduction to encode
+a solution to the input problem. For our deterministic reduction, these points must realize every
+prescribed assignment on a designated set of coordinates. Bennett and Peikert proposed a candidate
+by lifting Reed–Solomon codes [BP23]. Wan used finite-field point counts to prove that an explicit
+Reed–Solomon coset has the required representatives with prescribed coordinates [Wan26c]. Wan’s
+result supplies the local-density statement needed for deterministic hardness results for general
+lattices in the ℓ2 -norm. It does not by itself show that the reduction remains sound when the output
+is required to have a prescribed cyclotomic module structure.
+    Under the canonical embedding of a number field, ideals yield ideal lattices [LPR13a]. Higher-
+rank modules similarly yield module lattices [LS15, FPMS22]. The ring action supports com-
+pact representations and fast arithmetic [HPS98, LPR13b], underlies Ring-LWE and Module-
+LWE [LPR13a, LS15], and enables specialized algorithms for module lattices [LPMSW19]. This
+algebraic structure is no longer just a theoretical design choice. In 2024, NIST standardized
+ML-KEM (FIPS 203), a module-lattice-based scheme derived from CRYSTALS–Kyber and based
+on Module-LWE [BDK+ 18, Nat24b]. It also standardized ML-DSA (FIPS 204), derived from
+CRYSTALS–Dilithium and relying on Module-LWE and a variant of Module-SIS [DKL+ 18, Nat24a].
+    The cryptographic importance of module lattices has motivated broad work on structured lattices.
+Prior work studies cyclic-lattice problems [Mic07], module unique-SVP and NTRU [FPMS22], proba-
+bilistic reductions for approximation problems from arbitrary modules to free modules [DMMPMT23],
+worst-case to average-case reductions for the approximate shortest independent vectors problem
+(SIVP) at fixed module rank under the Extended Riemann Hypothesis [dBPTW26], and the geometry
+of shortest vectors in random modules [GSVV25].
+    For the Closest Vector Problem (CVP), a recent preprint proves that exact Euclidean decision-
+CVP is NP-complete on coefficient lattices of nonzero principal ideals in power-of-two cyclotomic rings,
+with a lift to principal cyclic ideal lattices [LFP26]. To the best of our knowledge, no deterministic
+polynomial-time NP-hardness result for exact Euclidean SVP on full-rank free rank-two modules
+over rings of integers in cyclotomic fields was known before the first version of this work appeared.
+
+
+
+                                                   1
+   This leads to the question addressed in this work:
+
+      Is Euclidean SVP NP-hard for rank-two modules over cyclotomic rings?
+                                                                              2 with K = Q(ζ ) for
+We answer this question affirmatively, even for full-rank free submodules of OK             q
+odd primes q.
+
+1.1   Our result
+For every odd prime q, let ζ := ζq be a primitive qth root of unity. Write K := Q(ζ) and OK := Z[ζ].
+For y = (y1 , y2 ) ∈ K 2 , define the canonical product norm by
+                                            ∑︂ (︁
+                                 ∥y∥2 :=            |σ(y1 )|2 + |σ(y2 )|2 .
+                                                                         )︁
+
+                                           σ:K↪→C
+
+We write ∥ · ∥2 for the ℓ2 -norm of coefficient vectors. An OK -submodule M ⊆ OK  2 is called full rank
+
+if it has finite index in OK2 .
+
+     We consider the following decision problem. An input consists of an odd prime q, two vectors
+m1 , m2 ∈ OK   2 with det[ m m ] ̸= 0, and an integer S ≥ 0. Each of the four ring coordinates
+                               1  2
+of m1 and m2 is specified by its q − 1 integer coefficients in the basis 1, ζ, . . . , ζ q−2 . For M :=
+OK m1 + OK m2 , the question is whether
+
+                                             λ1 (M)2 ≤ S.
+
+We call this problem decision-SVP in the ℓ2 -norm on rank-two cyclotomic modules. The correspond-
+ing search-SVP problem takes q, m1 , m2 as input and asks for a shortest nonzero vector of M. The
+determinant condition makes M a full-rank free submodule of OK   2 generated by two vectors.
+
+
+Theorem 1.1. As q ranges over odd primes, decision-SVP in the ℓ2 -norm on free rank-two cyclo-
+tomic modules is NP-complete. The hardness holds under deterministic polynomial-time many-one
+reductions.
+
+    Our reduction is from Exact Cover by 3-Sets (X3C), which is NP-complete [GJ79]. Given an
+X3C instance, the reduction outputs a tuple (q, m1 , m2 , S) of the form above. Here q is an odd
+prime, m1 , m2 ∈ OK 2 generate the output module and have nonzero determinant, and S is an integer
+
+squared threshold. As a lattice, the output module has Z-rank 2(q − 1). The tuple has polynomial
+encoding length. Section 5.3 gives the choice of q and bounds the encoding length and running time.
+    This is a worst-case hardness result in which the cyclotomic ring varies with q. The theorem does
+not establish hardness for the power-of-two cyclotomic family, on average, or through a cryptographic
+security reduction. The same construction also gives NP-hardness of search-SVP.
+
+Corollary 1.2. As q ranges over odd primes, search-SVP in the ℓ2 -norm on free rank-two submodules
+    2 is NP-hard. The hardness holds under deterministic polynomial-time Turing reductions with
+of OK
+at most one oracle call.
+
+Subsequent work. Wan proved deterministic NP-completeness for exact decision-SVP on full-rank
+cyclic lattices in the coefficient ℓ2 -norm [Wan26b]. Martin gave a dimension-preserving deterministic
+polynomial-time reduction from general Euclidean SVP to ideal lattices over monogenic orders in
+totally real number fields under the canonical embedding [Mar26].
+
+
+
+
+                                                     2
+1.2    Proof overview
+Our goal is to give a deterministic polynomial-time reduction from X3C to decision-SVP on rank-two
+modules over cyclotomic rings. The reduction directly constructs a rank-two OK -module M ⊆ OK    2
+
+and an integer squared threshold S such that
+
+                         λ1 (M)2 ≤ S     ⇐⇒           the X3C instance is positive.
+
+The main challenge is to prove the strict lower bound λ1 (M)2 > S for every negative instance
+despite closure under multiplication by OK .
+   X3C asks whether a given matrix A ∈ {0, 1}M ×n with exactly three ones in each column admits
+a vector ξ ∈ {0, 1}n satisfying
+                                             Aξ = 1M ,                                      (1)
+where 1M is the all-one vector in {0, 1}M .
+   The proof of the reduction has three layers. First, we show that every ξ has an extension to
+a binary coefficient vector x whose evaluation at ζ lies in a fixed ideal coset in OK . Second, we
+construct an X3C checker whose squared norm encodes Aξ − 1M . Third, we place the checker in a
+rank-two module. The reduction computes its output directly from A without finding x.
+
+The ideal coset. The reduction embeds ξ ∈ {0, 1}n in a longer binary coefficient vector x =
+(xa )a∈Fq ∈ {0, 1}Fq by choosing distinct field elements α1 , . . . , αn ∈ Fq and requiring xαj = ξj for
+1 ≤ j ≤ n. Put π := 1 − ζ. For a chosen integer k, define a := π k OK . For x = (xa )a∈Fq ∈ ZFq ,
+evaluation at ζ gives the corresponding ring element
+                                                     ∑︂
+                                        [x] :=              xa ζ a ∈ OK .
+                                                     a∈Fq
+
+    By Theorem 3.2, which uses the Bennett–Peikert minimum bound [BP23], evaluation maps a
+Reed–Solomon lattice to the ideal lattice a and λ1 (a)2 ≥ 2kq. Wan’s point-count estimate [Wan26c],
+in the uniform form of Theorem 3.4, supplies many binary vectors whose corresponding ring
+elements lie in a fixed coset of a. The reduction chooses one coset c + a with c ∈ OK . By Lemma 3.3
+and Theorem 3.4, every ξ ∈ {0, 1}n has many extensions x ∈ {0, 1}Fq such that
+                                        ∑︂
+                       [x] ∈ c + a,            xa = h,            xαj = ξj   (1 ≤ j ≤ n),
+                                        a∈Fq
+
+where h is the prescribed Hamming weight. Thus xαj = ξj stores ξ in designated coordinates
+α1 , . . . , αn of x, while [x] places the resulting ring element in the coset c + a. For the chosen
+parameters, [x] has squared canonical norm H = h(q − h) < 2kq and is therefore shorter than every
+nonzero element of a.
+
+The X3C checker. The second step constructs U, V ∈ OK so that the squared canonical norm
+of U [x] − V encodes the residual Aξ − 1M of Equation (1). By Theorem 4.3, every weight-h binary
+vector x with ξj = xαj satisfies
+
+                          ∥U [x] − V ∥2 = Q2 B0 + 2κ∥Aξ − 1M ∥22 + δ(x) .
+                                                (︁                                 )︁
+                                                                                                       (2)
+
+Here B0 and the positive parameters Q, κ are independent of x, and δ(x) ≥ 0 is the total error. We
+call a representative x admissible if it satisfies the correlation conditions in Section 4.3, which ensure
+δ(x) < κ/8. The uniform count in Theorem 3.4 and the union bound in the proof of Theorem 4.4
+
+                                                            3
+show that every ξ ∈ {0, 1}n has an admissible representative x with [x] ∈ c + a. Consequently, an
+exact cover gives an admissible representative whose squared checker norm is at most Q2 (B0 + κ/8).
+For a negative instance, every weight-h binary representative has squared checker norm at least
+Q2 (B0 + 2κ).
+
+The rank-two module. The third step places the value U [x] − V in a module. Choose a positive
+                                                                                         2
+integer Γ to control the second module coordinate. Define the rank-two OK -submodule of OK
+                          M := OK (U π k , 0) + OK (U c − V, −QΓ) ⊂ OK
+                                                                     2
+                                                                       .
+Every vector in M has the unique form
+                               (︁                )︁
+                   v(y, w) := U y − V w, −QΓw ,            y, w ∈ OK ,   y − wc ∈ a.               (3)
+When w = 1 and y = [x], the first coordinate is the checker value U [x] − V . The second coordinate
+contributes Q2 Γ2 ∥w∥2 to the squared norm. The integer threshold in Equation (23) satisfies
+S = Q2 (B0 + F + κ), where F = Γ2 (q − 1). If ξ is an exact cover, choose an admissible representative
+x. Taking w = 1 in Equation (3) then gives ∥v([x], 1)∥2 < S.
+
+Soundness under multiplication. Suppose that the X3C instance is negative, and consider a
+nonzero vector v(y, w) ∈ M. The main issue is possible cancellation between U y and V w. Since
+y ∈ wc + a, one has ∥y∥ ≥ dist(wc, a). For an explicit ν = o(1), Lemma 5.1 gives
+                              ∥v(y, w)∥2 ≥ Q2 (1 − ν) ∥y∥2 + Γ2 ∥w∥2 .
+                                                      (︁                 )︁
+                                                                                                   (4)
+This inequality lets us use lower bounds for ∥y∥ and ∥w∥ separately and transfers the geometric
+bounds from the ideal cosets to the module. The argument considers four cases. The comparisons
+with S below are verified in the proof of Theorem 5.2.
+  (i) If w = 0, then 0 ̸= y ∈ a. Lemma 4.2 gives ∥U y∥ ≥ Q∥y∥, so the minimum bound for a puts
+      the squared norm of every nonzero module vector with w = 0 above S.
+  (ii) If w is a root of unity, write y = wu with u ∈ c + a. Then v(y, w) = wv(u, 1), and
+       multiplication by w preserves the canonical norm. Let x ∈ ZFq be the unique integral
+       coefficient representative of u with coefficient sum h from Lemma 3.3. If x is binary, the
+       checker bound for a negative instance and the second coordinate put the squared norm of
+       the module vector above S. If x is not binary, Lemma 3.3 gives ∥u∥2 ≥ H + 2q. Applying
+       Equation (4) to u and 1 again puts the squared norm of the module vector above S.
+ (iii) If w is not a root of unity and 0 < ∥w∥2 ≤ 3q, Theorem 3.7 gives a lower bound for dist(wc, a),
+       and part (ii) of Lemma 3.5 gives ∥w∥2 ≥ 2q − 4. Combining these bounds with Equation (4)
+       puts the squared norm of the module vector above S.
+ (iv) If w is not a root of unity and ∥w∥2 > 3q, the second coordinate −QΓw alone puts the squared
+      norm of the module vector above S.
+
+Organization. Section 2 recalls Euclidean lattices, cyclotomic rings, X3C, and Sidon sequences,
+and records the power-sum estimates used to count binary representatives in ideal cosets. Section 3
+maps the lifted Reed–Solomon lattice to a principal cyclotomic ideal, proves the fixed-coordinate
+count, and establishes the norm-separation bounds used for soundness. Section 4 constructs the X3C
+checker and proves the existence of admissible representatives. Section 5 gives the main reduction.
+It assembles the rank-two module, proves completeness and soundness, and bounds the encoding
+length and running time.
+
+                                                  4
+2     Preliminaries
+Notation. For a positive integer r, write [r] := {1, . . . , r}. For a prime q, let Fq denote the finite
+field with q elements, and let F×  q := Fq \ {0} denote its multiplicative group. When an element of
+Fq occurs as an exponent or in a binomial coefficient, we use its unique integer representative in
+{0, . . . , q − 1}. Vectors and matrices are represented in bold, e.g., v for a vector and A for a matrix,
+while their scalar coordinates are not. We use ∥ · ∥2 for the ℓ2 -norm and 1r for the vector of ones in
+Rr . The notation a ◁ A means that a is an ideal of the ring A.
+
+2.1     Euclidean lattices
+A Euclidean lattice of rank n is a discrete additive subgroup L ⊆ Rm of the form
+
+                                                   L = L(B) := BZn ,
+
+where B ∈ Rm×n has linearly independent columns. These columns form a basis. The first minimum
+of L is the length of a shortest nonzero lattice vector:
+
+                                                   λ1 (L) = min ∥v∥2 .
+                                                            0̸=v∈L
+
+Definition 2.1 (SVP). The decision-SVP problem takes as input a basis B ∈ Qm×n with linearly
+independent columns and a rational squared threshold ∆ ≥ 0, and asks whether
+
+                                                     λ1 (L(B))2 ≤ ∆.
+
+    The problem belongs to NP: a YES certificate is a nonzero integer coefficient vector for a short
+lattice point. Standard cofactor bounds give a certificate of polynomial bit length, and exact rational
+arithmetic checks both membership and the squared norm. See, e.g., [MG02]. The corresponding
+search-SVP problem takes a full-column-rank basis B and outputs a shortest nonzero vector of
+L(B).
+
+2.2     Cyclotomic fields and module lattices
+Cyclotomic field. In this paper, we only consider odd primes q. For a fixed q, let ζ := ζq ∈ C be
+a primitive qth root of unity. We suppress the subscript q after fixing the prime and put
+
+                                  K := Q(ζ),           OK := Z[ζ],            π := 1 − ζ.
+
+Here OK is the ring of integers of K. The elements 1, ζ, . . . , ζ q−2 form an integral basis of K, so
+[K : Q] = q − 1. The prime q is totally ramified in OK , and hence (q) = (π)q−1 [Was97].
+
+Canonical embedding. For v ∈ K, write v for its complex conjugate. In particular, ζ = ζ −1 .
+For a ∈ F×                                                         a
+         q , let σa : K ↪→ C be the embedding defined by σa (ζ) = ζ . These are all the embeddings
+of K. The canonical embedding sends v to (σa (v))a∈F×    q
+                                                           . For each integer d ≥ 1 and vectors
+y = (y1 , . . . , yd ), y′ = (y1′ , . . . , yd′ ) ∈ K d , define the real inner product
+                                                          d ∑︂
+                                               ′
+                                                         ∑︂
+                                         ⟨y, y ⟩ := Re               σa (yi )σa (yi′ )
+                                                         i=1 a∈F×
+                                                                q
+
+
+
+
+                                                             5
+and its induced product norm
+                                                             d ∑︂
+                                                            ∑︂
+                                      2
+                                  ∥y∥ := ⟨y, y⟩ =                      |σa (yi )|2 .
+                                                            i=1 a∈F×
+                                                                   q
+
+
+For d = 1, this is the canonical norm on K:
+                                                       ∑︂
+                                            ∥v∥2 =            |σa (v)|2 .
+                                                      a∈F×
+                                                         q
+
+
+The roots of unity in K are exactly ±ζ j for 0 ≤ j < q [Was97]. If ε is a root of unity, then
+∥εy − εy′ ∥ = ∥y − y′ ∥ for all y, y′ ∈ K d . Thus multiplication by ε is an isometry. In particular, it
+preserves distances.
+
+Module lattices. For an integer s ≥ 1, an OK -module lattice in K s is a finitely generated
+OK -submodule M ⊆ K s , equipped with the componentwise canonical embedding and the product
+norm. It has full rank if its K-span is K s . When s = 1, a nonzero ideal a ⊆ OK gives a module
+lattice in K called an ideal lattice. Both module and ideal lattices are discrete additive subgroups of
+their real spans.
+    In this paper, we only use free module lattices of full rank. If m1 , . . . , ms ∈ K s are linearly
+independent over K, then
+                                       M = OK m1 + · · · + OK ms
+is free of module rank s, has full rank, and has Z-rank s(q − 1). The square matrix with columns
+m1 , . . . , ms has nonzero determinant precisely when these vectors are linearly independent over K.
+If M ⊆ OK     s , then full rank is equivalent to finite index in O s . Under the canonical embedding,
+                                                                   K
+the product norm is the Euclidean ℓ2 -norm. We specify the lattice by its module generators in
+power-basis coordinates.
+     The first minimum of an ideal lattice or module lattice is the length of its shortest nonzero
+vector in the canonical or product norm. For v ∈ K and an ideal lattice a, define
+
+                                          dist(v, a) := min ∥v − y∥.
+                                                            y∈a
+
+
+Coefficient representatives.       For z = (za )a∈Fq ∈ QFq , write
+                                                     ∑︂
+                                            [z] :=          za ζ a ∈ K.
+                                                     a∈Fq
+
+
+If z ∈ ZFq , then [z] ∈ OK , and we call z an integral coefficient representative of [z]. Since
+Φq (X) = 1 + X + · · · + X q−1 is the minimal polynomial of ζ, two integral coefficient vectors represent
+the same element precisely when they differ by an integer multiple of the all-one vector 1q .
+    The following identity converts the canonical inner product and norm into calculations with
+these q coefficients.
+
+Lemma 2.2. For all rational coefficient vectors x, y ∈ QFq ,
+                                                              (︄           )︄ (︄         )︄
+                                              ∑︂                ∑︂                 ∑︂
+                             ⟨[x], [y]⟩ = q        xa ya −            xa                ya .
+                                              a                   a                a
+
+
+
+                                                        6
+In particular, for every z ∈ ZFq ,
+                                                             (︄             )︄2
+                                            ∑︂                    ∑︂                  ∑︂
+                             ∥[z]∥2 = q             za2 −              za         =        (za − zb )2 .
+                                               a                  a                   a<b
+
+Here a < b uses the integer representatives 0, . . . , q − 1.
+
+Proof. For a, b ∈ Fq , a finite geometric sum gives
+                                                                  {︄
+                                          ∑︂
+                                                    t(a−b)             q − 1,         a = b,
+                                                ζ            =
+                                                                       −1,            a ̸= b.
+                                         t∈F×
+                                            q
+
+
+Hence, for rational coefficient vectors x and y,
+                                                                                             (︄          )︄ (︄         )︄
+                                   ∑︂              ∑︂                    ∑︂                    ∑︂                ∑︂
+                  ⟨[x], [y]⟩ = q        xa ya −           x a yb = q              x a ya −          xa                yb .
+                                   a                a,b                     a                   a                b
+
+Taking x = y = z gives the norm identity. Expanding a<b (za − zb )2 gives its final form. The
+                                                                                   ∑︁
+
+inner-product formula is unchanged under replacing x by x + r1q and y by y + s1q , for r, s ∈ Q.
+Thus the identities do not depend on the choice of coefficient representatives.
+
+2.3    X3C and Sidon sequences
+An Exact Cover by 3-Sets (X3C) instance consists of a universe [M ] and three-element subsets
+C1 , . . . , Cn ⊆ [M ]. Its incidence matrix A ∈ {0, 1}M ×n is defined by Aij = 1 when i ∈ Cj and
+Aij = 0 otherwise. A selection vector ξ ∈ {0, 1}n specifies a choice of sets, with ξj = 1 exactly when
+Cj is selected. We call ξ an X3C witness if
+
+                                                           Aξ = 1M .
+
+This equality says that every universe element belongs to exactly one selected set. The instance is
+positive exactly when it has an X3C witness, which specifies an exact cover of the universe. X3C is
+NP-complete [GJ79].
+   An instance with M = 0 is positive. An instance whose incidence matrix has a zero row is
+negative. Henceforth, assume M, n ≥ 1 and that every row of A is nonzero. Then M ≤ 3n.
+   To index the n selection bits in the reduction, we choose distinct nonnegative integers whose
+nonzero ordered differences are all distinct. Such a sequence is called a Sidon sequence. The following
+lemma gives a deterministic construction with largest entry O(n2 ).
+
+Lemma 2.3. For every n ≥ 1, one can deterministically compute integers
+
+                               0 ≤ α1 < · · · < αn =: α⋆ ,                            α⋆ = O(n2 ),
+
+such that all nonzero ordered differences αℓ − αj , j ̸= ℓ, are distinct. The computation takes time
+polynomial in n.
+
+Proof. Use the deterministic quadratic-residue Sidon construction of Erdős and Turán [ET41]. For
+an explicit construction and the verification of the directed-difference property, see also Liu–Feng–
+Pan [LFP26].
+
+
+                                                                   7
+2.4       Power-sum estimates
+Let q be prime, let 2 ≤ k < m, and let b = (b1 , . . . , bk−1 ) ∈ Fk−1
+                                                                   q   . Define
+                                                                      m
+                                 {︄                                                              }︄
+                                                                      ∑︂
+                  Xk,m (b) :=         z = (z1 , . . . , zm ) ∈ Fm
+                                                                q :         zrj = bj   (1 ≤ j < k) .
+                                                                      r=1
+
+The following proposition records the point-count bounds used below.
+
+Proposition 2.4 ([Wan26c]). Let q be prime and suppose that 2 ≤ k ≤ m − 2 < q − 2. For every
+b ∈ Fk−1
+     q   , the following estimates hold.
+
+    (i)
+                                      ⃓                     ⃓  1
+                                      ⃓|Xk,m (b)| − q m−k+1 ⃓ ≤ (2k)m q (m−k+2)/2 .
+                                      ⃓                     ⃓
+                                                                      2
+ (ii) For distinct i, ℓ ∈ [m],
+                         ⃓⃓                                   ⃓  1
+                         ⃓ {z ∈ Xk,m (b) : zi = zℓ }⃓ − q m−k ⃓ ≤ (2k)m−1 q (m−k+2)/2 .
+                         ⃓⃓                         ⃓         ⃓
+                                                                              2
+
+(iii) For i ∈ [m] and a ∈ Fq ,
+                         ⃓⃓                                 ⃓  1
+                         ⃓ {z ∈ Xk,m (b) : zi = a}⃓ − q m−k ⃓ ≤ (2k)m−1 q (m−k+1)/2 .
+                         ⃓⃓                       ⃓         ⃓
+                                                                              2
+
+Proof. Wan [Wan26c, Propositions 5.2 and 6.2] proves part (i) and proves part (ii) for z1 = z2 ,
+respectively. The statements in that paper use one particular vector of prescribed power sums b.
+The displayed estimates and their proofs depend only on q, k, and m, so they hold for every b.
+    For distinct i, ℓ ∈ [m], a permutation of the m coordinates sends the condition zi = zℓ to z1 = z2
+and leaves each equation m           j
+                             ∑︁
+                                r=1 zr = bj unchanged. Therefore Wan’s estimate for z1 = z2 proves
+part (ii) for every pair i ̸= ℓ.
+    For part (iii), fix zi = a and delete that coordinate. The remaining m − 1 variables satisfy
+        j         j
+  r̸=i zr = bj − a for 1 ≤ j < k. Since k < m − 1 < q, Wan’s Proposition 5.2 [Wan26c] applies to
+∑︁
+
+these m − 1 variables and proves part (iii).
+
+
+3         Reed–Solomon lattices and ideal cosets
+Following the local-density approach in earlier SVP hardness reductions [Mic01, Mic12, BP23], we
+use an ideal lattice obtained from a Construction A Reed–Solomon lattice. We require one fixed
+ideal coset containing many short ring elements represented by weight-h binary coefficient vectors
+x ∈ {0, 1}Fq , with [x] = a∈Fq xa ζ a ∈ OK . The first step of the reduction stores an X3C selection
+                         ∑︁
+
+vector ξ ∈ {0, 1}n in designated coordinates of x. Using Wan’s point-count estimates [Wan26c], we
+show that for every ξ there are many such vectors x with [x] in the same fixed coset. At the same
+time, the ideal is designed to have a minimum larger than the norms of these coset elements, so
+that its nonzero elements cannot create unintended short vectors. This section constructs the ideal,
+proves the required count, and establishes the additional norm bounds for nonbinary representatives
+and scalar multiples.
+
+
+
+
+                                                            8
+3.1   From lattice to ideal
+We first transfer an ℓ2 -minimum bound for the Construction A Reed–Solomon lattice to a principal
+ideal of OK .
+    Fix an ordering Fq = {a1 , . . . , aq } and index the coordinates of Zq accordingly. For 1 ≤ k < q,
+define
+                                                ···
+                             ⎛                             ⎞
+                                 1          1          1
+                             ⎜ a
+                             ⎜ 1           a2 · · ·   aq ⎟ ⎟
+                             ⎜ 2              2          2 ⎟
+                   Hq (k) := ⎜ 1
+                             ⎜  a          a  2 · · · a  q ⎟ = (aj )0≤j<k, a∈Fq ∈ Fk×q .
+                                                                                   q
+                             ⎜ ..           ..   ..    .. ⎟
+                             ⎝ .             .      .   . ⎠
+                                                           ⎟
+
+                              ak−1
+                               1   ak−1
+                                    2   ···              ak−1
+                                                          q
+
+The matrix Hq (k) defines the lattice
+                                        {︂                                       }︂
+                               Lq,k := z ∈ ZFq : Hq (k)z = 0 in Fkq ,
+
+which is also known as the Construction A lattice of the Reed–Solomon code of dimension q − k
+over Fq . The following lemma gives a lower bound on the ℓ2 -minimum of Lq,k .
+
+Lemma 3.1 ([BP23, Theorem 14]). Let q be prime and 1 ≤ k ≤ q/2. Then the first minimum of
+Lq,k with respect to the ℓ2 -norm ∥ · ∥2 satisfies
+
+                                               λ1 (Lq,k )2 ≥ 2k.
+
+   Put aq,k := π k OK and write 1⊥          q   T
+                                 q := {z ∈ R : 1q z = 0}. Let
+
+                             φ : Z[X]/(X q − 1) −→ OK ,                      X ↦−→ ζ,
+
+be the surjective ring homomorphism given by evaluation at ζ. Its kernel is generated by Φq (X) =
+1 + X + · · · + X q−1 . We use the unique degree-< q representative of each element f ∈ Z[X]/(X q − 1)
+and write f¯ ∈ Fq [X] for its reduction modulo q.
+
+Theorem 3.2. For 1 ≤ k ≤ q/2, the map z ↦→ [z] restricts to an additive-group isomorphism
+
+                                             Lq,k ∩ 1⊥
+                                                     q −→ aq,k .
+
+Consequently, with respect to the canonical norm,
+
+                                               λ1 (aq,k )2 ≥ 2kq.
+
+Proof. For z ∈ ZFq , let f := a∈Fq za X a ∈ Z[X]/(X q − 1), so that φ(f ) = [z]. The coefficient of
+                              ∑︁
+
+Y j in f (1 + Y ) is a za aj . Thus
+                    ∑︁   (︁ )︁
+
+                                                             (︄ )︄
+                                                                 a
+                     (X − 1)k | f¯
+                                                 ∑︂
+                                      ⇐⇒                za           = 0 in Fq   (0 ≤ j < k).
+                                                  a              j
+
+Since k < q, the functions a ↦→ aj and a ↦→ aj , for 0 ≤ j < k, are related by an invertible triangular
+                                                (︁ )︁
+
+change of basis over Fq . Hence the defining equations of Lq,k are equivalent to (X − 1)k | f¯. The
+identity X q − 1 = (X − 1)q in Fq [X] therefore gives
+
+                                              f ∈ q, (X − 1)k ◁ Z[X]/(X q − 1).
+                                                   (︁                   )︁
+                       z ∈ Lq,k      ⇐⇒
+
+                                                             9
+The image of (q, (X − 1)k ) under φ is the ideal (q, π k ). Total ramification gives (q) = (π q−1 ), so
+this image is (π k ) = aq,k since k ≤ q − 1.
+    Furthermore, Φq (X) ≡ (X − 1)q−1 (mod q), so ker(φ) = (Φq ) is contained in (q, (X − 1)k ). Since
+φ((q, (X − 1)k )) = aq,k , it follows that
+
+                           φ−1 (aq,k ) = q, (X − 1)k        in Z[X]/(X q − 1).
+                                           (︁          )︁
+                                                                                                    (5)
+
+    To prove surjectivity of the restricted map, fix v ∈ aq,k and choose f ∈ (q, (X − 1)k ) with
+φ(f ) = v. Since f (1) ∈ qZ, replace f by f − (f (1)/q)Φq . The new f remains in (q, (X − 1)k ), still
+satisfies φ(f ) = v, and has coefficient sum zero. Its coefficient vector z therefore lies in Lq,k ∩ 1⊥
+                                                                                                      q
+and satisfies [z] = v.
+    For injectivity, if z ∈ Lq,k ∩ 1⊥
+                                    q satisfies [z] = 0, then z ∈ Z1q by the description of ker(φ). Its
+coefficient sum is zero, so z = 0.
+    Finally, for every nonzero z ∈ Lq,k ∩ 1⊥  q , Lemmas 3.1 and 2.2 give
+
+                                        ∥[z]∥2 = q∥z∥22 ≥ 2kq.
+
+The isomorphism therefore gives the claimed minimum bound.
+
+3.2   Binary representatives in ideal cosets
+For x ∈ ZFq , its syndrome Hq (k)x ∈ Fkq has jth coordinate a∈Fq xa aj modulo q for 0 ≤ j < k.
+                                                                    ∑︁
+
+When x is binary, these coordinates are the power sums of the positions a for which xa = 1.
+Lemma 3.3 identifies the vectors with fixed syndrome and coefficient sum with one coset of aq,k .
+
+Lemma 3.3. Assume 1 ≤ k ≤ q/2. Fix h ∈ Z. Let u = (u0 , . . . , uk−1 ) ∈ Fkq satisfy u0 = h mod q.
+There exists z0 ∈ ZFq such that
+
+                                    Hq (k)z0 = u,           1T
+                                                             q z0 = h.
+
+Moreover, evaluation at ζ induces a bijection
+
+                 {z ∈ ZFq : Hq (k)z = u, 1T
+                                          q z = h} −→ [z0 ] + aq,k ,             z ↦−→ [z].
+
+Put H := h(q − h). For each v ∈ [z0 ] + aq,k , let z be its unique representative with syndrome u and
+coefficient sum h. If z ∈ {0, 1}Fq , then it has weight h and ∥v∥2 = H. Otherwise, ∥v∥2 ≥ H + 2q.
+
+Proof. A Vandermonde k × k minor of Hq (k) has determinant 1≤i<j≤k (aj − ai ) ̸= 0 in Fq . Hence
+                                                                     ∏︁
+
+the matrix has rank k. Choose x0 ∈ ZFq whose reduction modulo q satisfies Hq (k)x0 = u over Fq .
+Since h − 1T q x0 ∈ qZ, adding this integer to the coordinate indexed by 0 gives a vector z0 with
+coefficient sum h and the same syndrome u.
+    Every other vector with syndrome u and coefficient sum h differs from z0 by an element of
+Lq,k ∩ 1⊥q . The restricted isomorphism in Theorem 3.2 now gives the stated bijection.
+    By Lemma 2.2,                      ∑︂                  ∑︂
+                              ∥v∥2 = q    za2 − h2 = H + q    za (za − 1).
+                                       a                        a
+
+For every integer za , the quantity za (za − 1) is a nonnegative even integer. The sum is zero exactly
+when every za ∈ {0, 1}, and is otherwise at least two. This proves the stated claim.
+
+
+
+
+                                                  10
+    We next count binary vectors with a prescribed syndrome and fixed coordinate values. We use
+the following parameters to specialize Proposition 2.4. Let C0 and k0 be sufficiently large absolute
+integer constants. For k ≥ k0 and an odd prime q ≥ (2k)C0 , put
+
+                                                             21k
+                                                        ⌊︃      ⌋︃
+                                               h :=              .                                    (6)
+                                                              20
+Set
+                                    H := h(q − h),               L := 2kq.                            (7)
+By Lemma 3.3, every weight-h binary vector x satisfies ∥[x]∥2 = H. By Theorem 3.2, λ1 (aq,k )2 ≥ L.
+Thus H/L = 21/40 + o(1) < 1 as k → ∞, uniformly for these q. In particular, the ring elements
+represented by weight-h binary vectors are shorter than a shortest nonzero vector of aq,k . The count
+below guarantees many such elements in every coset described in Lemma 3.3.
+    For a prescribed syndrome u = (u0 , . . . , uk−1 ), let P ⊆ Fq be the position set indexing the
+coordinates fixed in advance, and let η ∈ {0, 1}P specify their values. Define
+
+                   F(u; P, η) := {x ∈ {0, 1}Fq : Hq (k)x = u, 1T
+                                                               q x = h, x|P = η}.
+
+The first row of Hq (k) forces u0 = h mod q in Fq .
+                                                                                               √
+Theorem 3.4. For every u ∈ Fkq with u0 = h mod q, every position set P ⊆ Fq with |P | ≤            k, and
+every η ∈ {0, 1}P , put t := a∈P ηa . Then
+                            ∑︁
+
+
+                                                                      q h−t−k+1
+                                 |F(u; P, η)| = (1 + o(1))                      .                     (8)
+                                                                       (h − t)!
+
+As k → ∞, this estimate is uniform in q, u, P , and η. Its relative error is at most q −Ω(k) + 3k 2 /q <
+1/4.
+
+Proof. Fix u, P , and η, and put m0 := h − t. By the parameter choices above,
+                                        √
+                         m0 ≥ 21k/20 − k − 1 ≥ k + 2,      m0 < q − 2.
+
+The fixed coordinates contain exactly t ones. Subtract their contribution by defining
+
+                                 u′j := uj −
+                                               ∑︂
+                                                      ηa aj          (1 ≤ j < k).                     (9)
+                                               a∈P
+
+For each x ∈ F(u; P, η), ordering the positions of its m0 ones outside P gives exactly m0 ! tuples
+(z1 , . . . , zm0 ) ∈ (Fq \ P )m0 with pairwise distinct entries satisfying
+                                     m0
+                                        j
+                                           zi = u′j
+                                     ∑︂
+                                                              (1 ≤ j < k).                           (10)
+                                     i=1
+
+Conversely, each such tuple and the prescribed values on P determine a unique vector in F(u; P, η),
+so the number of these tuples is m0 ! |F(u; P, η)|.
+    Let A count the tuples satisfying Equation (10) without requiring their entries to be pairwise
+distinct or to lie outside P . In Proposition 2.4, set m = m0 and divide the error bound in part (i)
+by q m0 −k+1 and those in parts (ii) and (iii) by q m0 −k . The three ratios are at most
+
+                                    (2k)m0 q −(m0 −k−2)/2 ≤ q −Ω(k) .
+
+                                                        11
+                                                       √
+This bound follows from q ≥ (2k)C0 , m0 ≥ 21k/20 − k − 1, and the choices of C0 and k0 . Part (i)
+of Proposition 2.4 gives |A/q m0 −k+1 − 1| ≤ q −Ω(k) . We bound the excluded tuples in two cases.
+Case I (collision). For fixed i < ℓ, part (ii) of Proposition 2.4 shows that the number of solutions
+with zi = zℓ is at most 2q m0 −k .
+Case II (entry in P ). For fixed i and a ∈ P , part (iii) of Proposition 2.4 bounds the number of
+solutions with zi = a by 2q(︁ m0)︁−k .
+    The union bound over m20 equalities zi = zℓ and m0 |P | equalities zi = a with a ∈ P shows that
+the nonnegative difference satisfies
+                                               (︃(︄        )︄
+                                                  m0
+                                                                )︃
+                0 ≤ A − m0 ! |F(u; P, η)| ≤ 2        + m0 |P | q m0 −k ≤ 3k 2 q m0 −k .
+                                                  2
+
+Together with the estimate for A, this gives
+                            ⃓ m0 ! |F(u; P, η)|
+                            ⃓                       ⃓                2
+                                                    ⃓ ≤ q −Ω(k) + 3k < 1 .
+                                                    ⃓
+                            ⃓                   − 1
+                            ⃓     q m0 −k+1         ⃓              q   4
+Substituting m0 = h − t proves the theorem.
+
+3.3   Norm separation
+Theorem 3.4 supplies the binary representatives used by the checker in Section 4. Lemma 3.3 gives
+the norm gap for nonbinary representatives. We now choose a coset center whose multiples by short
+nonzero elements of OK remain separated from the ideal.
+    We first record the norm gap between roots of unity and all other nonzero elements of OK ,
+together with a sparse representative for short elements. The sparse representative will be used in
+the polynomial argument for separating short scalar multiples from the ideal.
+Lemma 3.5. The following statements hold.
+  (i) Every v ∈ OK has an integral coefficient representative z satisfying ∥z∥22 ≤ 2∥v∥2 /q, and hence
+      having at most 2∥v∥2 /q nonzero coefficients.
+
+ (ii) For every nonzero w ∈ OK , either w = ±ζ j for some j, in which case ∥w∥2 = q − 1,
+      or ∥w∥2 ≥ 2q − 4.
+Proof. For (i), let z = (za )a∈Fq ∈ ZFq satisfy [z] = v. Choose b ∈ Fq minimizing                     2
+                                                                                          a (za − zb ) . By
+                                                                                     ∑︁
+
+Lemma 2.2,
+                            ∑︂                1 ∑︂ ∑︂                 2∥v∥2
+                                (za − zb )2 ≤           (za − zr )2 =       .
+                              a               q r∈F a∈F                 q
+                                                  q        q
+
+Subtracting zb from every coordinate gives another integral coefficient representative of v. Every
+nonzero integer coefficient has square at least one, so the resulting representative has at most
+2∥v∥2 /q nonzero coefficients.
+   For (ii), if ∥w∥2 ≥ q 2 /4, then ∥w∥2 ≥ 2q − 4. Otherwise, part (i) gives an integral coefficient
+representative with exactly s < q/2 nonzero coefficients. If s ≥ 2, each of the s(q − s) pairs formed
+by one nonzero coordinate and one zero coordinate contributes at least one to the pairwise norm
+formula in Lemma 2.2, so
+                                     ∥w∥2 ≥ s(q − s) ≥ 2(q − 2).
+If s = 1, then w = tζ j for a nonzero integer t. The cases t = ±1 are precisely the roots of unity,
+whereas |t| ≥ 2 gives squared norm at least 4(q − 1).
+
+                                                      12
+Lemma 3.6. If
+                                                    s
+                                                   ∑︂
+                                         F (X) =         ci X ai ∈ Fq [X]
+                                                   i=1
+                           ̸ 0 and the exponents ai ∈ {0, . . . , q − 1} are distinct, then its order of
+is nonzero, where every ci =
+vanishing at X = 1 is at most s − 1.
+Proof. Multiplicity at least s would make the first s coefficients of F (1 + Y ) vanish. The resulting
+homogeneous system has determinant
+                                 (︄(︄ )︄)︄
+                                                                   1≤i<ℓ≤s (aℓ − ai )
+                                                                  ∏︁
+                                    ai
+                           det                                =       ∏︁s−1           ,
+                                    j     0≤j<s, 1≤i≤s                  j=0 j!
+
+which is nonzero in Fq : the exponents are distinct, and s ≤ q makes every factorial in the denominator
+nonzero. Hence every ci would vanish. This contradicts F ̸= 0.
+   We next choose c so that wc remains separated from aq,k for every nonzero w ∈ OK with
+∥w∥2 ≤ 3q. Define c ∈ OK by
+                                     c := h + π ⌊k/2⌋ .                             (11)
+Let c ∈ ZFq be the coefficient vector of h + (1 − X)⌊k/2⌋ . Then [c] = c, and evaluating the polynomial
+                  ∑︁
+at X = 1 gives a∈Fq ca = h. Thus Lemma 3.3 and Theorem 3.4 identify and count binary
+representatives in c + aq,k with prescribed coordinate values.
+   The next theorem separates every short nonzero multiple of c from aq,k .
+Theorem 3.7. For the parameter choices in Section 3.2, every nonzero w ∈ OK with ∥w∥2 ≤ 3q
+satisfies
+                                 dist(wc, aq,k )2 > L/10.
+Proof. We prove the theorem by contradiction. Suppose that there exist a nonzero w ∈ OK with
+∥w∥2 ≤ 3q and an element e ∈ wc + aq,k such that ∥e∥2 ≤ L/10 = kq/5. By part (i) of Lemma 3.5,
+choose fe , fw ∈ Z[X]/(X q − 1) with φ(fe ) = e and φ(fw ) = w, whose coefficient vectors have squared
+ℓ2 -norm at most 2k/5 and 6, respectively. In particular, fe and fw have at most 2k/5 and 6 nonzero
+coefficients. Put m := ⌊k/2⌋.
+     Since φ(h+(1−X)m ) = c and e−wc ∈ aq,k , Equation (5) gives fe −fw (h+(1−X)m ) ∈ (q, (X−1)k ).
+Reducing modulo q and using X q − 1 = (X − 1)q in Fq [X] gives
+                             f¯e − hf¯w ≡ f¯w (1 − X)m            (mod (X − 1)k ).                  (12)
+By Equation (12), (X − 1)m divides f¯e − hf¯w . This polynomial has at most 2k/5 + 6 ≤ m nonzero
+coefficients by the choice of k0 , so Lemma 3.6 gives f¯e − hf¯w = 0.
+    Substituting this equality into Equation (12) gives (X − 1)k−m | f¯w . Since f¯w has at most six
+nonzero coefficients and k − m > 5, Lemma 3.6 gives f¯w = 0. Since w ̸= 0, the coefficient vector
+of fw is nonzero. All its coefficients are divisible by q, so its squared ℓ2 -norm is at least q 2 . This
+contradicts the upper bound of 6 for the squared norm.
+
+
+4    The X3C checker
+Section 3 supplies weight-h binary representatives in fixed ideal cosets. A representative x encodes
+the X3C selection vector ξ through prescribed coordinates. This section constructs U, V ∈ OK so
+that ∥U [x] − V ∥2 records the residual Aξ − 1M , up to nonnegative error terms. In Section 4.3,
+we define admissible representatives for which one of the error terms vanishes. The final corollary
+records the conclusions used in Section 5.
+
+                                                         13
+4.1    Separated offsets
+Consider the X3C instance with universe [M ], three-element subsets C1 , . . . , Cn , and incidence
+matrix A ∈ {0, 1}M ×n . A selection vector ξ ∈ {0, 1}n specifies which subsets are chosen. For each
+i ∈ [M ], define                                                ∑︂
+                   Ri := {j ∈ [n] : i ∈ Cj }    and      si :=      ξj = (Aξ)i .
+                                                                                  j∈Ri
+
+Thus si is the number of selected sets containing i, and the sets selected by ξ form an exact cover
+exactly when si = 1 for every i. The quantity encoded by the checker is
+                                                        M
+                                                        ∑︂                      M
+                                                                                ∑︂
+                             2∥Aξ − 1M ∥22 = 2                (s2i − si ) − 2         si +2M.                   (13)
+                                                        i=1                     i=1
+                                                    ⏞          ⏟⏟      ⏞    ⏞ ⏟⏟ ⏞
+                                                         quadratic              linear
+
+Since ξj2 = ξj , we have s2i − si =
+                                      ∑︁
+                                        j,ℓ∈Ri , j̸=ℓ ξj ξℓ , so the first sum in Equation (13) is quadratic in ξ.
+   Define the incidence set
+                                      I := {(i, j) ∈ [M ] × [n] : j ∈ Ri }.
+Every set Cj contains three elements. Under the assumptions in Section 2.3,
+
+                                           W := |I| = 3n,             M ≤ W.                                    (14)
+
+    Let 0 ≤ α1 < · · · < αn = α⋆ be the Sidon positions from Lemma 2.3. We encode ξ in a vector
+x ∈ {0, 1}Fq by requiring xαj = ξj for j ∈ [n], so the coordinate indexed by αj stores the selection bit
+ξj for Cj . We call αj a witness position. For a, b ∈ Fq , the offset from a to b is the cyclic difference
+b − a ∈ Fq . We separate the offsets associated with different rows of A. Define
+
+               τ := 2α⋆ + 1,          βi := τ i    (i ∈ [M ]),             dij := βi − αj       ((i, j) ∈ I).   (15)
+
+We regard αj , βi , and dij as integers and reduce them modulo q when using them as coordinate
+indices or offsets. Here βi is the position assigned to row i of A, and dij is the offset from the
+witness position αj to βi . We choose q large enough that
+
+                                                  q > 4βM = 4τ M.                                               (16)
+
+   We use two types of offsets. The witness offsets are the cyclic differences between distinct witness
+positions:
+                                Dwit := {αℓ − αj : j, ℓ ∈ [n], j ̸= ℓ}.
+By the Sidon property and q > 4βM > 2α⋆ , these differences remain distinct modulo q. The bad
+offsets are the cross-row differences and the sums of the offsets dij :
+
+              Dbad := {dij − drℓ : (i, j), (r, ℓ) ∈ I, i ̸= r} ∪ {dij + drℓ : (i, j), (r, ℓ) ∈ I}.
+
+    The expansion of ∥U [x] − V ∥2 in the proof of Theorem 4.3 uses witness offsets to represent the
+products ξj ξℓ in the quadratic term of Equation (13). For d ∈ Fq , the correlation of x at offset
+d counts all ordered pairs (a, a + d) with xa = xa+d = 1, as defined in Section 4.2. The position
+pair (αj , αℓ ) contributes ξj ξℓ = xαj xαℓ to the correlation of x at d = αℓ − αj . Correlations at bad
+offsets contribute to a nonnegative error term. To preserve the products at witness offsets while
+eliminating the correlations at bad offsets, the two offset sets are designed to be disjoint. The next
+lemma proves this separation and bounds the number of bad offsets.
+
+                                                              14
+Lemma 4.1. Under the bound in Equation (16), the 2W residues dij and −dij , for (i, j) ∈ I, are
+nonzero and pairwise distinct. Moreover,
+
+                    0∈
+                     / Dbad ,       Dbad ∩ Dwit = ∅,              |Dbad | = O(W 2 ) = O(n2 ).
+
+Proof. For every (i, j) ∈ I,
+
+                                   α⋆ + 1 = β1 − α⋆ ≤ dij ≤ βM < q/4,
+
+so dij is nonzero modulo q. Fix distinct (i, j), (r, ℓ) ∈ I.
+Case 1: i = r.
+                               dij − diℓ = αℓ − αj ̸= 0,            |dij − diℓ | ≤ α⋆ .
+
+Case 2: i ̸= r.
+                          dij − drℓ = βi − βr + αℓ − αj = τ (i − r) + αℓ − αj .
+Consequently,
+                         α⋆ + 1 ≤ |dij − drℓ | ≤ τ (M − 1) + α⋆ = βM − α⋆ − 1.
+For all (i, j), (r, ℓ) ∈ I, one also has
+
+                                 2α⋆ + 2 = 2β1 − 2α⋆ ≤ dij + drℓ ≤ 2βM .
+
+Since q > 4βM , the bounds above give 0 < |dij − drℓ | < q/2 whenever (i, j) ̸= (r, ℓ), so dij ̸≡ drℓ
+(mod q). For all (i, j), (r, ℓ) ∈ I, we also have 0 < dij + drℓ < q/2, so dij ̸≡ −drℓ (mod q). Thus the
+2W residues dij and −dij are nonzero and pairwise distinct.
+   Every witness offset is represented in [−α⋆ , α⋆ ]. By contrast, the integer differences dij − drℓ
+       ̸ r and the integer sums dij + drℓ lie in (−q/2, q/2), with absolute value greater than α⋆ .
+with i =
+Hence 0 ∈/ Dbad and Dbad ∩ Dwit = ∅. The two sets in the definition of Dbad contain at most
+O(W ) = O(n2 ) offsets.
+     2
+
+
+
+4.2    Checker elements and norm formula
+Fix x ∈ {0, 1}Fq of weight h and define ξj := xαj . Recall si :=
+                                                                                  ∑︁
+                                                                                       j∈Ri ξj .   By Lemma 2.2 and
+Equation (7), ∥[x]∥2 = H = h(q − h).
+   For d ∈ Fq , define the cyclic correlation of x at offset d by
+                                                          ∑︂
+                                             Cx (d) :=          xa xa+d .
+                                                         a∈Fq
+
+The indices lie in Fq , and a + d is computed modulo q. Thus Cx (d) counts the ordered pairs
+(a, a + d) ∈ F2q for which xa = xa+d = 1.
+     Equation (13) separates the target into quadratic and linear parts. We first define g ∈ OK so
+that ∥g[x]∥2 represents the quadratic part through cyclic correlations. Next, V encodes the linear
+part, and the checker combines both parts in ∥U [x] − V ∥2 .
+
+Quadratic term.        Using the separated offsets dij , define
+
+                                                       ζ dij + ζ −dij ∈ OK .
+                                              ∑︂ (︁                  )︁
+                                      g :=
+                                             (i,j)∈I
+
+We have g = g. By Lemma 4.1, the 2W exponents in the sum defining g are distinct modulo q.
+
+                                                          15
+Linear term.       Define                                    n
+                                                            ∑︂
+                                                   V := 6         ζ αj ∈ OK .
+                                                            j=1
+
+The coefficient 6 = 2 · 3 comes from the factor 2 in Equation (13) and the three elements in each
+selected set.
+
+Checker elements.           To obtain the remainder bound in Theorem 4.3, put Q := 128W 4 h and define
+
+                                                   U := Q + g 2 ∈ OK .
+
+Since g = g, we have ⟨[x], g 2 [x]⟩ = ∥g[x]∥2 . Thus the expansion of ∥U [x] − V ∥2 contains 2Q∥g[x]∥2 ,
+which represents the quadratic part. The following lemma gives norm bounds for multiplication by
+U and V .
+Lemma 4.2. For every y, w ∈ K, one has ∥U y∥ ≥ Q∥y∥ and ∥V w∥ ≤ 2W ∥w∥.
+Proof. For every embedding σ : K ↪→ C, σ(g) is real, so σ(U ) = Q + σ(g)2 ≥ Q > 0. Hence
+|σ(U y)| ≥ Q|σ(y)|. The triangle inequality gives |σ(g)| ≤ 2W and |σ(V )| ≤ 2W , so |σ(V w)| ≤
+2W |σ(w)|. Summing squares over all embeddings proves the two inequalities.
+
+Norm formula. We call U [x] − V ∈ OK the checker value. Put κ := 2q/Q and R(x) :=
+∥g 2 [x] − V ∥2 /Q2 . The next theorem relates the squared norm of the checker value to ∥Aξ − 1M ∥22
+and bounds the remainder R(x).
+Theorem 4.3. For every x ∈ {0, 1}Fq of weight h, define ξ ∈ {0, 1}n by ξj := xαj for j ∈ [n]. Then
+there exists E(x) ≥ 0 such that
+
+                           ∥U [x] − V ∥2
+                                         = B0 + 2κ∥Aξ − 1M ∥22 + κE(x) + R(x),                                      (17)
+                                Q2
+where
+                                                                     2hW − 4h2 W 2
+                                              (︃                                          )︃
+                             B0 := H + κ 2W h − 2M +                                            ∈Q                  (18)
+                                                                          q
+is independent of x. Moreover, 0 ≤ R(x) < κ/8.
+Proof. Quadratic term. For a ∈ Fq , define
+                                                     ∑︂
+                                           ya :=              (xa−dij + xa+dij ).
+                                                    (i,j)∈I
+
+Then g[x] = a ya ζ a . To compute ∥g[x]∥2 by Lemma 2.2, we determine a ya and a ya2 . For each
+             ∑︁                                                                                  ∑︁            ∑︁
+
+(i, j) ∈ I, the vectors (xa−dij )a∈Fq and (xa+dij )a∈Fq are coordinate permutations of x, so both have
+coordinate sum h. Hence a ya = 2W h. For r, s ∈ Fq , cyclic reindexing gives
+                            ∑︁
+
+                               ∑︂
+                                     xa−r xa−s = Cx (r − s),              Cx (−r) = Cx (r).
+                              a∈Fq
+            ∑︁   2
+Expanding     a ya and using the preceding identities gives
+                  ∑︂                          ∑︂                                    ∑︂
+                         ya2 = 2W h + 2                   Cx (dij − dtℓ ) + 2                   Cx (dij + dtℓ ).
+                  a∈Fq                    (i,j),(t,ℓ)∈I                         (i,j),(t,ℓ)∈I
+                                           (i,j)̸=(t,ℓ)
+
+
+                                                               16
+The squared terms x2a−dij and x2a+dij contribute 2W h after summing over a ∈ Fq and (i, j) ∈ I.
+Both double sums are over ordered pairs in I × I. The products xa−dij xa−dtℓ and xa+dij xa+dtℓ each
+contribute Cx (dij − dtℓ ) after summing over a. The sum over a of xa−dij xa+dtℓ + xa+dij xa−dtℓ is
+2Cx (dij + dtℓ ). For the terms with i = t and j =   ̸ ℓ, we have dij − diℓ = αℓ − αj . The ordered pair
+(αj , αℓ ) contributes ξj ξℓ to Cx (αℓ − αj ). The difference Cx (αℓ − αj ) − ξj ξℓ counts all other ordered
+pairs (a, a + αℓ − αj ) with xa = xa+αℓ −αj = 1, so it is nonnegative. Since j,ℓ∈Ri ξj ξℓ = s2i − si ,
+                                                                                      ∑︁
+                                                                                                                         j̸=ℓ
+the products ξj ξℓ contribute 2 i (s2i − si ).
+                                        ∑︁
+
+   We collect the remaining terms in
+             M ∑︂
+             ∑︂                                                           ∑︂                                     ∑︂
+                  (︁                                 )︁
+ E(x) := 2                Cx (αℓ − αj ) − ξj ξℓ + 2                                    Cx (dij − dtℓ ) + 2                   Cx (dij + dtℓ ). (19)
+             i=1 j,ℓ∈Ri                                             (i,j),(t,ℓ)∈I                            (i,j),(t,ℓ)∈I
+                   j̸=ℓ                                                  i̸=t
+
+The differences in the first term and the correlation counts in the other two terms are nonnegative.
+Hence E(x) ≥ 0, and the expansion becomes
+
+                                        ∑︂                                M
+                                                                          ∑︂
+                                             ya2 = 2W h + 2                         (s2i − si ) + E(x).
+                                        a                                     i=1
+                               ∑︁
+    Using Lemma 2.2 and           a ya = 2W h, we obtain
+                                             (︄                                                   )︄
+                                                                    ∑︂
+                                    2
+                           ∥g[x]∥ = q 2W h + 2                            (s2i − si ) + E(x)           − 4W 2 h2 .
+                                                                      i
+
+
+Linear term. In the expression V = 6 nj=1 ζ αj , the coefficient sum is 6n = 2W . Since each
+                                                              ∑︁
+                                                ∑︁     ∑︁
+selected set contains three universe elements, 3 j ξj = i si . Hence Lemma 2.2 gives
+                                                      ∑︂                                    ∑︂
+                                ⟨[x], V ⟩ = 6q                     ξj − 2hW = 2q                 si − 2hW.
+                                                          j                                  i
+
+
+Combining the terms. Since g = g, one has ⟨[x], g 2 [x]⟩ = ∥g[x]∥2 . The definitions of U and V ,
+the equality ∥[x]∥2 = H, and the two preceding identities give
+
+                           ∥U [x] − V ∥2      2         2
+                                         = H + ∥g[x]∥2 − ⟨[x], V ⟩ + R(x)
+                                Q2            Q         Q
+                                                                       ∑︂
+                                                  = B0 + 2κ                    (si − 1)2 + κE(x) + R(x)
+                                                                          i
+                                                  = B0 + 2κ∥Aξ − 1M ∥22 + κE(x) + R(x).
+
+ The last two equalities use i (s2i − 2si ) = ∥Aξ − 1M ∥22 − M . The remaining terms independent of
+                                 ∑︁
+
+x give B0 from Equation (18).
+   Finally, H ≤ hq and the embedding bounds in the proof of Lemma 4.2 give
+                                                   √       √ )︁2
+                                               4W 2 hq + 2W q
+                                                              (︁
+                                                                  κ
+                                    0 ≤ R(x) ≤                   < .
+                                                     Q2           8
+The last inequality uses W ≥ 3, h ≥ 1, and the definition of Q.
+
+
+
+                                                                          17
+4.3   Representatives with prescribed correlations
+Let x ∈ {0, 1}Fq have weight h, and put ξj := xαj for every j ∈ [n]. We call x an admissible
+representative if
+
+                Cx (αℓ − αj ) = ξj ξℓ   (j, ℓ ∈ [n], j ̸= ℓ),      Cx (d) = 0   (d ∈ Dbad ).        (20)
+
+The first equality allows only the ordered pair (αj , αℓ ) to contribute at the witness offset αℓ − αj .
+This ordered pair contributes ξj ξℓ . The second equality excludes every ordered pair (a, a + d) with
+d ∈ Dbad and xa = xa+d = 1. Hence every term in Equation (19) vanishes and E(x) = 0 whenever x
+is an admissible representative.
+    The next theorem uses Theorem 3.4 and a union bound to prove that an admissible representative
+always exists.
+                                                                               √
+Theorem 4.4. With the parameters from Section 3.2, assume that n + 2 ≤ ⌊ k⌋ and Equation (16)
+holds. For every syndrome u ∈ Fkq with u0 = h mod q, and every ξ ∈ {0, 1}n , there is an admissible
+representative x ∈ {0, 1}Fq such that
+                                            ∑︂
+                       Hq (k)x = u,              xa = h,        xαj = ξj   (j ∈ [n]).
+                                             a
+
+Proof. Put P := {α1 , . . . , αn }. Let F be the set of weight-h vectors x ∈ {0, 1}Fq with syndrome u
+and xαj = ξj for every j ∈ [n]. Applying Theorem 3.4 with position set P and values ξj at αj gives
+|F| > 0.
+    By Lemma 2.3 and Equation (16), the ordered pair (αj , αℓ ) is the unique ordered pair in P at
+the witness offset d = αℓ − αj . The contribution xαj xαℓ = ξj ξℓ is already fixed. The first equality
+in Equation (20) therefore requires xa xa+d = 0 only for a ̸= αj . For d ∈ Dbad , the second equality
+requires xa xa+d = 0 for every a ∈ Fq . By Lemma 4.1, no ordered pair in P has a bad offset. Thus
+every pair whose product is required to vanish has at least one coordinate outside P . All these
+offsets are nonzero.
+    For a set J ⊆ Fq \ P of one or two additional coordinates, put
+
+                               FJ := {x ∈ F : xa = 1 for every a ∈ J}.
+                           √
+Since |P | + |J| ≤ n + 2 ≤ k, Theorem 3.4 applies to both FJ and F. Let t be the weight of ξ, so
+t = nj=1 ξj . By Theorem 3.4, each count lies between 3/4 and 5/4 times its main term. Dividing
+    ∑︁
+
+the upper bound for |FJ | by the lower bound for |F| gives
+                                |FJ |   5      (h − t)!
+                                      ≤    |J|
+                                                           < 2(h/q)|J| .
+                                 |F|    3 q (h − t − |J|)!
+    Consider one of the conditions xa xa+d = 0 above. If exactly one of a, a + d lies outside P , no
+representative violates the condition when the coordinate in P is fixed to zero. When the coordinate
+in P is fixed to one, the violating representatives form FJ for J = {a, a + d} \ P , so |FJ |/|F| ≤ 2h/q.
+If both a and a + d lie outside P , the violating representatives form F{a,a+d} and occupy a fraction
+of at most 2(h/q)2 .
+    The definition of Dwit and Lemma 4.1 give |Dwit ∪ Dbad | = O(n2 ). For each of these offsets, at
+most 2n ordered pairs (a, a + d) have exactly one of a, a + d outside P , and at most q have both
+a, a + d outside P . A union bound shows that the proportion of representatives violating at least
+one of these conditions is at most
+                                (︄                 (︃ )︃2 )︄      (︄             )︄
+                                     2h      h                    n3 h + n2 h2
+                         O(n2 ) 2n ·    +q·2                   =O                     .
+                                      q      q                         q
+
+                                                     18
+          √
+Since n ≤ k and h = O(k), the proportion of violating representatives is O(k 3 /q), uniformly in
+u and ξ. By q ≥ (2k)C0 and the choice of k0 , this proportion is less than one. Therefore some
+representative in F is admissible.
+
+    We summarize the checker bounds used in Section 5.
+
+Corollary 4.5. Under the assumptions of Theorem 4.4, let c ∈ OK have an integral coefficient
+representative c ∈ ZFq with a ca = h. Then for every ξ ∈ {0, 1}n , there exists an admissible
+                              ∑︁
+
+representative x ∈ {0, 1}Fq of weight h such that [x] ∈ c + aq,k , xαj = ξj for j ∈ [n], and
+
+                                          ∥U [x] − V ∥2                        κ
+                 B0 + 2κ∥Aξ − 1M ∥22 ≤           2
+                                                        ≤ B0 + 2κ∥Aξ − 1M ∥22 + .                  (21)
+                                               Q                               8
+
+Proof. Put uc := Hq (k)c ∈ Fkq and choose x by Theorem 4.4 with u = uc . The vectors x and c
+have syndrome uc and coefficient sum h. Hence Lemma 3.3 gives [x] ∈ c + aq,k . Admissibility gives
+E(x) = 0, so Theorem 4.3 gives the norm bounds in Equation (21).
+
+
+5     The rank-two reduction
+Let q be an odd prime with the parameters specified in Section 3.2. This section assembles the
+checker and the ideal coset into a rank-two module and chooses the scale Γ for its second coordinate.
+Let U, V ∈ OK and Q be the checker elements and scale constructed in Section 4.2 for the given X3C
+                                                                  k
+                                         √ the ideal a := aq,k = π OK and the center c ∈ OK from
+instance, respectively. The reduction uses
+Equation (11). Assume that n + 2 ≤ ⌊ k⌋ and Equation (16) holds. The center c fixes the ideal
+coset whose representatives encode X3C selections. The elements U and V test the X3C equations
+in the first coordinate. The integer Γ weights the second coordinate. Define the generators and
+their OK -span by
+                             m1 := (U π k , 0),  m2 := (U c − V, −QΓ),
+                                                          2
+                                    M := OK m1 + OK m2 ⊂ OK .
+                                  ̸ 0, and the choice of Γ below is positive. The generator matrix
+Taking y = 1 in Lemma 4.2 gives U =
+has nonzero determinant −QΓU π k , so M is a free module of rank two and Z-rank 2(q − 1). Hence
+every vector in M has the unique form
+                               (︁                 )︁
+                    v(y, w) := U y − V w, −QΓw ,         y, w ∈ OK ,   y − wc ∈ a.                 (22)
+
+The coefficients of v(y, w) in the module basis m1 , m2 are (y − wc)/π k and w, respectively. When
+w = 1 and y = [x] for some x ∈ {0, 1}Fq of weight h, the first coordinate is the checker value U [x]−V .
+Corollary 4.5 guarantees the existence of such an admissible representative for the completeness
+proof with w = 1. Theorem 4.3 gives a lower bound for every weight-h binary coefficient vector.
+The second coordinate contributes Q2 Γ2 ∥w∥2 to the squared norm. For soundness, we consider
+separately w = 0, roots of unity, and elements that are not roots of unity.
+
+5.1   Parameters
+We choose Γ and S for the norm comparisons in the proof of Theorem 5.2. Recall H = h(q − h),
+L = 2kq, W = 3n, and Q = 128W 4 h, and let B0 be as in Equation (18). Define
+                  √︂
+           Γ := ⌊ 9k/10⌋,      F := Γ2 (q − 1),   S := Q2 (B0 + F + κ),    ν := 2W/(QΓ).           (23)
+
+
+                                                  19
+When w is a root of unity, the second coordinate contributes Q2 F to ∥v(y, w)∥2 . By Equation (18),
+both Q2 B0 and Q2 κ = 2qQ are integers, so S ∈ Z.
+   The formula in Equation (22) also defines v(y, w) for arbitrary y, w ∈ K.
+Lemma 5.1. For the parameters in Equation (23), we have 0 < ν < 1. For every y, w ∈ K,
+
+                              ∥v(y, w)∥2 ≥ Q2 (1 − ν) ∥y∥2 + Γ2 ∥w∥2 .
+                                                           (︁                 )︁
+                                                                                                 (24)
+
+Proof. Since Q > 2W and Γ ≥ 1, we have 0 < ν < 1. Lemma 4.2 gives ∥U y∥ ≥ Q∥y∥ and
+∥V w∥ ≤ 2W ∥w∥ = νQΓ∥w∥. Hence
+
+                     2|⟨U y, V w⟩| ≤ 2νQΓ∥U y∥∥w∥ ≤ ν ∥U y∥2 + Q2 Γ2 ∥w∥2 .
+                                                                (︁                     )︁
+
+
+Expanding ∥v(y, w)∥2 and using this bound together with ∥U y∥ ≥ Q∥y∥ proves Equation (24).
+
+5.2   Completeness and soundness
+                                                                                     √
+Theorem 5.2. With the parameters from Section 3.2 and Equation (23), assume n + 2 ≤ ⌊ k⌋
+and Equation (16) holds. Then the following implications hold:
+
+                          ∃ξ ∈ {0, 1}n : Aξ = 1M           =⇒         λ1 (M)2 < S,
+                          ∀ξ ∈ {0, 1}n : Aξ ̸= 1M          =⇒         λ1 (M)2 > S.
+
+Proof. Completeness. Let ξ ∈ {0, 1}n satisfy Aξ = 1M . Corollary 4.5 gives an admissible
+representative x ∈ {0, 1}Fq such that [x] ∈ c + a and ∥U [x] − V ∥2 ≤ Q2 (B0 + κ/8). By Equation (22),
+the vector v([x], 1) ∈ M has second coordinate −QΓ ̸= 0 and satisfies
+
+                                                           κ               7κQ2
+                                             (︃                 )︃
+                                   2     2
+                        ∥v([x], 1)∥ ≤ Q           B0 + F +           =S−        < S.
+                                                           8                 8
+
+Soundness. We first record the parameter estimates used in the soundness proof. Since h = Θ(k)
+and W ≥ 3, the definitions of Q, Γ, ν, and κ give
+                             9k     √
+                      Γ2 =      + O( k),            ν = O(k −3/2 ),        κ = O(q/k).
+                             10
+By Equation (18) and M ≤ W , we have |B0 − H| = O(q/W 3 + h/W 2 ) = o(L). Since h =
+21k/20 + O(1) and k = o(q),
+                       21                           18                  S   39
+                  H=      L + o(L),      F =           L + o(L),         2
+                                                                           = L + o(L).
+                       40                           40                  Q   40
+                                                                                       √
+These estimates hold as k → ∞, uniformly for q ≥ (2k)C0 , 1 ≤ M ≤ 3n, and n + 2 ≤ ⌊ k⌋. In
+particular, S > 0 by the choice of k0 .
+   Assume that the X3C instance is negative, and consider any nonzero v(y, w) ∈ M. We use
+the checker identity only when w is a root of unity and the coefficient representative of w−1 y
+with coefficient sum h is binary. In the other cases, geometric norm bounds suffice to prove
+∥v(y, w)∥2 > S.
+Case 1: w = 0. Then 0 ̸= y ∈ a. Lemma 4.2 and Theorem 3.2 give
+
+                             ∥v(y, 0)∥2 = ∥U y∥2 ≥ Q2 ∥y∥2 ≥ Q2 L > S,
+
+since S/Q2 = (39/40)L + o(L) < L.
+
+                                                      20
+Case 2: w is a root of unity. Since y − wc ∈ a and wa = a, we have u := w−1 y ∈ c + a.
+Multiplication by w is an isometry, so the identities v(y, w) = wv(u, 1) and ∥w∥2 = q − 1 give
+∥v(y, w)∥2 = ∥U u − V ∥2 + Q2 F . By Lemma 3.3, u has a unique integral coefficient representative
+x ∈ ZFq with coefficient sum h.
+ (a) If x ∈ {0, 1}Fq , the coefficient-sum condition shows that x has weight h. Define ξj := xαj for
+     j ∈ [n]. Since the instance is negative, ∥Aξ − 1M ∥22 ≥ 1. Thus Theorem 4.3 yields
+                             ∥v(y, w)∥2 ≥ Q2 (B0 + 2κ + F ) = S + κQ2 > S.
+
+          / {0, 1}Fq , then Lemma 3.3 gives ∥u∥2 ≥ H + 2q. Dropping the negative
+ (b) If x ∈                                                                      √ terms in
+                                               3
+     Equation (18) gives B0 − H ≤ (q + 1)/(32W ). Since κ + ν(H + 2q + F ) = O(q/ k) = o(q),
+                   (1 − ν)(H + 2q + F ) − S/Q2 = 2q − (B0 − H) − κ − ν(H + 2q + F )
+                                                       q+1
+                                               ≥ 2q −        − o(q) > 0.
+                                                       32W 3
+      The last inequality uses W ≥ 3 and the choice of k0 . Applying Equation (24) to u and 1
+      therefore gives
+                               ∥v(y, w)∥2 ≥ Q2 (1 − ν)(H + 2q + F ) > S.
+
+Case 3: w is not a root of unity and 0 < ∥w∥2 ≤ 3q. Since y − wc ∈ a, the coset-separation bound
+in Theorem 3.7 gives
+                                   ∥y∥2 ≥ dist(wc, a)2 > L/10.
+Because w is not a root of unity, part (ii) of Lemma 3.5 also gives ∥w∥2 ≥ 2q −4. Hence Equation (24)
+yields
+                 ∥v(y, w)∥2 > Q2 (1 − ν) L/10 + Γ2 (2q − 4) = Q2 L + o(L) > S.
+                                            (︁                 )︁     (︁       )︁
+
+Case 4: w is not a root of unity and ∥w∥2 > 3q. Since F = (18/40)L + o(L) and S/Q2 < L, we
+have 3F > L > S/Q2 . The second coordinate alone gives
+                               ∥v(y, w)∥2 ≥ Q2 Γ2 ∥w∥2 > 3Q2 F > S.
+These cases exhaust every nonzero module vector. Thus λ1 (M)2 > S.
+
+5.3   Encoding length and running time
+We choose q and bound the encoding length and running time of the reduction.
+   Over Z[ζ3 ], the module generated by (2, 0) and (0, 2) has squared minimum 8. If M = 0, the
+reduction outputs this module with squared threshold 8 as a fixed YES instance. If M > 0 and A
+has a zero row, the reduction outputs this module with squared threshold 1 as a fixed NO instance.
+For all remaining instances, M, n ≥ 1 and every row of A is nonzero.
+
+Choosing k and q. Recall that k0 and C0 are the fixed absolute integer constants from Section 3.2.
+Let ℓ be the bit length of the given X3C instance, and put
+                             k := max{k0 , (n + 2)2 },    Y := (2k)C0 .
+Since n = O(ℓ) for this explicit encoding, Y = O((n + 2)2C0 ). By Bertrand’s postulate [Erd32], the
+interval [Y, 2Y ] contains an odd prime. The reduction scans the odd integers in this interval and
+applies deterministic primality testing [AKS04]. It finds a prime Y ≤ q ≤ 2Y with q = ℓO(1) in
+                                                             O(1) candidates. The choice of k gives
+           √ polynomial time. There are at most Y + 1 = ℓ
+deterministic
+n + 2 ≤ ⌊ k⌋. Lemma 2.3 and Equations (14) and (15) give βM = O(n3 ) = O(k 3/2 ), so the same
+sufficiently large k0 ensures q > 4βM .
+
+                                                 21
+Generator coefficients. The sum defining g has 2W nonzero coefficients, and the sum defining
+V has total absolute coefficient sum 2W . Expanding U = Q + g 2 gives an integral coefficient
+representative whose total absolute coefficient sum is at most Q + 4W 2 . The expansions of (1 − ζ)k
+and h + (1 − ζ)⌊k/2⌋ give representatives of π k and c with total absolute coefficient sums at most 2k
+and h + 2⌊k/2⌋ , respectively. Hence U π k and U c − V have integral coefficient representatives whose
+coefficients are bounded in absolute value by (Q + 4W 2 )(h + 2k ) + 2W . Converting q−1            a
+                                                                                          ∑︁
+                                                                                            a=0 ca ζ to
+the power basis gives coefficients ca − cq−1 for 0 ≤ a < q − 1. The maximum coefficient bit length
+therefore increases by at most one and is O(k + log q + log n). The second coordinate −QΓ has
+O(log k + log n) bit length, by Equation (23) and the definition of Q.
+
+Running time. The output is computed from A and the explicit center c. By Equation (23),
+S has O(log q + log k + log n) bits. The generators and S are computed by an integer square-root
+computation for Γ and power-basis arithmetic on q − 1 integer coefficients. Since k and q are
+polynomially bounded in ℓ, the coefficient bounds above give a deterministic polynomial-time
+construction with polynomial encoding length. Admissible representatives serve only as witnesses in
+the completeness proof and need not be found by the reduction.
+
+5.4   Proof of the main theorem
+Proof of Theorem 1.1. Every output of the reduction is a full-rank free OK -submodule of OK     2 and
+
+hence has module rank two. As a lattice, each output has Z-rank 2(q − 1). For NP-hardness,
+Theorem 5.2 gives the YES–NO equivalence for instances with M, n ≥ 1 and no zero row in A.
+Together with the fixed YES and NO outputs in Section 5.3, this proves the correctness of the
+reduction on all X3C instances. The reduction is deterministic, runs in polynomial time, and outputs
+(q, m1 , m2 , S). The two module generators lie in OK  2 and have nonzero determinant.
+
+    A certificate for a positive instance is a nonzero y ∈ OK     2 in power-basis coordinates with
+                                                                            √
+∥y∥2 ≤ S. By Lemma 2.2, every coefficient has absolute value at most S, so the certificate has
+polynomial bit length. The verifier first checks that each ring coordinate of the input generators is
+given by q − 1 integer coefficients and verifies the remaining input conditions in polynomial time. It
+then solves y = z1 m1 + z2 m2 over K and checks that z1 , z2 ∈ OK to verify module membership.
+Exact power-basis arithmetic performs this check and computes ∥y∥2 in polynomial time. Thus the
+problem belongs to NP, completing the proof of Theorem 1.1.
+
+Proof of Corollary 1.2. Given an X3C instance, apply the reduction from the proof of Theorem 1.1
+to obtain (q, m1 , m2 , S), and query a search-SVP oracle on (q, m1 , m2 ). It returns a shortest
+nonzero vector y ∈ M in power-basis coordinates. These coordinates have polynomial bit length
+by Lemma 2.2 and ∥y∥2 ≤ ∥m1 ∥2 . Compute ∥y∥2 using Lemma 2.2. By the correctness of the
+reduction, the X3C instance is positive exactly when ∥y∥2 ≤ S. Thus at most one oracle call decides
+X3C in polynomial time, which proves the claimed Turing hardness.
+
+AI disclosure. GPT-5.6 Sol Ultra discovered the proof through an iterative conversation conducted
+in a single session. The discussion began by asking whether the locally dense lattices that Bennett
+and Peikert construct from Reed–Solomon codes for approximate SVP [BP23] could be adapted to
+module lattices. The model first found a randomized reduction by combining this construction with
+Wan’s point-count estimates [Wan26c], and then developed the deterministic reduction proved in
+this paper. In the second version, the authors removed the restriction q ≡ 3 (mod 4) and simplified
+the checker construction to avoid lengthy Gauss-sum calculations. The authors independently
+verified every mathematical claim and proof, checked every use of the cited references, simplified
+
+
+                                                  22
+and refined the argument, and wrote the final manuscript. The authors take full responsibility for
+the paper.
+
+
+References
+[Ajt98]       Miklós Ajtai. The shortest vector problem in L2 is NP-hard for randomized reductions. In
+              Proceedings of the 30th Annual ACM Symposium on Theory of Computing (STOC), pages
+              10–19. ACM, 1998.
+[AKS04]       Manindra Agrawal, Neeraj Kayal, and Nitin Saxena. PRIMES is in P. Annals of Mathematics,
+              160(2):781–793, 2004.
+[BDK+ 18]     Joppe W. Bos, Léo Ducas, Eike Kiltz, Tancrède Lepoint, Vadim Lyubashevsky, John M.
+              Schanck, Peter Schwabe, Gregor Seiler, and Damien Stehlé. CRYSTALS–Kyber: A CCA-
+              secure module-lattice-based KEM. In 2018 IEEE European Symposium on Security and
+              Privacy (EuroS&P), pages 353–367. IEEE, 2018.
+[BP23]        Huck Bennett and Chris Peikert. Hardness of the (approximate) shortest vector problem: A
+              simple proof via Reed–Solomon codes. In Approximation, Randomization, and Combinatorial
+              Optimization. Algorithms and Techniques (APPROX/RANDOM 2023), volume 275 of LIPIcs,
+              pages 37:1–37:20, 2023.
+[CN98]        Jin-Yi Cai and Ajay Nerurkar. Approximating the SVP to within a factor (1 + 1/ dimε ) is
+              NP-hard under randomized reductions. In Proceedings of the 13th Annual IEEE Conference
+              on Computational Complexity (CCC), pages 46–55. IEEE Computer Society, 1998.
+[dBPTW26]     Koen de Boer, Aurel Page, Radu Toma, and Benjamin Wesolowski. Average hardness of
+              SIVP for module lattices of fixed rank. In Proceedings of the 58th Annual ACM Symposium
+              on Theory of Computing (STOC), pages 814–822. ACM, 2026.
+[DKL+ 18]     Léo Ducas, Eike Kiltz, Tancrède Lepoint, Vadim Lyubashevsky, Peter Schwabe, Gregor Seiler,
+              and Damien Stehlé. CRYSTALS-Dilithium: A lattice-based digital signature scheme. IACR
+              Transactions on Cryptographic Hardware and Embedded Systems, 2018(1):238–268, 2018.
+[DMMPMT23] Gabrielle De Micheli, Daniele Micciancio, Alice Pellet-Mary, and Nam Tran. Reductions
+           from module lattices to free module lattices, and application to dequantizing Module-LLL.
+           In Advances in Cryptology—CRYPTO 2023, Part V, pages 836–865. Springer, 2023.
+[Erd32]       Paul Erdős. Beweis eines Satzes von Tschebyschef. Acta Scientiarum Mathematicarum
+              (Szeged), 5:194–198, 1932.
+[ET41]        Paul Erdős and Pál Turán. On a problem of Sidon in additive number theory, and on some
+              related problems. Journal of the London Mathematical Society, 16(4):212–215, 1941.
+[FPMS22]      Joël Felderhoff, Alice Pellet-Mary, and Damien Stehlé. On module unique-SVP and NTRU.
+              In Advances in Cryptology—ASIACRYPT 2022, pages 709–740. Springer, 2022.
+[GJ79]        Michael R. Garey and David S. Johnson. Computers and Intractability: A Guide to the
+              Theory of NP-Completeness. W. H. Freeman, 1979.
+[GSVV25]      Nihar Gargava, Vlad Serban, Maryna Viazovska, and Ilaria Viglino. Module lattices and
+              their shortest vectors. CoRR, abs/2510.12893, 2025.
+[HPS98]       Jeffrey Hoffstein, Jill Pipher, and Joseph H. Silverman. NTRU: A ring-based public key
+              cryptosystem. In Algorithmic Number Theory (ANTS-III), volume 1423 of Lecture Notes in
+              Computer Science, pages 267–288. Springer, 1998.
+[HR12]        Ishay Haviv and Oded Regev. Tensor-based hardness of the shortest vector problem to within
+              almost polynomial factors. Theory of Computing, 8(23):513–531, 2012.
+
+
+
+                                                 23
+[HS26a]     Isaac M. Hair and Amit Sahai. Deterministic hardness of approximation for SVP in all finite
+            ℓp norms. CoRR, abs/2604.01451, 2026. Accepted to FOCS 2026.
+[HS26b]     Isaac M. Hair and Amit Sahai. SVPp is deterministically NP-hard for all p > 2, even to
+                                               1−ε
+            approximate within a factor of 2log n . In Proceedings of the 58th Annual ACM Symposium
+            on Theory of Computing (STOC), pages 1716–1727. ACM, 2026.
+[Kho05]     Subhash Khot. Hardness of approximating the shortest vector problem in lattices. Journal
+            of the ACM, 52(5):789–808, 2005.
+[LFP26]     Jiaqi Liu, Yansong Feng, and Yanbin Pan. Exact CVP is NP-complete for principal cyclotomic
+            ideals. CoRR, abs/2608.23828, 2026.
+[LPMSW19]   Changmin Lee, Alice Pellet-Mary, Damien Stehlé, and Alexandre Wallet. An LLL algorithm
+            for module lattices. In Advances in Cryptology—ASIACRYPT 2019, pages 59–90. Springer,
+            2019.
+[LPR13a]    Vadim Lyubashevsky, Chris Peikert, and Oded Regev. On ideal lattices and learning with
+            errors over rings. Journal of the ACM, 60(6):43:1–43:35, 2013.
+[LPR13b]    Vadim Lyubashevsky, Chris Peikert, and Oded Regev. A toolkit for Ring-LWE cryptography.
+            In Advances in Cryptology—EUROCRYPT 2013, pages 35–54. Springer, 2013.
+[LS15]      Adeline Langlois and Damien Stehlé. Worst-case to average-case reductions for module
+            lattices. Designs, Codes and Cryptography, 75(3):565–599, 2015.
+[Mar26]     Daniel E. Martin. NP-hardness of ideal lattice problems. CoRR, abs/2609.15813, 2026.
+[MG02]      Daniele Micciancio and Shafi Goldwasser. Complexity of Lattice Problems: A Cryptographic
+            Perspective, volume 671 of The Kluwer International Series in Engineering and Computer
+            Science. Kluwer Academic Publishers, 2002.
+[Mic01]     Daniele Micciancio. The shortest vector in a lattice is hard to approximate to within some
+            constant. SIAM Journal on Computing, 30(6):2008–2035, 2001.
+[Mic07]     Daniele Micciancio. Generalized compact knapsacks, cyclic lattices, and efficient one-way
+            functions. Computational Complexity, 16(4):365–411, 2007.
+[Mic12]     Daniele Micciancio. Inapproximability of the shortest vector problem: Toward a deterministic
+            reduction. Theory of Computing, 8(22):487–512, 2012.
+[Nat24a]    National Institute of Standards and Technology. Module-Lattice-Based Digital Signature
+            Standard. Federal Information Processing Standards Publication NIST FIPS 204, U.S.
+            Department of Commerce, 2024.
+[Nat24b]    National Institute of Standards and Technology. Module-Lattice-Based Key-Encapsulation
+            Mechanism Standard. Federal Information Processing Standards Publication NIST FIPS
+            203, U.S. Department of Commerce, 2024.
+[vEB81]     Peter van Emde Boas. Another NP-complete partition problem and the complexity of
+            computing short vectors in a lattice. Technical Report 81-04, Mathematical Institute,
+            University of Amsterdam, 1981.
+[Wan26a]    Daqing Wan. Euclidean SVP is deterministically NP-hard to approximate within any constant
+            factor. CoRR, abs/2608.12664, 2026.
+[Wan26b]    Daqing Wan. Euclidean SVP is NP-hard for cyclic lattices. CoRR, abs/2609.16711, 2026.
+[Wan26c]    Daqing Wan. NP-hardness of SVP in Euclidean space. CoRR, abs/2603.27398, 2026.
+[Was97]     Lawrence C. Washington. Introduction to Cyclotomic Fields, volume 83 of Graduate Texts in
+            Mathematics. Springer, second edition, 1997.
+
+
+
+                                                24
+

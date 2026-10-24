@@ -34,4 +34,13 @@
 
 ## Round 3 (RUNNING): r2m-p3-membership (Membership*.lean, NP membership),
    r2m-p3-asymptotics (Asymptotics*.lean, Wan/Checker asymptotic obligations, ReductionParameters).
-   Next: Reduction job (module M, completeness/soundness, denominators) after asymptotics lands.
+   r2m-p3-reduction (Reduction*.lean, Clearing.lean): module M, exact-X3C-encoding, denominator clearing, under explicit GapConditions.
+
+## Round 3 outcome (v1 target)
+- r3-asymptotics DONE (v1 parameters; Asymptotics*.lean committed as v1 history).
+- r3-membership DONE: Membership*.lean, moduleSVP_mem_NP_of_resource_bounds (certificate-bit premise).
+- r3-reduction KILLED at 19:52 (v1 rational checker; superseded by v2). Partial files moved to
+  /workspace/hardness_v1_partial (not committed). r4-primes KILLED (v2 only needs Bertrand).
+- r4-cert RUNNING (MembershipCert.lean, unconditional NP membership).
+
+## RETARGET to paper v2 (see specs/v2_diff.md)
