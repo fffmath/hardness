@@ -40,3 +40,9 @@ Times Asia/Shanghai (UTC+8).
 - prompt: specs/phase9_prompt.md; log: /workspace/hardness_codex_r9.log
 session id: 01a16b4a-27c5-7041-8d68-d8ce50435650
 - Result: moduleSIVP_npComplete (separated triangular subclass = image of paper's completion), Hardness.PPoly.of_polyTimeReducible, np_subset_ppoly_of_fixedCVPP, PH_eq_SigmaP_two_of_fixedCVPP, PH_eq_SigmaP_two_of_polyCVPP. Cyclic NP membership still open (singular cyclic generators). Axioms clean, 7168 jobs.
+
+## Round 9 commit: fe290a6
+## Round 10 (DONE) — cyclic NP membership (separated subclass), optional general Module-SIVP
+- prompt: specs/phase10_prompt.md; log: /workspace/hardness_codex_r10.log
+- session id: 01a16b7b-e3c2-7f50-a9ea-2b2dd7c58483
+- Result: principalCyclicCVP_npComplete (SeparatedPrincipalCyclicCVP). General Module-SIVP / singular cyclic membership deferred. README final summary written. PROJECT WRAPPED UP — nothing in flight.

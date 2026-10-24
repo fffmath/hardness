@@ -51,3 +51,4 @@ import Hardness.Complexity.ModuleProblem
 import Hardness.Complexity.PPolyReduction
 import Hardness.Complexity.FixedCompiler
 import Hardness.Complexity.CVPPClass
+import Hardness.Complexity.SeparatedCyclic

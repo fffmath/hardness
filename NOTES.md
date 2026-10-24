@@ -12,6 +12,8 @@ certifies the principal cyclic CVP hardness lift.
 Round 9 proves NP-completeness for a recognized triangular module-SIVP subclass
 and the fixed-family CVPP Karp–Lipton corollary, including universe-indexed
 polynomial preprocessing advice.
+Round 10 proves NP-completeness of principal cyclic CVP on a polynomial-time
+recognized integral separated class containing the reduction image.
 
 ## Files and theorem names
 
@@ -1019,3 +1021,104 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   B is complete, including P/poly reduction closure and the universe-indexed
   preprocessing form. C remains open at the rank-deficient certificate bound
   described above; no unfinished Lean declaration is left in the library.
+
+## Round 10 — principal cyclic CVP on separated generators
+
+### C — recognized separated cyclic CVP (complete)
+
+- `Complexity/SeparatedCyclic.lean` defines `SeparatedPrincipalCyclicCVP`
+  using the same `encCVP` and the actual ideal in ℤ[X]/(X^(2d)-1).
+  **Scope restriction:** d is a power of two; the stored generator is exactly
+  `(g+B e₀,−g+B e₀)` for an integral nonzero B and a nonzero integral
+  coefficient vector g of length d. Both stored lists have length 2d.
+  Targets are arbitrary integral coefficient vectors, with arbitrary signed
+  thresholds. Equivalently the opposite coefficients sum to zero away from
+  index zero, and `G₀+G_d = 2B ≠ 0`; the recovered g is nonzero.
+  This language contains every well-formed reduction output. It is an
+  intersection with the existing `PrincipalCyclicCVP`, which continues to admit
+  arbitrary generators and retains its Round 8 hardness theorem.
+- `separatedCyclicCheck_iff` proves exactly that mathematical recognition
+  condition. `poly_separatedCyclicCheck` certifies its native polynomial-time
+  implementation: binary signed halving, coefficient reconstruction, list
+  equality, and a nonzero-entry scan. `binaryHalf_eq` includes negative odd
+  integers and uses binary natural division; there is no unary search over
+  a binary coefficient.
+- `Cyclic.multiplicationMatrix` is the 2d×2d integer matrix of the actual
+  quotient multiplication map. `Cyclic.multiplicationMatrix_det_ne_zero`
+  derives nonsingularity from the existing integral block decomposition,
+  `Cyclic.mulHom_injective`, and the proved cyclotomic domain theorem.
+  Thus the CRT observation is realized without an additional CRT assumption.
+  `separatedCyclic_multiplier_unique` states uniqueness of the integral preimage.
+- `separatedCyclicVerifier`, `ofList_separatedProduct`, and
+  `separatedCyclic_iff_exists_check` connect the executable block product to
+  the actual principal ideal, for arbitrary targets. `poly_cyclicAssembleCoeff`,
+  `poly_separatedProduct`, and `poly_separatedCyclicVerifier` supply native
+  multitape-TM runtime certificates. A certificate has exactly 2d signed-binary
+  integers, giving the cyclic multiplier.
+- `separatedCyclic_bounded_certificate` applies the existing adjugate/Cramer
+  bound to that nonsingular matrix. To reuse `cvpCertificateBound_bits`, the
+  polynomial-time function `cyclicBoundInput` produces an auxiliary diagonal
+  negacyclic multiplication basis whose Cramer bound dominates the cyclic one.
+  If `A = 1+‖g‖²+B²`, each cyclic matrix entry is bounded by
+  `E = 2A+2d²A`; the auxiliary dimension is n=2d and its generator is the
+  constant nE, so its basis magnitude is n²E. The target and threshold are
+  copied. `cyclicBoundInput_dominates` proves the comparison. The framed witness
+  length is bounded by `witnessPolynomial` evaluated at the auxiliary encoded
+  size, which is polynomial in the original size by `poly_cyclicBoundInput`.
+  The NP proof composes these polynomials; no certificate-size premise is assumed.
+- `CyclicFast.compile_separated` proves that every valid compiler output has
+  the required form with nonzero g and B. The unchanged total function
+  `compileCyclicFast` is reused by
+  `polyTimeReducible_Masked_SeparatedCyclicCVP`, including malformed-source NO
+  inputs. `separatedPrincipalCyclicCVP_npHard`, `principalCyclicCVP_mem_NP`, and
+  `principalCyclicCVP_npComplete : NPComplete encCVP SeparatedPrincipalCyclicCVP`
+  have no runtime, correctness, bit-bound, or hardness hypotheses.
+
+### Remaining optional scope
+
+- No general-nonsingular cyclic language or runtime certificate for a general
+  determinant test is added. Membership for the original arbitrary-generator
+  `PrincipalCyclicCVP` still needs a polynomial-bit preimage bound for singular
+  multiplication lattices, as described in Round 9 C. The new completeness
+  headline explicitly concerns the recognized separated restriction.
+- Optional general Module-SIVP B is deferred. The current `ModuleSIVPLang`
+  completeness headline remains the Round 9 triangular subclass. Extending it
+  needs the arbitrary-basis integral span and 2d×2d nonsingularity bridge,
+  certificates for two short field-independent vectors (four integral ring
+  multipliers), their native verifier, and the Cramer/encoding-bound bridge.
+  No unfinished Lean declarations for those extensions are retained.
+
+### Round 10 validation
+
+- The C checkpoint full build succeeds (7172 jobs),
+  `/tmp/round10-C-build3.log`, using
+  `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`.
+  `Hardness.lean` exports the new module and README entry points describe the
+  exact restriction and the remaining arbitrary-generator limitation.
+- `/tmp/HardnessRound10Audit.lean` prints axioms for 55 new declarations,
+  including all headlines, the nonsingularity and uniqueness theorems, the
+  recognizer, ideal/verifier bridges, runtime proofs, and certificate bounds.
+  `/tmp/round10-all-axioms.log` completes with exit status zero. Each report was
+  matched to `/tmp/round10-audit-names.txt` and checked against the whitelist:
+  only `propext`, `Classical.choice`, and `Quot.sound` occur.
+- `/tmp/HardnessRound10Smoke.lean` passes with the prescribed 900-second Lean
+  command; `/tmp/round10-smoke.log` records exit status zero. It checks the
+  exact NP and NP-completeness types, proves acceptance of the empty masked
+  system's output, proves concrete cyclic YES instances with targets `(1,5)`
+  and `(-5,-1)` (including negative B), and proves rejection of g=0.
+  Signed halving on -5 through 5 returns
+  `[-3,-2,-2,-1,-1,0,0,1,1,2,2]`. The recognizer returns
+  `[true,true,false,false,false,false,false,false,false]` on two valid inputs,
+  zero g, zero B, an odd constant block sum, a nonseparated generator,
+  a non-power-of-two half-dimension, a short target, and the zero generator.
+  Verifier checks return `[true,false,false,true]` for a valid multiplier,
+  negative threshold, short multiplier, and negative-B valid multiplier.
+  Empty, singleton, blocked-mask, and malformed masked systems give recognized
+  reduction outputs `[true,true,true,false]`.
+- A scan of `Hardness.lean` and `Hardness/**/*.lean` finds no `sorry`, `axiom`,
+  or `native_decide`. No git command, dependency update, cache download,
+  Lake configuration, manifest, or toolchain edit was used.
+- The final full rebuild also succeeds (7172 jobs),
+  `/tmp/round10-C-build4.log`, after the documentation and final source scan.
+  Round 10 C is complete for the stated restriction; the optional general
+  cyclic and general Module-SIVP extensions are deferred as described above.

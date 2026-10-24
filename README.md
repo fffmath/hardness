@@ -9,7 +9,53 @@ Build with `timeout 1500 lake build` (toolchain `leanprover/lean4:v4.36.0-rc1`, 
 The library is sorry-free and adds no axioms. If the toolchain artifact cache is read-only, use
 `LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`.
 
-Main entry points:
+## Final summary
+
+Everything below is sorry-free and axiom-clean: `#print axioms` gives only `propext`,
+`Classical.choice` and `Quot.sound`. Complexity classes, reductions and polynomial time are
+complexitylib's native multitape-TM notions (`NP`, `NPHard`, `NPComplete`, `PolyTimeReducible`,
+`PPoly`, `PH`, `SigmaP`).
+
+### Headline theorems
+
+| Theorem | Statement | File |
+|---|---|---|
+| `Hardness.principalCVP_npComplete` | `NPComplete encCVP PrincipalCVP`: exact principal cyclotomic CVP over ℤ[X]/(X^d+1) is NP-complete | `Hardness/Complexity/NPComplete.lean` |
+| `Hardness.x3c_npComplete` | `NPComplete encX3C X3CLang`: X3C is NP-complete, via ExactThreeSAT → X3C (direct gadget) | `Hardness/Complexity/SatToX3C.lean` |
+| `Hardness.principalCVP_npHard_via_X3C` | The paper's route to principal CVP hardness: X3C → principal CVP | `Hardness/Complexity/SatToX3C.lean` |
+| `Hardness.principalCyclicCVP_npComplete` | `NPComplete encCVP SeparatedPrincipalCyclicCVP`: cyclic ℤ[X]/(X^{2d}−1), separated generators | `Hardness/Complexity/SeparatedCyclic.lean` |
+| `Hardness.principalCyclicCVP_npHard` | NP-hardness for arbitrary principal cyclic CVP | `Hardness/Complexity/CyclicProblem.lean` |
+| `Hardness.moduleSIVP_npComplete` | `NPComplete encModuleSIVP ModuleSIVPLang`: rank-2 module-SIVP, triangular-basis subclass | `Hardness/Complexity/ModuleProblem.lean` |
+| `Cslib.Circuits.Boolean.PPoly.of_polyTimeReducible` | P/poly is closed under polynomial-time reductions | `Hardness/Complexity/PPolyReduction.lean` |
+| `Hardness.np_subset_ppoly_of_fixedCVPP` | P/poly circuits for the fixed CVPP family ⇒ NP ⊆ P/poly | `Hardness/Complexity/CVPPClass.lean` |
+| `Hardness.PH_eq_SigmaP_two_of_fixedCVPP` | The same hypothesis ⇒ PH = Σ₂ (Karp–Lipton) | `Hardness/Complexity/CVPPClass.lean` |
+| `Hardness.PH_eq_SigmaP_two_of_polyCVPP` | Poly-size advice plus a poly-time decider for fixed-family CVPP ⇒ PH = Σ₂ | `Hardness/Complexity/CVPPClass.lean` |
+
+Below the complexity layer sit the paper's mathematical results:
+
+- the X3C → CVP reduction with its exact gaps: `x3c_correct`, `x3c_yes_gap`, `x3c_no_gap`;
+- the cyclic and canonical-embedding variants;
+- module completion: `module_completion`;
+- the fixed family: `Fixed.fixed_family_correct`;
+- explicit certificate bounds;
+- search-to-decision.
+
+### Remaining gaps
+
+1. **Module-SIVP for arbitrary bases.** NP membership is proved only for the triangular subclass
+   `(Q,T),(0,g)` with `Q = 1+‖T‖²+‖g‖²`. That subclass is the image of the paper's completion,
+   so hardness holds as stated. NP membership for general independent rank-2 bases is not
+   formalised.
+2. **Cyclic CVP with singular generators.** NP membership is proved only for the
+   polynomial-time-recognisable separated generators `(g+B e₀, −g+B e₀)`, which contain the
+   reduction's image. It is not formalised for arbitrary, possibly singular, generators of
+   ℤ[X]/(X^{2d}−1); that would need integer-solution size bounds for rank-deficient systems.
+3. **CVPP is stated in a non-uniform form.** The corollary assumes P/poly circuits, or
+   poly-size advice plus a poly-time decider, for the fixed family. Preprocessing time is
+   unbounded, which matches the paper's corollary.
+4. **Not formalised:** approximate (gap) versions beyond the exact +4 / +32 squared-distance gaps.
+
+## Detailed entry points
 
 - `Hardness.polyTimeReducible_X3C_FixedCVPP`, `Hardness.fixedCVPP_npHard` –
   the certified reduction to one principal ideal per unary universe size, using
@@ -40,6 +86,14 @@ Main entry points:
   paper's incidence-matrix route, using the certified cubic compiler
 - `Hardness.principalCVP_npHard_via_X3C` – unconditional principal CVP hardness
   through `x3c_npComplete`, discharging the list version of the paper's route
+- `Hardness.principalCyclicCVP_npComplete` – unconditional NP-completeness of
+  `SeparatedPrincipalCyclicCVP` in the actual quotient ℤ[X]/(X^{2d}−1).
+  Its polynomial-time recognizable generators are exactly
+  `(g+B e₀,−g+B e₀)`, with integral nonzero `B`, nonzero `g`, and power-of-two
+  half-dimension `d`; targets are arbitrary lists of length `2d`.
+  `Hardness/Complexity/SeparatedCyclic.lean` proves the recognizer's exact scope,
+  native verifier runtime, nonsingularity, and polynomial certificate bound.
+  The existing `compileCyclicFast` reduction has its image in this subclass.
 - `Hardness.principalCyclicCVP_npHard` – unconditional hardness for the actual
   cyclic quotient, via `compileCyclicFast`; NP membership for arbitrary cyclic
   generators is not claimed
