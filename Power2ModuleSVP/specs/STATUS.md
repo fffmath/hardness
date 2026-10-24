@@ -304,3 +304,82 @@ parameterized by `NormSeparationHypothesis` as requested; the dispatcher can
 instantiate it with `Power2ModuleSVP.normSeparationHypothesis_holds` from
 `NormFinal.lean`. Constructing a uniform rigid anchor family remains a
 separate obligation. No runtime claim for the composite maps is made here.
+- f8baa84: packing/homogenization/anchor contract, NormFinal (separation unconditional), SourceMap runtime. 
+- Round 4 (04:25 UTC+8): p2s-main (ReductionMap*/Main: coset_npComplete, moduleSVP_npComplete_of hJ), p2s-repair (AnchorSeedSpec/Screen/DisjointTests/Repair), p2s-seed (Bernstein/SineKernel/SeedIntervals/PartialColoring).
+
+## Main assembly (p2s-main)
+
+Completed P5 complexity assembly in `ReductionMap.lean`,
+`ReductionMapAux.lean`, `ReductionMapPoly.lean`, and `Main.lean`.
+Only these four new Lean files and this appended section were changed by
+this job. Existing source, separation, packing, homogenization, membership,
+anchor, root, and Lake files were reused without edits.
+
+`sourceMap_eq_threeSATToAffine` proves exact agreement of the executable
+source tuple and the semantic affine interface. `cosetReduction` packs
+`sourceMap` at `packingDegree L`; `cosetReduction_correct` proves
+`f ∈ ThreeSAT ↔ cosetReduction f ∈ CosetLang` for every CNF, with
+`normSeparationHypothesis_holds` discharging separation unconditionally.
+Well-formedness, coefficient alphabets, and explicit cubic degree bounds
+(also composed with the source's clause-count polynomial) are exported.
+
+Native multitape-TM certificates are `dyadicCeil_polytime`,
+`packingDegree_polytime`, `modulePackingDegree_polytime`,
+`packCoset_polytime`, and `triangularInput_polytime`. They reuse
+complexitylib's certified unary logarithmic power, range/map/lookup,
+signed-binary arithmetic, and pair/list constructors. The packing
+certificate holds on every raw input tuple. It charges the explicit unary
+output degree and both coefficient arrays, not merely binary arithmetic
+on the degree. `cosetReduction_polytime` composes it with
+`sourceMap_polytime`; `threeSAT_polyTimeReducible_coset` packages the
+actual total reduction and correctness.
+
+`moduleReductionDegree k0` computes the final module degree in unary;
+`moduleReductionDegree_polytime` certifies this function directly from
+`encCNF`. `moduleReduction k0 J` packs the affine input at that degree,
+runs the supplied uniform anchor program on the same unary degree, and
+attaches the anchor with the triangular constructor.
+`moduleReduction_polytime` composes all three certificates.
+`moduleReduction_eq` and `threeSATToModule_polytime` also expose exact
+agreement with the existing semantic map. Correctness, well-formedness,
+all four coefficient promises, and polynomial degree bounds are proved.
+The only module premise is the existing uniform anchor hypothesis;
+`threeSAT_polyTimeReducible_moduleSVP_of` extracts its fixed cutoff,
+family, native-machine certificate, and anchor specification.
+
+The final namespace-`Power2ModuleSVP` statements are:
+
+```lean
+theorem coset_npHard : NPHard encCoset CosetLang
+theorem coset_npComplete : NPComplete encCoset CosetLang
+theorem moduleSVP_npHard_of (hJ : RigidAnchorFamilyHypothesis) :
+  NPHard encSVP ModuleSVPLang
+theorem moduleSVP_npComplete_of (hJ : RigidAnchorFamilyHypothesis) :
+  NPComplete encSVP ModuleSVPLang
+```
+
+`moduleReduction_gap` states, for any family satisfying the anchor
+specification, that the actual stored module columns have attained
+`FirstMinimum ... 1` on YES formulas and that every nonzero module vector
+has `pairSup ≥ 2` on NO formulas. Integrality and the proved language
+equivalence suffice; it introduces no further analytic premise.
+
+Validation: single-module builds for `ReductionMap` and
+`ReductionMapAux`, direct Lean checks for `ReductionMapPoly` and `Main`,
+and the final single-target `lake build Power2ModuleSVP.Main` compile all
+four modules. The five `#print axioms` commands retained in `Main.lean`
+report only `propext`, `Classical.choice`, and `Quot.sound`, including both
+completeness theorems and the gap theorem. No `sorry`, `admit`, new axiom,
+or new hypothesis structure occurs in this job's Lean files.
+
+Audit: no new mathematical gap was found in assembly. The cutoff exponent
+is fixed before forming a reduction, so `2^k0` is a constant in its runtime
+bound. The anchor machine receives the final degree; no change of quotient
+ring by padding an already constructed general coset is assumed. Both
+reductions retain the existing total malformed-CNF behavior.
+
+Open work: construct the uniform rigid anchor family to remove the module
+hypothesis. Root-file import integration remains the dispatcher's task;
+this job did not edit `Power2ModuleSVP.lean` or `lakefile.toml`. Coset
+hardness/completeness and all requested composite runtime certificates
+have no remaining proof obligation.

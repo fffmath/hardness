@@ -30,3 +30,7 @@ import Power2ModuleSVP.SourceMap
 import Power2ModuleSVP.SourceMapAux
 import Power2ModuleSVP.SourceMapPoly
 import Power2ModuleSVP.SourceMapPrime
+import Power2ModuleSVP.ReductionMap
+import Power2ModuleSVP.ReductionMapAux
+import Power2ModuleSVP.ReductionMapPoly
+import Power2ModuleSVP.Main
