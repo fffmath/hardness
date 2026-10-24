@@ -54,3 +54,76 @@ Dispatcher context retained: round 1 began at 2026-10-25 03:20 UTC+8 with
 dispatcher; prompts are in `/workspace/shared/jobs/_p2s`. Before relaunching,
 check `cx-status p2s-*`, git status, and this file. Do not update or clean
 dependencies or modify shared package trees.
+
+## API/NP (p2s-api)
+
+Completed P0 and P1 on 2026-10-25. All declarations use namespace
+`Power2ModuleSVP`; importing `Power2ModuleSVP.Membership` exposes both final
+NP theorems. This job created only `Coefficient.lean`, `Problem.lean`,
+`MembershipAux.lean`, `MembershipPoly.lean`, `MembershipCert.lean`, and
+`Membership.lean`, and appended this status section. Root imports and Lake
+configuration remain the dispatcher's integration task.
+
+The section-4 coefficient and language interfaces are implemented exactly:
+`Coeff`, `Rd`, `Dyadic`, `Cube`, `Signs`, `Bits`, `EvenCoeffs`,
+`SignedMonomial`, `Rigid`, `coeffSup`, `pairSup`, `CosetYes`, `moduleVector`,
+`ModuleYes`, both input types/encodings/well-formedness predicates/languages,
+`CosetBits`, `ModuleSVPBits`, and `FirstMinimum`. `encCoset_mem_iff` and
+`encSVP_mem_iff` identify encoded membership with semantic membership.
+Degree zero and malformed lengths are rejected; degree one is included.
+The columns follow the specified orientation. Zero is allowed for the coset
+point and excluded for the accepted module vector.
+
+Executable checks are `cosetWellFormedCheck`, `moduleWellFormedCheck`,
+`listCube`, `listEven`, `cosetVerifier`, and `moduleVerifier`.
+`cosetWellFormedCheck_spec`, `moduleWellFormedCheck_spec`,
+`cosetVerifier_spec`, and `moduleVerifier_spec` prove their full semantic
+specifications. The requested equivalences are proved as
+`cosetVerifier_correct (x) : x ∈ CosetLang ↔ ∃ u, cosetVerifier (x,u) = true`
+and
+`moduleVerifier_correct (x) : x ∈ ModuleSVPLang ↔ ∃ uv, moduleVerifier (x,uv) = true`.
+`cosetVerifier_polytime` and `moduleVerifier_polytime` have exactly the
+section-4 native multitape-TM encoding signatures. All runtime proofs compose
+imported certified list/integer routines, including negacyclic products,
+dyadic recognition, determinant checking, and coefficient scans. Parity is
+computed as binary `natAbs % 2`, with its equivalence to `Even` proved.
+
+The final unconditional results in `Membership.lean` are:
+
+```lean
+theorem coset_mem_NP : CosetLang ∈ Cslib.Complexity.NP encCoset
+theorem moduleSVP_mem_NP : ModuleSVPLang ∈ Cslib.Complexity.NP encSVP
+```
+
+Certificate bounds reuse the stronger applicable nonsingular-matrix route
+from IdealCVP instead of introducing another integer-preimage development.
+`Cube.sqNorm_le` gives the bounds `d` and `2d`. The existing
+`certificate_coeff_le`, `multiplicationMatrix_det_ne_zero`,
+`generalMatrix_det_iff`, `moduleBoundInput_dominates`, and
+`cvpCertificateBound_bits` bound the original accepted multipliers.
+`Membership.coset_certificate_bound`, `Membership.module_certificate_bound`,
+`Membership.coset_certificate_length`, and
+`Membership.module_certificate_length` include all signed-binary/list/pair
+framing. Auxiliary bound-input maps have native polynomial-time certificates;
+their encoding-length polynomials compose with the existing witness
+polynomials. The final NP proofs reuse `intBinDecoder.list`, its pair, and
+`mem_NP_of_witness`. In particular, no solver runtime or new analytic,
+separation, anchor, or resource-bound hypothesis is assumed.
+
+Validation: successful single-module `lake build` checks for all six owned
+modules, with final dependencies also rebuilt through
+`lake build Power2ModuleSVP.Membership`. A temporary Lean check passed twelve
+kernel-computed examples covering degree-one YES instances, zero module
+rejection, zero/odd coset generator rejection, singular matrices, excessive
+coefficients, zero/nondyadic degree, and malformed arrays.
+`#print axioms` for both final NP theorems reports only `propext`,
+`Classical.choice`, and `Quot.sound`. No `sorry`, `admit`, new axiom, or new
+hypothesis structure occurs in these files.
+
+Audit: no mathematical gap was found in the NP argument of the private
+reduction section. The paper's rational-elimination verifier can be replaced
+by the proved bounded-multiplier verifier because the promised bases are
+nonsingular. Squared norms occur only in certificate estimates; acceptance
+uses the coefficient sup norm throughout. There are no open P0/P1 proof
+obligations. Hardness, homogenization, and root-file integration are outside
+this job's ownership and are not claimed here.
