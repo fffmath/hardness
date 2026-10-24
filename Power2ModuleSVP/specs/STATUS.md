@@ -127,3 +127,180 @@ nonsingular. Squared norms occur only in certificate estimates; acceptance
 uses the coefficient sup norm throughout. There are no open P0/P1 proof
 obligations. Hardness, homogenization, and root-file integration are outside
 this job's ownership and are not claimed here.
+
+## Dispatcher log
+- 693f7c8, 1c1e5e1 (local only): plan; Sidon/Boolean source (semantic, 0 sorry); NP membership both languages (0 sorry); Mahler lemma proved (ElementaryMahlerHypothesis discharged in NormMahler.lean).
+- Round 2 (04:00 UTC+8): p2s-gap (NormResultant.lean: ReciprocalResultantHypothesis), p2s-divd (NormDivided.lean: DividedDerivativeWitnessHypothesis), p2s-pack (ParityBlock/Packing/Homogenization/Anchor semantic).
+- Next: TM poly-time certificates for source map + packing + homogenization (ReductionMap*), Main assembly with RigidAnchorFamilyHypothesis; then decide on anchor construction.
+- cec08f1: ReciprocalResultantHypothesis and DividedDerivativeWitnessHypothesis discharged (NormResultant, NormDivided).
+- Round 3 (04:10 UTC+8): p2s-pack still running; launched p2s-srcpoly (SourceMap*.lean TM runtime) and p2s-sepfinal (NormFinal.lean unconditional separation).
+
+## Separation integration (p2s-sepfinal)
+
+`NormFinal.lean` now proves `normSeparationHypothesis_holds` by assembling
+the proved Mahler, reciprocal-resultant, and divided-derivative inputs.
+`elementary_separation_unconditional` and
+`elementary_separation_of_eq_unconditional` remove the hypothesis argument;
+`bounded_remainder_separation` has the exact section-4 `natDegree` contract.
+
+`sourceModulus` interprets the finite exponent output of
+`BooleanSource.threeSATEncode`. `source_modulus_promises` proves monicity,
+the exact degree, the cutoff 64, unit constant, and reciprocal-root
+exclusion for every CNF. The latter uses an explicit rational-to-integer
+evaluation/reversal bridge. `source_separation` therefore gives `e = 0`
+under the cubic dimension bound, degree bound, coefficient bound, and
+`SeparationCongruence`, with no extra hypothesis structure.
+
+Validation: `lake env lean Power2ModuleSVP/NormFinal.lean` and
+`lake build Power2ModuleSVP.NormFinal` both succeeded. All six exported
+assembly/source axiom checks report only `propext`, `Classical.choice`,
+and `Quot.sound`. No `sorry`, `admit`, or new axiom was introduced.
+No new mathematical gap was found in this integration. The source-facing
+height bound remains the explicit premise specified in section 4; proving
+it for decoded packing remainders belongs to the packing job. No existing
+norm/source files, packing files, root import, or Lake configuration were
+edited by this job.
+
+## Source runtime (p2s-srcpoly)
+
+Interface: `SourceInput := ℕ × (ℕ × (List ℤ × List ℤ))`, storing
+`(L,(T,(P,c)))`. `encSource` uses unary `L,T`, signed binary integers,
+and the established list/pair framing. This raw type is definitionally the
+same as packing's `AffineInput`; source files do not import the concurrently
+owned packing files. The executable function is
+`sourceMap : Cslib.Logic.PL.CNF ℕ → SourceInput`.
+
+`SourceMap.lean` compiles: `sourceMap_eq` identifies the output with
+`BooleanSource.threeSATEncode`, replacing its exponent set by its `T+1`
+coefficient list; the offset list is unchanged. `sourceMap_polynomial`
+identifies the coefficient polynomial with the completed semantic `P`.
+`sourceMap_solution_iff` identifies the coefficientwise affine predicates,
+and `sourceMap_correct` states
+`f ∈ ThreeSAT ↔ ∃ x y, SourceAffineSolution (sourceMap f) x y` for every
+CNF, including malformed clauses. `sourceMap_lengths` gives exactly `T+1`
+and `L` entries; `sourceMap_dimension_bound` reuses
+`1125*(7*f.length+17)*(12*f.length+28)^2`.
+
+`SourceMapAux.lean` implements first-occurrence compression and the numbered
+selector gadget using ordinary lists/ranges and proves exact agreement with
+`normalizeTotal`/`positiveEncoding`. `SourceMapPrime.lean` reuses
+`Rank2ModuleSVP.ReductionMap.primeScan` and its native-TM certificate.
+`SourceRuntime.positionPrime_eq` and `SourceRuntime.exponentPrime_eq`
+prove equality with both original `Nat.find` choices. The executable map
+uses only these bounded scans. Input variable magnitudes never become
+unary loop bounds: only occurrence indices are converted to unary.
+
+The unconditional theorem in `SourceMapPoly.lean` is:
+
+```lean
+theorem sourceMap_polytime :
+  Turing.MultiTapeTM.ComputableTidilyInPolyTime sourceMap
+    Cslib.Complexity.encCNF encSource
+```
+
+The proof reuses `CNF.isPolyTime_compact`, complexitylib's certified
+`toExactThreeSAT`, and the existing native-TM range/map/flatten/lookup/Boolean
+scan and unary arithmetic combinators. The finite coefficient scans are
+polynomial even on arbitrary raw positive inputs. No oracle, asymptotic-only
+runtime argument, new hypothesis structure, or unresolved source premise is
+used. `sourceMap_eq` also has exactly the right-hand side of packing's
+`threeSATToAffine`, definitionally; the dispatcher can transfer the native
+certificate by function extensionality without changing either library.
+
+Validation: successful single-module `lake build` checks for
+`SourceMapPrime`, `SourceMapAux`, `SourceMap`, and `SourceMapPoly` (the first
+two also built as dependencies of later individual targets). The final
+`SourceMapPoly` build succeeded in approximately six seconds after cached
+imports. Twelve kernel-computed examples passed, covering both prime scans,
+large/repeated binary labels, malformed/empty normalization, numbered gadget
+sizes, lower/reflected support membership, and priority of negative offsets;
+a separate example checks the exact exported TM signature. Axiom inspection of the two prime equalities, exact map agreement,
+source correctness, and the final TM theorem reports only `propext`,
+`Classical.choice`, and `Quot.sound`. No `sorry`, `admit`, or new axiom occurs
+in the four files.
+
+Audit: no new mathematical gap was found. The strict prime intervals are
+preserved by equality to the least semantic choices, rather than by assuming
+a weak-endpoint prime satisfies strict bounds. Variable compression uses
+first occurrence positions (with repetitions in the inventory), so binary
+label magnitude cannot cause exponential unary allocation. Root tests and
+factorization never occur in the executable map. Packing/homogenization
+runtime certificates and final reduction assembly remain outside this job;
+no source runtime obligation remains.
+
+## Semantic packing and homogenization (p2s-pack)
+
+Completed semantic P4/P5 in `ParityBlock.lean`, `Packing.lean`,
+`Homogenization.lean`, and `Anchor.lean`. Existing source, norm, problem,
+coefficient, membership, root, and Lake files were not edited.
+
+`packCoset D q` implements a **zero-padded specialization**: the generator
+represents `2*(X^L+P)` and the translation represents `S_(2L)-2*c`, with
+exactly `D` coefficients. It omits the manuscript's repeated geometric factor
+`F`. This works because zero output coordinates are permitted: cube bounds
+and parity force the coset point itself to be two sign words followed by
+zeros. The monic-division and separation arguments then apply directly.
+The original repeated-block map is not claimed as an implementation.
+The total program uses only bounded list maps/ranges, `getD`, arithmetic,
+and comparisons; it never decides an algebraic promise.
+
+Principal exports, all in namespace `Power2ModuleSVP`:
+
+* `parity_block`: in every positive degree, a cube product by the geometric
+  word implies a cube multiplier. `parity_block_one` forces a signed
+  constant under congruence to the constant one; `parity_block_even` forces
+  zero under even parity. The general signed-shift form is
+  `parity_block_bound`/`parity_block_forcing`.
+* `AffineInput` is `(L,(T,(P,c)))`, definitionally matching the runtime
+  source's raw `SourceInput`. `AffineYes` uses polynomial bits;
+  `affineYes_iff_coefficients` proves its equivalence to the shared `Bits`
+  coefficient-vector contract. `sourceToAffine_correct` and
+  `threeSATToAffine_correct` reuse the completed Boolean source. All
+  well-formedness/root promises are proved; no source hypothesis is added.
+* `packCoset_wellFormed` and `packCoset_alphabet` prove validity and the
+  alphabets `{0,2}` and `{-1,0,1,3}`. `packCoset_correct hSep` proves
+  `AffineYes q` iff `packCoset D q in CosetLang`, assuming valid source,
+  dyadic `D`, and `16L^3 <= D`. Completeness needs no separation.
+  Soundness proves the remainder's degree/height and calls the existing
+  `elementary_separation`. `threeSATToCoset_correct` handles every CNF.
+* Executable `dyadicCeil`, `packingBlockSize`, `packingDegree`, and
+  `modulePackingDegree` have proved dyadic/size bounds. `packing_degrees`
+  proves `2L <= m < 4L` and `m | D`; the chosen coset degree is `<32L^3`,
+  and the chosen module degree is `<2^k0+32L^3` above both required cutoffs.
+  The zero-padded map does not require block division.
+* `homogenization` proves `CosetYes g h` iff `ModuleYes (g,0) (h,J)` for
+  nonzero even `g` and a rigid sign `J` in dyadic degree.
+  `homogenization_firstMinimum_iff` replaces module YES by attained first
+  minimum one. `homogenization_minimum` and `packed_module_minimum` prove
+  minimum one on YES and norm at least two for every nonzero vector on NO.
+* `triangular_independent`, `triangular_free`, and
+  `triangularInput_wellFormed` give nonsingularity, a basis through imported
+  `generalBasis`, and exact valid list inputs. `triangularInput_correct`
+  gives the language equivalence.
+* `threeSAT_module_correct` proves the composite 3SAT/module equivalence
+  given a rigid sign anchor at the chosen final degree.
+  `threeSATToModule_wellFormed` also covers NO formulas.
+  `exists_threeSAT_module_reduction` packages the semantic result under
+  `RigidAnchorFamilyHypothesis`, defined exactly as PLAN section 5 in
+  `Anchor.lean`, including its uniform native-machine certificate.
+
+Validation: successful single-module `lake build` targets for each of the
+four new modules. A temporary Lean audit checked fourteen main exports with
+`#print axioms`; all use only `propext`, `Classical.choice`, and `Quot.sound`.
+Small `#eval` checks confirmed executable packed arrays and dyadic ceiling
+at zero, an exact power of two, and the next integer. No `sorry`, `admit`,
+or new axiom occurs in the delivered files. Own scratch was removed.
+
+Audit: no new mathematical error was found. Congruence to one means the
+constant polynomial. Zero coset points remain permitted, whereas `(E,J)` is
+nonzero because a positive-degree sign anchor is nonzero. The remainder
+bound uses high coefficients of the correction quotient and does not
+assume squarefreeness. Zero padding is an implementation specialization,
+not a claim that the manuscript's repetition is incorrect.
+
+Remaining integration: packing/homogenization native-TM certificates and
+NP-hardness/NP-completeness assembly. Separation remains explicitly
+parameterized by `NormSeparationHypothesis` as requested; the dispatcher can
+instantiate it with `Power2ModuleSVP.normSeparationHypothesis_holds` from
+`NormFinal.lean`. Constructing a uniform rigid anchor family remains a
+separate obligation. No runtime claim for the composite maps is made here.
