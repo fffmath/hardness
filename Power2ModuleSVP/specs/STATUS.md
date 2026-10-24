@@ -1,6 +1,6 @@
 # Power2ModuleSVP status
 
-**Current state (2026-10-25 07:25 UTC+8, local commits only, nothing pushed).**
+**Current state (2026-10-25 07:35 UTC+8, local commits only, nothing pushed).**
 Working copy: /workspace/shared/projects/hardness. Build: `lake build Power2ModuleSVP`.
 
 Proved, 0 sorry, axioms only propext/Classical.choice/Quot.sound:
@@ -19,9 +19,10 @@ Remaining for the unconditional `moduleSVP_npComplete`:
    `FullColoringNativeHypothesis partialColor`; per AUDIT2 the old `FullColoringRuntimeHypothesis`
    is unsatisfiable and must NOT be used). p2s-colornative delivered primitives + denominator
    bounds (ColoringNative*.lean, commit 4294034); remainder -- job p2s-colornative2.
-2. Concrete flat-seed frontend `A` with `FlatSeedPreparationHypothesis A` (geometry, interval
-   rounding, derivative rounding, coefficient identity) -- job p2s-frontend.
-3. `FlatSeedFrontendRuntimeHypothesis A` (native certificates of the frontend programs).
+2. Concrete frontend `flatFrontend` exists (commit 100a3e7); interval + coefficient contracts proved;
+   `preparation_of (h : PreparationHypothesis)` -- remaining GeometryCertificate + EnclosureHypothesis
+   -- job p2s-frontend2.
+3. `FlatSeedFrontendRuntimeHypothesis flatFrontend` -- job p2s-frontrt.
 
 Resume protocol: check `cx-status p2s-*`, `git status`, this file; prompts in /workspace/shared/jobs/_p2s.
 Historical sections below (per job) are kept for detail; the Phase-1 text further down is superseded.
