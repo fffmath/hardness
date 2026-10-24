@@ -24,3 +24,6 @@ name = "Rank2ModuleSVP"
 name = "complexitylib"
 git = "https://github.com/cslib-community/complexitylib"
 rev = "ba134c185f6b76f68bd31c3a6b89abe8afd0f3c6"
+
+[[lean_lib]]
+name = "Power2ModuleSVP"
