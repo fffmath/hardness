@@ -239,7 +239,7 @@ theorem det_eq {q : ℕ} [NeZero q] (a b : List ℤ × List ℤ) :
 
 /-- All syntactic and algebraic promises are checked, including malformed dimensions. -/
 def wellFormedCheck (x : SVPInput) : Bool :=
-  primeCheck x.q && decide (x.q % 4 = 3) &&
+  primeCheck x.q && decide (x.q ≠ 2) &&
     decide (x.m₁.1.length = x.q-1) && decide (x.m₁.2.length = x.q-1) &&
     decide (x.m₂.1.length = x.q-1) && decide (x.m₂.2.length = x.q-1) &&
     decide (norm x.q (det x.q x.m₁ x.m₂) ≠ 0) && decide (0 ≤ x.threshold)

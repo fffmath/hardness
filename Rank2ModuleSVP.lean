@@ -16,6 +16,8 @@ import Rank2ModuleSVP.Checker
 import Rank2ModuleSVP.MembershipAux
 import Rank2ModuleSVP.Membership
 import Rank2ModuleSVP.MembershipCert
+import Rank2ModuleSVP.Reduction
+import Rank2ModuleSVP.ReductionMap
 
 /-! # Rank2ModuleSVP
 

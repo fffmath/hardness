@@ -48,7 +48,7 @@ abbrev threshold (x : SVPInput) := x.2.2.2
 def WellFormed (x : SVPInput) : Prop :=
   ∃ hp : x.q.Prime,
     letI : NeZero x.q := ⟨hp.ne_zero⟩
-    x.q % 4 = 3 ∧
+    x.q ≠ 2 ∧
     x.m₁.1.length = x.q-1 ∧ x.m₁.2.length = x.q-1 ∧
     x.m₂.1.length = x.q-1 ∧ x.m₂.2.length = x.q-1 ∧
     determinant (powerPair (q := x.q) x.m₁) (powerPair (q := x.q) x.m₂) ≠ 0 ∧ 0 ≤ x.threshold

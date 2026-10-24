@@ -56,3 +56,10 @@
 - Full build 7239 jobs OK, axioms clean. PrimesThreeModFourDyadic dropped (v2 uses Bertrand).
 ## Round 6 RUNNING: r2m-p6-reduction (Reduction*.lean: Cor 4.5, module, Lemma 5.1, Thm 5.2),
    r2m-p6-map (Problem odd-prime, Membership update, ReductionMap*: computable map, Bertrand prime scan, polytime).
+## Round 6 result (v2)
+- r6-reduction: exact_X3C_encoding (Lemma 5.1/Thm 5.2 core, hWan explicit), red_completeness,
+  red_soundness, red_corollary_4_5, nonzero determinant.
+- r6-map: WellFormed now q prime ∧ q ≠ 2 (odd primes); computable reductionMap K0 C0 with
+  semantics lemmas (m₁, m₂, S, q), fixed YES/NO instances, Bertrand prime scan, polytime pieces
+  (primeScan, mapK, mapQ, threshold, sum/single lists). OPEN: full ComputableTidilyInPolyTime of the map.
+- Full build 7247 jobs OK, axioms clean, no sorry/axiom/native_decide.
