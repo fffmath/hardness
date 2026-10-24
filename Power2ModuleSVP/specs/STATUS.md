@@ -1115,3 +1115,89 @@ Remaining work is the independent native-machine and bit-size certificate
 for `partialColor`, together with the full-recursion native bounds. Those
 remain in the existing native/runtime hypotheses; this job does not claim
 an unconditional polynomial-time certificate or change another job's files.
+
+
+## Coloring native runtime (p2s-colornative)
+
+**Partial completion: neither native hypothesis is discharged.** The existing
+`PartialColoringAlg.PartialColoringNativeHypothesis` and
+`FullColoringNativeHypothesis PartialColoringAlg.partialColor` remain explicit
+obligations. No new hypothesis, axiom, or unfinished proof is introduced.
+
+Added six owned modules; no committed Lean source, root import, Lake entry,
+IdealCVP source, or Rank2ModuleSVP source was changed:
+
+- `ColoringNativeSqrt.lean`: a descending binary-digit square-root scan,
+  agreement with `Nat.sqrt`, and native certificates for binary square root,
+  `ceilSqrt`, and `normScale`. The scan has one step per input bit, with a
+  proved bounded-growth fold; it does not scan to the numerical input value.
+- `ColoringNativeArithmetic.lean`: native rational powers with unary
+  exponents, exact list sums/products through the existing repair fraction
+  routines, floor, ceiling, grid rounding, precision, mesh, cubic fuel,
+  factorial, `expSum`, and `initialWeight`. Factorial reuses the certified
+  binary integer list product. `expSum_bits_polyBounded` bounds canonical
+  numerator and denominator bits for the actual Taylor sum.
+- `ColoringNativeProjector.lean`: exact list dot products, materialized
+  table application, and one projector elimination stage, with native
+  certificates. `projectorStep_spec` identifies this stage with
+  `PartialColoringAlg.projectorTable (a :: C)` for arbitrary constraint
+  lists, including zero and dependent rows. Its certificate includes
+  intermediate bit costs for that one stage.
+- `ColoringNativeDenominators.lean`: common-denominator and bit invariants
+  for the actual cube update, fixed dyadic weight denominators, direction
+  independence from unfrozen point values, and a stopped-walk recurrence.
+- `ColoringNativeRecursion.lean`: unconditional sign outputs for every
+  supplied partial program, a linear final-output encoding bound, shared
+  denominator preservation under restriction, and exact denominator
+  preservation through all repeated threshold shifts.
+- `ColoringNative.lean`: aggregate import, explicitly documenting the two
+  remaining native boundaries.
+
+Principal size statements, in namespace `Power2ModuleSVP.ColoringNative`:
+
+```lean
+cubeStep_commonDen : -- positive D,E; CommonDen D x; CommonDen E z; |z_j| <= 1
+  exists D' > 0, CommonDen D' (x + stepSize r * (stepFraction x z * z)) and
+    D'.size <= D.size + (stepSize r).den.size + E.size
+walk_commonDen : -- invariant P preserved by nextState, direction bound B on P
+  exists D' > 0, CommonDen D' (walk a fuel s).x and
+    D'.size <= D.size + fuel * ((stepSize r).den.size + B)
+run_weight_den_size : ((run a x).w i).den.size <= precision r m + 2
+fullColor_encoding_length_le :
+  (encList encColoringRational (fullColor F input)).length <= 13 * input.2.1.length
+threshold_iterate_den : ((fun t : Rat => t + 4)^[k] q).den = q.den
+```
+
+The first two displayed statements abbreviate the fully typed Lean
+statements. `coordinate_bits_le` additionally bounds each cube coordinate's
+numerator-plus-denominator bits by twice its common denominator's size.
+`vectorDen_size` charges an initial shared denominator to the sum bound on
+coordinate denominator bits. `direction_den_eq_of_weights_and_fixed` proves
+that changing unfrozen coordinates with the same frozen-coordinate set and
+weights changes no direction denominator; only orientation can change.
+
+Audit: weights, rather than coordinates, are rounded. This is sufficient
+for the inspected denominator mechanism. For a truncated step, the common
+direction denominator cancels, and the old point denominator occurs once.
+Thus rounding coordinates is not needed to repair the proved local growth
+bound. No mathematical defect or counterexample to polynomial time was
+established here. The uniform direction bit bound itself is still open.
+
+Exact remaining work: prove determinant/rank bounds for every intermediate
+canonical projector table and direction; bound weight numerator magnitudes
+on all raw valid inputs, including inputs without the entropy premise;
+instantiate the walk size invariant and certify preparation, sorting,
+column selection and stopped iteration as one list program. Then certify
+full recursion with a uniform bound on every recursive call's encoding.
+One polynomial-time stage, polynomial fuel, and a small final output alone
+do not prove these complete machine certificates.
+
+Validation: all six modules passed individual single-module `lake env lean`
+compilations, including emitted local artifacts, with no final warnings.
+The aggregate import and sixteen principal-export axiom audits also passed;
+all audits report only `propext`, `Classical.choice`, and `Quot.sound`.
+Eight exact computed checks returned true: binary roots, Taylor summation,
+both signs of grid rounding, ordinary/zero/dependent projector stages, and
+negative floor/ceiling. Final compilation needs no scratch dependency
+overlay. No external dependency source or artifact was modified. Own scratch
+was removed after validation. Root integration remains with the dispatcher.
