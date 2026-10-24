@@ -383,3 +383,176 @@ hypothesis. Root-file import integration remains the dispatcher's task;
 this job did not edit `Power2ModuleSVP.lean` or `lakefile.toml`. Coset
 hardness/completeness and all requested composite runtime certificates
 have no remaining proof obligation.
+
+## Flat seed analysis (p2s-seed)
+
+Added six independently checkable modules: `Bernstein.lean`,
+`Chebyshev.lean`, `ChebyshevTrig.lean`, `SeedIntervals.lean`,
+`SineKernel.lean`, and `PartialColoring.lean`. This job did not edit existing
+Lean sources, the root import file, or the Lake configuration.
+
+**Sharp Bernstein is unconditional.** `bernstein_interpolation` proves the
+finite interpolation identity at the roots of `X^(2*n)+1`.
+`bernsteinWeight_sum` proves that the nonnegative absolute weights sum to
+`n`. The resulting `bernstein_polynomial_circle_bound` gives
+`norm(z*P'(z)-n*P(z)) <= n*M` for degree at most `2*n` and a circle bound
+`M`. `HasTrigDegree` expresses exact centered Laurent evaluation, including
+zero imaginary part. It is closed under every iterated derivative, and
+
+```lean
+bernstein_real_iterate (hT : HasTrigDegree n T)
+  (hM : ∀ θ, |T θ| ≤ M) (r : ℕ) (θ : ℝ) :
+  |(deriv^[r] T) θ| ≤ (n : ℝ)^r * M
+```
+
+holds also in degree zero. `hasTrigDegree_trigSum` constructs the Laurent
+representation for arbitrary finite real sine/cosine sums with frequencies
+at most `n`; `bernstein_trigSum` exposes the same derivative estimate in
+that notation. `hasTrigDegree_cosinePolynomial` connects it to the grid API.
+
+**Sampling estimates are unconditional, but interval geometry is unfinished.**
+`chebyshev_U_eval_bound` and `chebyshev_derivative_eval_bound` prove
+`|U_n(x)| <= n+1` and `|T_n'(x)| <= n^2` on the closed interval `[-1,1]`.
+`SeedCosineData` retains an integer polynomial and exact rational
+evaluations. Its polynomial and angular variation bounds are `8*N^3`
+and `2*N^2`. `seed_marked_cell_witness` proves the `13*h/16` witness from
+the inclusive rational cell test; `seed_unmarked_cell_bound` proves the
+`5*h/8` complementary margin under the specified enclosure and spacing
+allowances. `RationalCosineGrid` is a contract, not a constructed algorithm.
+`PolynomialSublevelComponentsHypothesis` explicitly states the remaining
+closed-sublevel component theorem, counting singleton tangencies and
+bounding the number of components by polynomial degree.
+
+**Kernel work is partial.** `odd_sine_reproducing_identity` proves the finite
+kernel formula everywhere, including removable singularities.
+`sineKernelError_lt` proves the stated error expression is below `2/3`
+for `N >= 2^20`. `SineKernelDecompositionHypothesis` isolates the unproved
+local sinc-integral and total-variation estimates. Given it,
+`sine_kernel_scaled_of_decomposition` gives the first-quadrant upper bound
+`5*K*sqrt(N)` and interval lower bound `(2*K/3)*sqrt(N)`. The global
+reflection extension and full integral lemma are not yet established.
+
+**Coloring work is partial.** `DeterministicPartialColoringHypothesis` states
+one uniform native multitape-TM algorithm on framed lists of canonical
+binary rationals, with the exact entropy budget, half-coordinate condition,
+and discrepancy constant `68`. It is not proved. Unconditional exports
+prove the exponential quadratic/damping estimates, small-threshold count,
+unrounded and rounded potential steps, full-step progress, nearest-sign
+terminal rounding, and the full-coloring constant recurrence with `240`
+and `2400`. Projector selection, the complete iteration, discrepancy
+accumulation, bit bounds, and full-coloring recursion remain open.
+
+Validation: all six individual `lake build Power2ModuleSVP.<Module>` targets
+succeeded without warnings. A scratch audit of twelve principal exports
+reported only `propext`, `Classical.choice`, and `Quot.sound`; conditional
+results retain their named premises. There are no unfinished proofs or
+new axioms in these modules. The scratch audit was removed.
+
+Audit: no new mathematical error was found in the portions checked.
+The formal sampling argument preserves closed thresholds and both cell
+endpoints; the component contract includes tangencies. The Bernstein
+proof uses actual complex polynomial interpolation rather than an assumed
+analytic estimate. This does not validate the still-unformalized arguments.
+
+To prove `thm:spectral-seed` and instantiate the repair job's
+`SpectralSeedFamilyHypothesis`, remaining work includes the Rudin--Shapiro
+construction and parameter estimates; seven-cell exclusion, axis avoidance,
+symmetries and component counting; discharging the kernel decomposition;
+deterministic partial/full coloring; the derivative-grid Taylor rounding
+and final coefficient assembly; and uniform rational enclosure, grid,
+arithmetic and native-machine time certificates. These lemmas alone do not
+yet produce a spectral seed family. Root import integration is left to the
+dispatcher.
+
+## Anchor repair (p2s-repair)
+
+Completed the semantic spectral-seed-to-rigid-anchor construction in
+`AnchorSeedSpec.lean`, `AnchorScreen.lean`, `DisjointTests.lean`, and
+`AnchorRepair.lean`; started native-machine work in `AnchorRepairPoly.lean`.
+No existing Lean file, root import, or Lake configuration was changed.
+
+`SpectralSeed d s` requires sign coefficients and evaluation magnitude at
+least `(seedConstant : Real) * sqrt d` at every complex root of `X^d+1`,
+where `seedConstant = 1/2^252` is rational. The uniform
+`SpectralSeedFamilyHypothesis` mirrors the anchor interface: one total list
+family, one native multitape polynomial-time certificate on unary degree,
+and length/spectral guarantees above a fixed dyadic cutoff. The interface
+allows an arbitrary fixed cutoff exponent; the manuscript's seed exponent
+is 512. It requires no all-circle bound.
+
+Screening is unconditional: `spectral_product_sqNorm` and `spectral_screen`
+reuse `IdealCVP.Canonical.norm_identity` and `sigma_mul`. They give
+`gamma^2*d*sqNorm v <= sqNorm (f*v)` and `sqNorm v <= 1/gamma^2` for a cube
+product. `signs_mul_cube` proves the parity/domain conclusion for nonzero
+multipliers in dyadic degree. `coeffEval_perturbation`,
+`SpectralSeed.perturbation`, and `half_seed_screen` preserve half the seed
+bound after the allowed flips and give the exact radius `C = 2^506`.
+`repair_cutoff_nat` and `repair_cutoff` prove both dimension inequalities
+for every exponent at least 3600, including odd exponents.
+
+The executable disjoint-row selector has proved pairwise disjointness,
+maximality, and `selectedRows_packing`:
+`d <= selectedRows.length * support.card^2`. `rowValue_eq_mul` identifies
+the exact local integer test with genuine negacyclic multiplication.
+`rowProbability_le_one_sub_half` proves survival at most `1-p/2`, and
+`eventProbability_le_pow` multiplies those bounds. All prefix probabilities
+are exact rationals over the local flag lists. `eventProbability_branch`
+and `eventProbability_terminal` prove branch averaging and the terminal
+zero-or-one interpretation without a probability oracle.
+
+`AnchorRepair.atomSums` enumerates sums of signed unit vectors and a blank
+symbol. `mem_candidates` proves coverage of every support-at-least-two
+multiplier of squared length at most `C`; `candidates_length_le_pow` bounds
+the actual list, with repetitions, by `d^(2*C)` for `d >= 3`. No enumeration
+of a dimension-sized coefficient box is used. `repair d s : List Int`
+chooses every flip by comparing the two exact rational potential values,
+including the linear flip penalty. `initial_survival_sum_le_half` and
+`initial_potential_lt_one` discharge the initial estimate; there is no
+remaining repair/probability hypothesis structure.
+
+Principal namespace-`Power2ModuleSVP` exports are:
+
+```lean
+repair_length (d) (s) : (repair d s).length = d
+repair_signs (s) (hs : Signs (IdealCVP.ofList (d := d) s)) :
+  Signs (IdealCVP.ofList (d := d) (repair d s))
+repair_rigid (hd : AnchorRepair.Admissible d) (s)
+  (hs : SpectralSeed d (IdealCVP.ofList (d := d) s)) :
+  Rigid (IdealCVP.ofList (d := d) (repair d s))
+repair_rigid_of_cutoff (hd : Dyadic d) (hlarge : 2^3600 <= d) (s)
+  (hs : SpectralSeed d (IdealCVP.ofList (d := d) s)) :
+  Rigid (IdealCVP.ofList (d := d) (repair d s))
+```
+
+`repair_spec` packages length, signs, and rigidity. `Admissible` states the
+explicit manuscript dimension inequalities with `Nat.log2 d`;
+`admissible_of_cutoff` discharges them above `2^3600`.
+
+Native-machine progress: `AnchorRepairRuntime.log2_polytime`,
+`flipBudget_polytime`, and `applyFlags_polytime` compile. Positive-denominator
+unnormalized integer fractions have proved value/ordering specifications and
+native certificates `fractionAdd_polytime`, `fractionMul_polytime`, and
+`fractionLE_polytime`. The theorem
+`rigidAnchorFamily_of_seed_of_repair_polytime` composes a supplied full repair
+time certificate with `SpectralSeedFamilyHypothesis`; that certificate is an
+explicit argument, not a theorem asserted here. Full candidate/row/probability
+loop certificates and encoded intermediate fraction-size bounds remain open.
+Consequently `rigidAnchorFamily_of_seed` without that extra argument is not
+yet proved, and the uniform module anchor premise has not been discharged.
+
+Validation: successful single-module builds of all five new modules, with
+the final `lake build Power2ModuleSVP.AnchorRepairPoly` rebuilding the repair
+and its dependencies. Thirteen final axiom audits (including the cutoff
+rigidity theorem and conditional native-family composition) report only
+`propext`, `Classical.choice`, and `Quot.sound`. Six kernel-computed examples
+checked candidate coverage/count, flag application, fraction arithmetic and
+comparison, and row selection; two compiled exact-probability checks returned
+the expected results. No unfinished proof or new axiom occurs. Own scratch
+files were removed after validation.
+
+Audit: no mathematical error was found in the screening, disjoint-tests,
+repair, or cutoff arguments formalized here. Candidate repetitions are
+explicitly included in the union bound. Prefix branch averaging uses
+disjointness within a candidate's selected rows; it requires no independence
+between candidates. Bit-complexity of the full rational computation remains
+a separate, unproved algorithmic obligation.
