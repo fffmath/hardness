@@ -559,3 +559,78 @@ a separate, unproved algorithmic obligation.
 - 182db75: coset_npComplete UNCONDITIONAL; moduleSVP_npComplete_of hJ. ebdab28: Bernstein etc. 71afbbf: semantic repair (spectral seed ⇒ rigid), audit (AUDIT.md: no soundness defect).
 - Round 5 (05:05 UTC+8): p2s-seed2 (running since 04:49), p2s-repairpoly (repair_polytime, rigidAnchorFamily_of_seed), p2s-color (coloring algorithm + runtime).
 - Remaining chain to unconditional module theorem: SpectralSeedFamilyHypothesis (flat seed: Rudin–Shapiro, sine kernel, intervals, coloring, Taylor rounding, runtime) + repair runtime.
+
+
+## Repair runtime (p2s-repairpoly)
+
+Completed the full native multitape polynomial-time certificate for the
+existing total `repair` program. Added seven modules: `RepairRuntime.lean`,
+`RepairRuntimeCandidates.lean`, `RepairRuntimeRows.lean`,
+`RepairRuntimeProbability.lean`, `RepairRuntimePotential.lean`,
+`RepairRuntimeLoop.lean`, and `AnchorRepairPoly2.lean`. Existing committed
+Lean sources, other jobs' files, root imports, and Lake configuration were
+not edited. Import `Power2ModuleSVP.AnchorRepairPoly2` for the final results.
+
+The namespace-`Power2ModuleSVP` exports are:
+
+```lean
+repair_polytime : ComputableTidilyInPolyTime
+  (fun a : Nat × List Int => repair a.1 a.2)
+  AnchorRepairRuntime.encRepairInput (encList encIntBin)
+rigidAnchorFamily_of_seed : SpectralSeedFamilyHypothesis -> RigidAnchorFamilyHypothesis
+moduleSVP_npComplete_of_seed (h : SpectralSeedFamilyHypothesis) :
+  NPComplete encSVP ModuleSVPLang
+```
+
+`AnchorRepairRuntime.repairFast_eq` proves function equality of the certified
+list/fraction program `repairFast` and `fun a => repair a.1 a.2`, on every
+raw pair. Thus the certificate includes zero/small/nondyadic degrees,
+arbitrary seed coefficients, and malformed seed lengths. The original
+false-on-tie branch, reverse greedy row order, candidate order, and all
+candidate repetitions are preserved.
+
+Fraction sums use a common denominator: a product of positive integer
+denominators followed by exact binary natural division and an integer sum.
+Fraction products use the numerator and denominator products separately.
+The certified binary integer product, sum, and division routines account
+for intermediate representation sizes. `fractionBits_polyBounded_of`,
+`fractionSum_bits_polyBounded`, `fractionProd_bits_polyBounded`,
+`localFraction_bits_polyBounded`, `eventFraction_bits_polyBounded`, and
+`potentialFraction_bits_polyBounded` explicitly bound both component bit
+lengths by fixed polynomials in their respective encoded input lengths.
+No rational normalization or exact real computation is used.
+
+`atomSumsList_polytime n` and `localFraction_polytime n` establish runtime
+for each fixed cap before specializing to `screeningBound = 2^506`.
+`candidateList_length_le` gives the total bound `(1+2*d)^n`, and
+`candidateList_length_le_pow` gives `d^(2*n)` when `3 <= d`. The capped local
+evaluator always runs in polynomial time on arbitrary multipliers; equality
+to the original local expectation is asserted only under the proved local
+support bound. `candidate_support_bounds` supplies that bound throughout
+the potential. `rowsList_polytime` uses a bounded-growth reverse fold, and
+`flagsFast_polytime` uses exactly `d` iterations with three additional
+encoded bits per flag. Positive denominators and exactness are proved at
+every interface, including at degree zero through `max 1 d`.
+
+Validation: single-module builds succeeded for all seven modules; the final
+`lake build Power2ModuleSVP.AnchorRepairPoly2` rebuilt the entire new chain
+without warnings in the owned modules. Eleven axiom audits, including all
+three final exports, the program equality, and the potential bit bound,
+report only `propext`, `Classical.choice`, and `Quot.sound`. Sixteen small
+kernel-computed checks passed for common-denominator arithmetic, empty
+products/sums, candidate equality/count at zero, row ordering, negacyclic
+local probabilities with partial/terminal prefixes, event products,
+padded flag application, and degree-zero repair. No unfinished proof, new
+axiom, or new hypothesis structure occurs in these modules. Own scratch
+was removed after validation.
+
+Audit: no new mathematical gap was found in the repair runtime argument
+associated with `thm:repair`. A uniform polynomial-time certificate for
+uncapped local expectation on arbitrary multiplier support is neither used
+nor claimed; its exponential branching is avoided by the fixed cap, with
+exactness recovered on candidates. The native-machine proof supplies the
+bit-complexity obligation previously left open in the anchor repair section.
+There are no remaining repair-runtime or seed-to-anchor integration
+obligations in this job. Constructing `SpectralSeedFamilyHypothesis` remains
+the separate seed/coloring task; the final completeness result above retains
+exactly that premise.
