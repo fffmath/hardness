@@ -634,3 +634,122 @@ There are no remaining repair-runtime or seed-to-anchor integration
 obligations in this job. Constructing `SpectralSeedFamilyHypothesis` remains
 the separate seed/coloring task; the final completeness result above retains
 exactly that premise.
+
+
+## Flat seed round 2 (p2s-seed2)
+
+Added twenty Lean modules, without changing any previously finished Lean
+source, the root import file, or Lake configuration:
+
+- `SineKernelProof.lean`, `SineKernelProofAux.lean`,
+  `SineKernelProofCorrection.lean`, `SineKernelProofSineIntegral.lean`,
+  `SineKernelProofLobes.lean`, `SineKernelProofVariation.lean`,
+  `SineKernelProofTail.lean`, `SineKernelProofReflected.lean`,
+  `SineKernelProofNear.lean`, `SineKernelProofDecomposition.lean`.
+- `RudinShapiro.lean`, `RudinShapiroAux.lean`,
+  `RudinShapiroBounds.lean`, `RudinShapiroDerivative.lean`,
+  `RudinShapiroWave.lean`.
+- `SeedGeometry.lean`, `SeedGeometryAux.lean`,
+  `SeedGeometryRolle.lean`, `SeedGeometryCells.lean`,
+  `SeedGeometryComponents.lean`.
+
+**The original sine-kernel decomposition is discharged unconditionally.**
+Import `Power2ModuleSVP.SineKernelProofDecomposition` for
+
+```lean
+sineKernelDecompositionHypothesis_holds : SineKernelDecompositionHypothesis
+```
+
+No correction or weakening of its statement was needed. The proof establishes
+the continuous sine integral's bounds `0 <= Si(x) <= 2` for `x >= 0`, and
+`Si(x) >= 4/3` for `x >= pi`, including certified base estimates at `pi` and
+`2*pi`. The continued cosecant correction is monotone, with exact variation
+`2 - 4/pi < 2`. Grid integration estimates hold for arbitrary phase and
+merely monotone continuous weights; disjoint integer ranges sum their
+variations. Each distant half-family costs at most `1/pi`. The reflected
+kernel costs at most `2/(N*sin(100*pi/N))`: an exact split at the cosecant
+minimum removes the crossing-interval exception. At most two intervals are
+local; a containing interval is the unique local interval.
+`sine_kernel_global` and `sine_kernel_scaled_global` consequently prove the
+global upper bound `5*K*sqrt(N)` and lower bound `(2*K/3)*sqrt(N)` on the
+reflected union, with no analytic hypothesis.
+
+**Rudin--Shapiro starting data and bounds are unconditional.** The integer
+recursion has exactly `2^k` sign coefficients and degree `2^k-1`.
+`rudinShapiro_norm_identity` states that the squared complex norms of its
+two evaluations sum to `2^(k+1)` on the unit circle.
+`rudinShapiroPrefix_bound` gives the strict `5*sqrt(m)` bound for every
+nonempty stable prefix. `rudinShapiro_seed_blocks` proves that both deleted
+blocks at the specified separated high bits are copies of the first word.
+`rudinShapiroCosinePart_bound` and `rudinShapiroEvenSinePart_bound` give the
+`sqrt(N)` and `6*sqrt(N)` estimates under their explicit size inequalities.
+`rudinShapiro_slow_block_bounds` proves the normalized derivative rate
+`(1/1024)^r`. The actual normalized two-frequency wave has exact all-order
+jets, first-five derivative bounds, error below `1/8`, four-jet
+nondegeneracy, seven-cell exclusion, and odd-stage zero-axis clearance.
+
+**The component hypothesis is also discharged unconditionally.** Import
+`Power2ModuleSVP.SeedGeometryComponents` for
+
+```lean
+polynomialSublevelComponentsHypothesis_holds :
+  PolynomialSublevelComponentsHypothesis
+```
+
+The proof includes a finite cover by strictly separated closed intervals,
+including singleton tangencies, with at most the polynomial's degree many
+intervals. A raised threshold gives distinct crossings, so no simple-root
+assumption is used. Ordered sampled-run counts are also exported.
+`seed_interpolation_derivative_bound` proves the separated-node factorial
+bound by Lagrange interpolation and repeated Rolle.
+`seed_seven_cell_exclusion` and `rudinShapiroWave_seven_cells_unmarked`
+prove the actual seven-cell exclusion argument, with its numerical margin;
+`seed_axis_clearance` supplies the generic axis estimate.
+
+Validation: all twenty modules have successful individual single-target
+builds; final aggregate checks were the single-module targets
+`SineKernelProofDecomposition`, `RudinShapiroBounds`, `RudinShapiroWave`,
+and `SeedGeometryComponents`. Eighteen final principal-export axiom audits
+report only `propext`, `Classical.choice`, and `Quot.sound`. No unfinished
+proof, new axiom, or new hypothesis structure occurs in these files. Own
+scratch was removed after checking.
+
+Audit: no mathematical error was found in the portions formalized here.
+The decomposition's original constants suffice; the reflected estimate is
+stronger than the intermediate manuscript estimate. This does not assert
+that the remaining spectral-seed construction is already formalized.
+
+Precisely what remains between these lemmas and `thm:spectral-seed`:
+
+1. Select the largest admissible positive odd stage from the final degree,
+   and prove all bounds for `N,T,gamma,delta,h`, the cutoff, and rational
+   grid sizes. The generic size premises in the block estimates must be
+   instantiated with these parameters.
+2. Assemble the finite cosine/even-sine supports from the stable sequence:
+   exact sign partition, integer even Chebyshev polynomial and its degree,
+   and equality of the angular cosine seed with the normalized RS wave.
+3. Construct the rational cosine grid, then assemble the marked closed-cell
+   runs. Apply the proved sampling, seven-cell, and component lemmas;
+   establish all axis exclusions (only the actual wave's zero-axis case is
+   specialized here), reflection/period symmetries, four-element orbits,
+   `J <= gamma*N`, and the complementary `delta*sqrt(N)` margin. The
+   continuous component contract itself is no longer an open obligation.
+4. Integrate the separate coloring job's partial/full coloring construction
+   with the two concrete seed matrices, including entropy budgets,
+   coefficient bounds, and all rational approximation allowances. This job
+   supplies the analytic kernel estimates, not a coloring algorithm.
+5. Prove the derivative-grid Taylor rounding estimate with constant 5900
+   and combine it with the kernel and even-sine bounds on the bad intervals.
+6. Assemble the Laurent coefficient signs, shift and append three terms,
+   and prove the final all-circle lower bound `2^(-252)*sqrt(d)`.
+7. Supply native multitape polynomial-time certificates for the complete
+   seed program: stage selection, stable prefixes, rational elementary
+   enclosures, grid and marking, coloring calls, coefficient recomputation,
+   and final arrays, with all intermediate encoded size bounds. Then
+   instantiate `SpectralSeedFamilyHypothesis`. No such uniform seed family
+   is claimed here. The independent repair runtime job now provides its
+   seed-to-anchor integration; it is not an additional seed obligation.
+
+Root import integration remains the dispatcher's task. In particular,
+importing only the identity module `SineKernelProof` does not import the
+final theorem; use `SineKernelProofDecomposition`.
