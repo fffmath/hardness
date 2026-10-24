@@ -1,0 +1,140 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem,microtype}
+\usepackage{aliascnt}
+\usepackage[colorlinks,allcolors=blue,bookmarksdepth=2]{hyperref}
+\hypersetup{
+  pdftitle={SVP Is NP-Hard for Some Rank-2 Cyclotomic Modules},
+  pdfauthor={Jiaqi Liu, Yansong Feng, Yanbin Pan},
+  pdfsubject={Exact shortest vector problem on rank-two cyclotomic modules},
+  pdfkeywords={shortest vector problem, module lattices, cyclotomic fields, NP-completeness}
+}
+
+\allowdisplaybreaks
+
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\F}{\mathbb F}
+\newcommand{\R}{\mathbb R}
+\newcommand{\C}{\mathbb C}
+\newcommand{\NP}{\mathsf{NP}}
+\newcommand{\SVP}{\mathsf{SVP}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\Tr}{\operatorname{Tr}}
+
+\newtheorem{theorem}{Theorem}[section]
+\newaliascnt{lemma}{theorem}
+\newtheorem{lemma}[lemma]{Lemma}
+\aliascntresetthe{lemma}
+\newaliascnt{corollary}{theorem}
+\newtheorem{corollary}[corollary]{Corollary}
+\aliascntresetthe{corollary}
+\newaliascnt{proposition}{theorem}
+\newtheorem{proposition}[proposition]{Proposition}
+\aliascntresetthe{proposition}
+
+\usepackage[nameinlink,capitalize]{cleveref}
+\crefname{lemma}{Lemma}{Lemmas}
+\Crefname{lemma}{Lemma}{Lemmas}
+\crefname{corollary}{Corollary}{Corollaries}
+\Crefname{corollary}{Corollary}{Corollaries}
+\crefname{proposition}{Proposition}{Propositions}
+\Crefname{proposition}{Proposition}{Propositions}
+\crefname{equation}{Equation}{Equations}
+\Crefname{equation}{Equation}{Equations}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\thispagestyle{empty}
+
+\begin{center}
+  \vspace*{1.5cm}
+  {\LARGE\bfseries
+SVP Is NP-Hard for Some Rank-2 Cyclotomic Modules
+    \par}
+\end{center}
+
+\vspace{0.55cm}
+
+\begin{center}
+  {\large Jiaqi Liu \quad Yansong Feng \quad Yanbin Pan\par}
+  \vspace{0.8em}
+  {\small
+    State Key Laboratory of Mathematical Sciences,\par
+    Academy of Mathematics and Systems Science, Beijing, China\par}
+  \vspace{0.35em}
+  {\small\texttt{\{ljqi,fengyansong,panyanbin\}@amss.ac.cn}\par}
+\end{center}
+
+\vspace{0.55cm}
+
+\begin{abstract}
+ Let $q$ range over primes congruent to $3$ modulo $4$.  Let
+ $\zeta_q$ be a primitive $q$th root of unity, and put
+ $K=\Q(\zeta_q)$, with ring of integers $\mathcal{O}_K=\Z[\zeta_q]$.  We
+ prove that the decision version of the Shortest Vector Problem
+ ($\SVP$) in the $\ell_2$-norm is
+ $\NP$-complete on full-rank free submodules of $\mathcal{O}_K^2$ by a
+ deterministic polynomial-time many-one reduction from Exact Cover by
+ 3-Sets (X3C).  The module rank
+ is fixed at two.  As a $\Z$-lattice, the module has rank $2(q-1)$, which
+ grows with $q$.  The main obstacle is closure under the action of $\mathcal{O}_K$.  A module containing a nonzero vector also contains every scalar
+ multiple of that vector by a nonzero element of $\mathcal{O}_K$, and some of
+ these multiples may be shorter.
+
+ Three ideas overcome this obstacle.  First, we map the
+ Bennett--Peikert Reed--Solomon lattice to a principal cyclotomic ideal and
+ use Wan's point-count estimates to prove that a coset of this
+ ideal contains many binary coefficient representatives.
+ Second, a checker based on a quadratic Gauss sum turns the X3C
+ equations into a canonical squared norm.  Third, the checker
+ and a second module coordinate combine with a separation bound for ideal
+ cosets to rule out every unintended vector created by
+ the $\mathcal{O}_K$-action.
+ Each constructed instance consists of a prime
+ $q\equiv3\pmod4$, two integral generators whose $2\times2$ generator matrix
+ has nonzero determinant, and an integer squared threshold.  The construction
+ also gives $\NP$-hardness of search-$\SVP$ under
+ polynomial-time Turing reductions.
+\end{abstract}
+\end{titlepage}
+
+\hypersetup{pageanchor=true}
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\section{Introduction}
+\begingroup
+\crefname{lemma}{Lemma}{Lemmas}
+\Crefname{lemma}{Lemma}{Lemmas}
+\crefname{corollary}{Corollary}{Corollaries}
+\Crefname{corollary}{Corollary}{Corollaries}
+\crefname{proposition}{Proposition}{Propositions}
+\Crefname{proposition}{Proposition}{Propositions}
+\input{chapter/intro}
+\endgroup
+
+\section{Preliminaries}
+\label{sec:preliminaries}
+\input{chapter/pre}
+
+\input{chapter/descent}
+\input{chapter/representative.tex}
+
+\input{chapter/reduction}
+
+\paragraph{AI disclosure.}
+GPT-5.6 Sol Ultra discovered the proof through an iterative conversation conducted in a single session. The discussion began by asking whether the locally dense lattices that Bennett and Peikert construct from Reed--Solomon codes for
+approximate $\SVP$~\cite{BennettPeikert23} could be adapted to module lattices.  The model first found a randomized reduction by combining this construction with Wan's point-count estimates~\cite{wan2026np}, and then developed the deterministic reduction proved in this paper.  The authors independently verified every mathematical claim and proof, checked every use of the cited references, simplified and refined the argument, and wrote the final manuscript.  The authors take full responsibility for the paper.
+
+\small
+\bibliographystyle{alpha}
+\bibliography{references}
+
+\end{document}

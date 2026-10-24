@@ -1,0 +1,300 @@
+\paragraph{Notation.}
+For a positive integer $r$, write $[r]:=\{1,\ldots,r\}$.  For a
+prime $q$, let $\F_q$ denote the finite field with $q$ elements,
+and let $\F_q^\times:=\F_q\setminus\{0\}$ denote its multiplicative group.
+Vectors and matrices are represented in bold, e.g., $\mathbf v$ for a vector and $\mathbf A$ for a matrix, while their scalar coordinates are not. We use $\|\cdot\|_2$ for the $\ell_2$-norm and $\mathbf1_r$ for the vector of ones in $\R^r$.
+
+\paragraph{Hasse derivatives.}
+We will use Hasse derivatives in \cref{sec:descent} to recognize when a
+polynomial has a zero of prescribed order at $X=1$.  Let $F$ be a field, let
+$f(X)=\sum_{i=0}^d c_iX^i\in F[X]$, and let $j\ge0$ be an integer.  The $j$th
+\emph{Hasse derivative} of $f$ is
+\[
+ D^{[j]}f(X):=\sum_{i=j}^d\binom ij c_iX^{i-j},
+\]
+where each integer binomial coefficient is read as an element of $F$.
+We also use the binomial polynomials $\binom{X}{0}:=1$ and
+$\binom{X}{j}:=X(X-1)\cdots(X-j+1)/j!\in F[X]$ for $j\ge1$ whenever
+$j!\ne0$ in $F$.
+For $b\in F$ and an integer $k\ge1$, we say that $b$ is a zero of order at
+least $k$ when $(X-b)^k$ divides $f(X)$.
+The following standard characterization will be
+used~\cite{LidlNiederreiter97}:
+\begin{equation}
+\label{eq:hasse-multiplicity}
+ (X-b)^k\mid f(X)
+ \quad\Longleftrightarrow\quad
+ D^{[j]}f(b)=0\quad(0\le j<k).
+\end{equation}
+
+\subsection{Euclidean lattices}
+A Euclidean lattice of rank $n$ is a discrete additive subgroup
+$\mathcal L\subseteq\R^m$ of the form
+\[
+ \mathcal L=\mathcal L(\mathbf B):=\mathbf B\Z^n,
+\]
+where $\mathbf B\in\R^{m\times n}$ has linearly independent columns.  These
+columns form a basis.
+The first minimum of $\mathcal L$ is the length of a shortest
+nonzero lattice vector:
+\[
+ \lambda_1(\mathcal L)
+ =\min_{\mathbf0\ne\mathbf v\in\mathcal L}\|\mathbf v\|_2.
+\]
+
+For computational problems, the basis
+$\mathbf B\in\Q^{m\times n}$ is given explicitly.  Exact decision-$\SVP$
+also receives a nonnegative rational squared threshold $\Delta$ and asks
+whether
+\[
+ \lambda_1(\mathcal L(\mathbf B))^2\le\Delta.
+\]
+The problem belongs to $\NP$: a YES certificate is a nonzero integer
+coefficient vector for a short lattice point.  Standard cofactor bounds give
+a certificate of polynomial bit length, and exact rational arithmetic checks
+both membership and the squared norm. See, e.g.,~\cite{MicciancioGoldwasser02}.
+The corresponding search-$\SVP$ problem takes a full-column-rank
+basis $\mathbf B$ and outputs a shortest nonzero vector of
+$\mathcal L(\mathbf B)$.
+
+\subsection{Prime cyclotomic fields and module lattices}
+
+\paragraph{Cyclotomic field.}
+Fix an odd prime $q$ for the remainder of the construction, and let
+$\zeta:=\zeta_q\in\C$ be a primitive $q$th root of unity.  We suppress the
+subscript $q$ after fixing the prime and put
+\[
+ K:=\Q(\zeta),
+ \qquad
+ \mathcal{O}_K:=\Z[\zeta],
+ \qquad
+ \pi:=1-\zeta.
+\]
+Here $\mathcal{O}_K$ is the ring of integers of $K$.  The elements
+$1,\zeta,\ldots,\zeta^{q-2}$ form an integral basis of $K$, so
+$[K:\Q]=q-1$.  The prime $q$ is totally ramified in $\mathcal{O}_K$, and hence
+$(q)=(\pi)^{q-1}$~\cite{Washington97}.  Whenever $a\in\F_q$ occurs as an
+exponent of $\zeta$, we identify it with its unique integer representative in
+$\{0,\ldots,q-1\}$.  A representation
+$v=\sum_{a\in\F_q}c_a\zeta^a$ with $c_a\in\Q$ is called a
+\emph{$q$-coordinate expression}
+for $v$.  Its $q$ coefficients are indexed by $\F_q$ and need not be unique,
+because $\sum_{a\in\F_q}\zeta^a=0$.  By contrast, the expression of $v$ in
+the power basis $1,\zeta,\ldots,\zeta^{q-2}$ is unique.
+
+\paragraph{Canonical embedding.}
+For $v\in K$, write $\overline v$ for its complex conjugate.  In particular,
+$\overline\zeta=\zeta^{-1}$.  For $a\in\F_q^\times$, let
+$\sigma_a:K\hookrightarrow\C$ be the embedding defined by
+$\sigma_a(\zeta)=\zeta^a$.  These are all the embeddings of $K$.  The field
+trace is
+\[
+ \Tr_{K/\Q}(v):=\sum_{a\in\F_q^\times}\sigma_a(v).
+\]
+ The canonical embedding sends $v$ to
+ $(\sigma_a(v))_{a\in\F_q^\times}$.  For each integer $s\ge1$, we
+ equip $K^s$ with the real inner product
+\[
+ \langle\mathbf x,\mathbf y\rangle
+ :=\operatorname{Re}\sum_{i=1}^s\sum_{a\in\F_q^\times}
+   \sigma_a(x_i)\overline{\sigma_a(y_i)}
+\]
+and its induced product norm
+\[
+ \|\mathbf x\|^2:=\langle\mathbf x,\mathbf x\rangle
+ =\sum_{i=1}^s\Tr_{K/\Q}(x_i\overline{x_i}).
+\]
+For $s=1$, this is the canonical norm on $K$:
+\[
+ \|v\|^2=\sum_{a\in\F_q^\times}|\sigma_a(v)|^2
+ =\Tr_{K/\Q}(v\overline v).
+\]
+The roots of unity in $K$ are exactly $\pm\zeta^j$ for $0\le j<q$
+~\cite{Washington97}.  If $\varepsilon$ is a root of unity, then
+$\|\varepsilon\mathbf x-\varepsilon\mathbf y\|=\|\mathbf x-\mathbf y\|$
+for all $\mathbf x,\mathbf y\in K^s$.  Thus multiplication by
+$\varepsilon$ is an isometry.  In particular, it preserves distances.
+
+\paragraph{Module lattices.}
+For an integer $s\ge1$, an \emph{$\mathcal{O}_K$-module lattice} in
+$K^s$ is a finitely generated $\mathcal{O}_K$-submodule
+$\mathcal M\subseteq K^s$, equipped with the componentwise canonical
+embedding and the product norm.  It has \emph{full rank} if its $K$-span is
+$K^s$.  When $s=1$, a nonzero ideal
+$\mathfrak a\subseteq\mathcal{O}_K$ gives a module lattice in $K$ called an
+\emph{ideal lattice}.  Both module and ideal lattices are discrete additive
+subgroups of their real spans.
+
+In this paper, we only use free module lattices of full rank.  If
+$\mathbf m_1,\ldots,\mathbf m_s\in K^s$ are linearly independent over $K$, then
+\[
+ \mathcal M=\mathcal{O}_K\mathbf m_1+\cdots+\mathcal{O}_K\mathbf m_s
+\]
+is free of module rank $s$, has full rank, and has $\Z$-rank
+$s(q-1)$.  The square matrix with
+columns $\mathbf m_1,\ldots,\mathbf m_s$ has nonzero determinant precisely
+when these vectors are linearly independent over $K$.  If
+$\mathcal M\subseteq\mathcal{O}_K^s$, then full rank is equivalent
+to finite index in $\mathcal{O}_K^s$.
+
+The first minimum of an ideal lattice or module lattice is the length of its
+shortest nonzero vector in the canonical or product norm.  For $v\in K$ and
+an ideal lattice $\mathfrak a$, define
+\[
+ \dist(v,\mathfrak a):=\min_{y\in\mathfrak a}\|v-y\|.
+\]
+
+\paragraph{Coefficient representatives.}
+For $\mathbf z=(z_a)_{a\in\F_q}\in\Q^q$, write
+\[
+ [\mathbf z]:=\sum_{a\in\F_q}z_a\zeta^a\in K.
+\]
+If
+$\mathbf z\in\Z^q$, then $[\mathbf z]\in\mathcal{O}_K$, and we call
+$\mathbf z$ an \emph{integral coefficient representative} of
+$[\mathbf z]$.  Since $\Phi_q(X)=1+X+\cdots+X^{q-1}$ is the minimal
+polynomial of $\zeta$, two integral coefficient vectors represent the same
+element precisely when they differ by an integer multiple of $\mathbf1_q$.
+
+The following identity converts the canonical inner product and norm into
+calculations with these $q$ coefficients.
+\begin{lemma}
+\label{lem:cyclotomic-form}
+For all rational coefficient vectors $\mathbf x,\mathbf y\in\Q^q$,
+\[
+ \langle[\mathbf x],[\mathbf y]\rangle
+ =q\sum_a x_ay_a-
+ \left(\sum_a x_a\right)\left(\sum_a y_a\right).
+\]
+In particular, for every $\mathbf z\in\Z^q$,
+\[
+ \|[\mathbf z]\|^2
+ =q\sum_a z_a^2-\left(\sum_a z_a\right)^2
+ =\sum_{a<b}(z_a-z_b)^2.
+\]
+\end{lemma}
+
+\begin{proof}
+For $a,b\in\F_q$, additive-character orthogonality gives
+\[
+ \sum_{t\in\F_q^\times}\zeta^{t(a-b)}
+ =\begin{cases}
+   q-1,&a=b,\\
+   -1,&a\ne b.
+  \end{cases}
+\]
+Hence, for rational coefficient vectors $\mathbf x$ and $\mathbf y$,
+\[
+ \langle[\mathbf x],[\mathbf y]\rangle
+ =q\sum_a x_ay_a-\sum_{a,b}x_ay_b
+ =q\sum_a x_ay_a-\left(\sum_a x_a\right)\left(\sum_b y_b\right).
+\]
+Taking $\mathbf x=\mathbf y=\mathbf z$ gives the norm identity.  Expanding
+$\sum_{a<b}(z_a-z_b)^2$ gives its final form.
+\end{proof}
+
+\subsection{X3C and Sidon sequences}
+
+An Exact Cover by 3-Sets (X3C) instance consists of a universe
+$[M]$ and three-element sets $C_1,\ldots,C_n\subseteq[M]$.  Its incidence
+matrix $\mathbf A\in\{0,1\}^{M\times n}$ is defined by $A_{ij}=1$ when
+$i\in C_j$ and $A_{ij}=0$ otherwise.  A \emph{selection vector}
+$\boldsymbol\xi\in\{0,1\}^n$ specifies a choice of sets, with $\xi_j=1$
+exactly when $C_j$ is selected.  We call $\boldsymbol\xi$ an
+\emph{X3C witness} if
+\[
+ \mathbf A\boldsymbol\xi=\mathbf1_M.
+\]
+This equality says that every universe element belongs to exactly one
+selected set.  The instance is positive exactly when it has an X3C witness.
+X3C is $\NP$-complete~\cite{GareyJohnson79}.
+
+A universe element is \emph{isolated} if it belongs to none of the sets $C_j$.  An instance with an isolated element is negative.  After handling
+this case separately, every row of $\mathbf A$ is nonzero and $M\le3n$.
+Adjoining a disjoint three-element block together with its unique set
+preserves the answer, so we may also assume $n\ge1$.
+
+To index the $n$ selection bits, we choose distinct nonnegative
+integers whose nonzero ordered differences are all distinct.  Such a sequence
+is called a \emph{Sidon sequence}.  The following lemma gives a
+deterministic construction with largest entry $O(n^2)$.
+\begin{lemma}
+\label{lem:sidon}
+For every $n\ge1$, one can deterministically compute integers
+\[
+ 0\le\alpha_1<\cdots<\alpha_n=: \alpha_\star,
+ \qquad \alpha_\star=O(n^2),
+\]
+such that all nonzero ordered differences
+$\alpha_\ell-\alpha_j$, $j\ne\ell$, are distinct.
+\end{lemma}
+
+\begin{proof}
+Use the deterministic quadratic-residue Sidon construction of
+Erd\H{o}s and Tur\'an~\cite{ErdosTuran41}.  For an explicit construction and
+the verification of the directed-difference property, see also
+Liu--Feng--Pan~\cite{LiuFengPan26}.
+\end{proof}
+
+\subsection{Power-sum estimates}
+
+Let $q$ be prime, let $2\le k<m$, and let
+$\mathbf b=(b_1,\ldots,b_{k-1})\in\F_q^{k-1}$.  Define the
+\emph{power-sum solution set}
+\[
+ \mathcal X_{k,m}(\mathbf b)
+ :=\left\{\mathbf z=(z_1,\ldots,z_m)\in\F_q^m:
+   \sum_{r=1}^m z_r^j=b_j\quad(1\le j<k)\right\}.
+\]
+The following proposition records the uniform point-count
+bounds used below.
+
+\begin{proposition}[{\cite{wan2026np}}]
+\label{prop:wan-power-sum-estimates}
+Let $q$ be prime and suppose that
+$2\le k\le m-2<q-2$.  For every
+$\mathbf b\in\F_q^{k-1}$, the following estimates hold.
+\begin{enumerate}[label=(\roman*)]
+ \item
+ \[
+  \left||\mathcal X_{k,m}(\mathbf b)|-q^{m-k+1}\right|
+  \le \frac12(2k)^m q^{(m-k+2)/2}.
+ \]
+ \item For distinct $i,\ell\in[m]$,
+ \[
+  \left|
+   \bigl|\{\mathbf z\in\mathcal X_{k,m}(\mathbf b):z_i=z_\ell\}\bigr|
+   -q^{m-k}
+  \right|
+  \le \frac12(2k)^{m-1}q^{(m-k+2)/2}.
+ \]
+ \item For $i\in[m]$ and $a\in\F_q$,
+ \[
+  \left|
+   \bigl|\{\mathbf z\in\mathcal X_{k,m}(\mathbf b):z_i=a\}\bigr|
+   -q^{m-k}
+  \right|
+  \le \frac12(2k)^{m-1}q^{(m-k+1)/2}.
+ \]
+\end{enumerate}
+All three estimates are uniform in $\mathbf b$, and the last two are also
+uniform in the displayed choices of indices and field elements.
+\end{proposition}
+
+\begin{proof}
+Wan~\cite[Propositions~5.2 and~6.2]{wan2026np} proves
+part~(i) and proves part~(ii) for $z_1=z_2$, respectively.  The statements in
+that paper use one particular vector of prescribed power sums $\mathbf b$.
+The displayed estimates and their proofs depend only on $q$, $k$, and $m$,
+so they hold uniformly for every $\mathbf b$.
+
+For distinct $i,\ell\in[m]$, a permutation of the $m$ coordinates sends the
+condition $z_i=z_\ell$ to $z_1=z_2$ and leaves each equation
+$\sum_{r=1}^m z_r^j=b_j$ unchanged.  Therefore Wan's estimate for
+$z_1=z_2$ proves part~(ii) for every pair $i\ne\ell$.
+
+For part~(iii), fix $z_i=a$ and delete that coordinate.  The remaining
+$m-1$ variables satisfy $\sum_{r\ne i}z_r^j=b_j-a^j$ for $1\le j<k$.
+Applying Wan's first point-count estimate to these $m-1$ variables proves
+part~(iii).
+\end{proof}

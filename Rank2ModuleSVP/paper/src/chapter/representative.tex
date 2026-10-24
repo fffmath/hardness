@@ -1,0 +1,579 @@
+\section{The X3C checker}
+\label{sec:x3c-checker}
+
+\Cref{sec:descent} supplies weight-$h$ binary representatives in
+fixed ideal cosets.  For such a representative $\mathbf x$, put
+$v_{\mathbf x}:=[\mathbf x]$ and let $\xi_j:=x_{\alpha_j}$.  This section
+constructs $U,V\in K$ so that the squared norm of the checker value
+$Uv_{\mathbf x}-V$ records the residual
+$\mathbf A\boldsymbol\xi-\mathbf1_M$, up to a baseline independent of
+$\mathbf x$ and a nonnegative error term.  In
+\cref{sec:clean-representatives}, we define clean completions for which this
+error term vanishes.  The final corollary records the conclusions used in
+\cref{sec:reduction}.
+
+\subsection{Separated offsets}
+\label{sec:separated-offsets}
+
+For a selection vector $\boldsymbol\xi\in\{0,1\}^n$ and each $i\in[M]$, define
+\[
+ \mathcal R_i:=\{j\in[n]:i\in C_j\}
+ \qquad\text{and}\qquad
+ s_i:=\sum_{j\in\mathcal R_i}\xi_j=(\mathbf A\boldsymbol\xi)_i.
+\]
+Thus $s_i$ is the number of selected sets containing $i$, and
+$\boldsymbol\xi$ is an exact cover exactly when $s_i=1$ for every $i$.  The
+quantity encoded by the checker is
+\begin{equation}
+\label{eq:checker-target-decomposition}
+ 2\|\mathbf A\boldsymbol\xi-\mathbf1_M\|_2^2
+ =
+   \underbrace{2\sum_{i=1}^M(s_i^2-s_i)}_{\text{quadratic}}
+   -\underbrace{2\sum_{i=1}^M s_i}_{\text{linear}}
+   +2M.
+\end{equation}
+
+Define the \emph{incidence set}
+\[
+ \mathcal I:=\{(i,j)\in[M]\times[n]:j\in\mathcal R_i\}.
+\]
+Every set $C_j$ contains three elements.  We assume here that
+$M,n\ge1$ and that every universe element lies in at least one set.  These
+conditions are enforced by the preprocessing in
+\cref{subsec:prime-and-euclidean}.  Under these assumptions,
+\begin{equation}
+\label{eq:incidence-count}
+ W:=|\mathcal I|=3n,
+ \qquad M\le W.
+\end{equation}
+
+Let
+$0\le\alpha_1<\cdots<\alpha_n=\alpha_\star$ be the Sidon positions from
+\cref{lem:sidon}.  The coordinate indexed by $\alpha_j$ will store the
+selection bit for $C_j$, so we call $\alpha_j$ a \emph{witness position}.  For
+$a,b\in\F_q$, the \emph{offset} from $a$ to $b$ is the cyclic difference
+$b-a\in\F_q$.  We separate the offsets associated with different rows of
+$\mathbf A$.  Define
+\begin{equation}
+\label{eq:row-shifts}
+ \tau:=2\alpha_\star+1,
+ \qquad
+ \beta_i:=\tau i\quad(i\in[M]),
+ \qquad
+ d_{ij}:=\beta_i-\alpha_j\quad((i,j)\in\mathcal I).
+\end{equation}
+Here $\beta_i$ is the position assigned to row $i$ of $\mathbf A$,
+and $d_{ij}$ is the offset from the witness position $\alpha_j$ to
+$\beta_i$.  We choose $q$
+large enough that
+\begin{equation}
+\label{eq:row-shift-q-bound}
+ q>4\beta_M=4\tau M.
+\end{equation}
+
+We use two types of offsets.  The \emph{witness offsets} are the
+cyclic differences between distinct witness positions:
+\[
+\mathcal D_{\mathrm{wit}}
+ :=\{\alpha_\ell-\alpha_j:j,\ell\in[n],\ j\ne\ell\}.
+\]
+By the Sidon property and
+$q>4\beta_M>2\alpha_\star$, these differences remain distinct modulo $q$.
+The \emph{bad offsets} are the cross-row differences and the sums
+of the offsets $d_{ij}$:
+\[
+ \mathcal D_{\mathrm{bad}}
+ :=\{d_{ij}-d_{r\ell}:(i,j),(r,\ell)\in\mathcal I,\ i\ne r\}
+ \cup
+ \{d_{ij}+d_{r\ell}:(i,j),(r,\ell)\in\mathcal I\}.
+\]
+In the norm expansion, each witness offset carries a product
+$\xi_j\xi_\ell$ from the quadratic term in
+\cref{eq:checker-target-decomposition}.  Every correlation at a bad
+ offset contributes instead to $\mathcal E(\mathbf x)$.  To preserve the products
+at witness offsets while eliminating the correlations at bad offsets, the two
+offset sets must be disjoint.  The next lemma proves this separation and bounds the number of
+bad offsets.
+\begin{lemma}
+\label{lem:row-shift-separation}
+Under the bound in \cref{eq:row-shift-q-bound}, the $2W$
+residues $d_{ij}$ and $-d_{ij}$, for $(i,j)\in\mathcal I$, are nonzero and pairwise
+distinct.
+Moreover,
+\[
+ 0\notin\mathcal D_{\mathrm{bad}},
+ \qquad
+ \mathcal D_{\mathrm{bad}}\cap\mathcal D_{\mathrm{wit}}=\varnothing,
+ \qquad
+ |\mathcal D_{\mathrm{bad}}|=O(W^2)=O(n^2).
+\]
+\end{lemma}
+
+\begin{proof}
+For every $(i,j)\in\mathcal I$,
+\[
+ \alpha_\star+1=\beta_1-\alpha_\star
+ \le d_{ij}\le\beta_M<q/4,
+\]
+so $d_{ij}$ is nonzero modulo $q$.  Fix distinct
+$(i,j),(r,\ell)\in\mathcal I$.
+
+\smallskip
+\noindent\emph{Case 1: $i=r$.}
+\[
+ d_{ij}-d_{i\ell}=\alpha_\ell-\alpha_j\ne0,
+ \qquad
+ |d_{ij}-d_{i\ell}|\le\alpha_\star.
+\]
+
+\smallskip
+\noindent\emph{Case 2: $i\ne r$.}
+\[
+ d_{ij}-d_{r\ell}
+ =\beta_i-\beta_r+\alpha_\ell-\alpha_j
+ =\tau(i-r)+\alpha_\ell-\alpha_j.
+\]
+Consequently,
+\[
+ \alpha_\star+1\le|d_{ij}-d_{r\ell}|
+ \le \tau(M-1)+\alpha_\star=\beta_M-\alpha_\star-1.
+\]
+For all $(i,j),(r,\ell)\in\mathcal I$, one also has
+\[
+ 2\alpha_\star+2=2\beta_1-2\alpha_\star
+ \le d_{ij}+d_{r\ell}\le2\beta_M.
+\]
+Together with $q>4\beta_M$, these bounds place the same-row differences,
+cross-row differences, and sums strictly inside $(-q/2,q/2)$, so reduction
+modulo $q$ creates no new equalities.  The difference bounds separate residues
+of the same sign, and the sum bound separates residues of opposite signs.
+Thus the $2W$ residues $d_{ij}$ and $-d_{ij}$ are nonzero and pairwise
+distinct.
+
+Every witness offset is represented in
+$[-\alpha_\star,\alpha_\star]$.  By contrast, every cross-row difference and
+every sum in $\mathcal D_{\mathrm{bad}}$ has a representative in
+$(-q/2,q/2)$ with absolute value greater than $\alpha_\star$.  Hence
+$0\notin\mathcal D_{\mathrm{bad}}$ and
+$\mathcal D_{\mathrm{bad}}\cap\mathcal D_{\mathrm{wit}}=\varnothing$.
+The two sets in the definition of $\mathcal D_{\mathrm{bad}}$ contain at most
+$O(W^2)=O(n^2)$ offsets.
+\end{proof}
+
+\subsection{Checker elements and norm formula}
+\label{sec:checker-construction}
+
+Assume throughout this subsection that $q\equiv3\pmod4$.  Fix
+$\mathbf x\in\{0,1\}^{\F_q}$ of weight $h$ and put
+\[
+ v_{\mathbf x}:=[\mathbf x]
+ :=\sum_{a\in\F_q}x_a\zeta^a.
+\]
+Define $\xi_j:=x_{\alpha_j}$ and let
+$s_i:=\sum_{j\in\mathcal R_i}\xi_j$ as in \cref{sec:separated-offsets}.  By
+\cref{lem:cyclotomic-form} and
+\cref{eq:HL-parameters}, $\|v_{\mathbf x}\|^2=H$.
+
+For $d\in\F_q$, define the \emph{cyclic correlation} of $\mathbf x$ at
+offset $d$ by
+\begin{equation*}
+ \mathcal{C}_{\mathbf x}(d):=\sum_{a\in\F_q}x_ax_{a+d}.
+\end{equation*}
+The indices lie in $\F_q$, so $a+d$ is computed modulo $q$.
+Thus $\mathcal C_{\mathbf x}(d)$ counts the ordered pairs
+$(a,a+d)\in\F_q^2$ for which $x_a=x_{a+d}=1$.
+
+The preceding decomposition separates the target into quadratic
+and linear parts.  We first define $p$, whose shifted monomials encode the
+quadratic part through cyclic correlations.  A Gauss sum is then used to
+define $U$, so that the quadratic contribution enters
+$\|Uv_{\mathbf x}\|^2$ and multiplication by $U$ does not decrease the
+canonical norm.  Next, $D$ encodes the linear part, and $V$ combines both
+parts in $\|Uv_{\mathbf x}-V\|^2$.
+\paragraph{Quadratic term.}
+Using the separated offsets $d_{ij}$, define
+\begin{equation*}
+ p:=\sum_{(i,j)\in\mathcal I}
+       \bigl(\zeta^{d_{ij}}+\zeta^{-d_{ij}}\bigr)\in \mathcal{O}_K.
+\end{equation*}
+By \cref{lem:row-shift-separation}, the displayed $q$-coordinate
+expression for $p=\overline p$ has $2W$ terms with pairwise distinct
+exponents.  Same-row differences produce
+witness offsets, while the other differences and sums produce bad offsets.
+The resulting additional correlations are collected in
+$\mathcal E(\mathbf x)$ below.
+
+\paragraph{The element $U$.}
+Let $\chi$ be the quadratic character of
+$\F_q$.  Thus $\chi$ is $1$ on nonzero squares, $-1$ on nonsquares, and $0$ at
+zero.  Define the quadratic Gauss sum
+\begin{equation*}
+ \vartheta:=\sum_{a\in\F_q}\chi(a)\zeta^a\in \mathcal{O}_K.
+\end{equation*}
+
+\begin{lemma}
+\label{lem:gauss-sum}
+The Gauss sum $\vartheta$ satisfies
+\[
+ \overline\vartheta=-\vartheta,
+ \qquad
+ \vartheta\overline\vartheta=q,
+ \qquad
+ \vartheta^2=-q.
+\]
+\end{lemma}
+
+\begin{proof}
+Since $q\equiv3\pmod4$, one has $\chi(-1)=-1$.  Conjugation followed by
+$a\mapsto-a$ therefore gives $\overline\vartheta=-\vartheta$.
+Since $\chi(0)=0$, writing $a=tb$ in
+$\vartheta\overline\vartheta$ gives
+\[
+ \vartheta\overline\vartheta
+ =\sum_{t\in\F_q^\times}\chi(t)
+   \sum_{b\in\F_q^\times}\zeta^{(t-1)b}
+ =q.
+\]
+The inner sum is $q-1$ for $t=1$ and $-1$ otherwise.  Combining
+$\vartheta\overline\vartheta=q$ with $\overline\vartheta=-\vartheta$ gives
+$\vartheta^2=-q$.
+\end{proof}
+
+Using \cref{lem:gauss-sum}, define
+\begin{equation}
+\label{eq:checker-U}
+ U:=1+\frac{\vartheta p}{q}\in K.
+\end{equation}
+
+\begin{lemma}
+\label{lem:checker-U-properties}
+The element $U$ has the following properties.
+\begin{enumerate}[label=(\roman*)]
+ \item $U\overline U=1+p^2/q$.
+ \item For every embedding $\sigma:K\hookrightarrow\C$,
+ $|\sigma(U)|^2=1+\sigma(p)^2/q\ge1$.  In particular, $U\ne0$.
+ \item For every $y\in K$, one has
+ $\|Uy\|\ge\|y\|$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Since $p=\overline p$, \cref{lem:gauss-sum} gives
+$U\overline U=1+p^2/q$, proving~(i).  The value $\sigma(p)$ is real for every
+embedding $\sigma$, so applying $\sigma$ to~(i) gives~(ii).  Summing the
+lower bound in~(ii) over all embeddings proves~(iii).
+\end{proof}
+
+\paragraph{Linear term.}
+Define
+\begin{equation*}
+ D:=-3\sum_{j=1}^n\zeta^{\alpha_j}\in \mathcal{O}_K.
+\end{equation*}
+Each selected set contributes to three row sums, which motivates
+the coefficient $-3$.  Part~(ii) of \cref{lem:checker-U-properties} gives
+$U\ne0$, so define
+\begin{equation}
+\label{eq:checker-V}
+ V:=-\frac{D}{q\overline U}
+   =-\frac{D}{q-\vartheta p}\in K.
+\end{equation}
+
+\paragraph{Norm formula.}
+We call $Uv_{\mathbf x}-V\in K$ the \emph{checker value}.  The
+correlations in $q^{-1}\|pv_{\mathbf x}\|^2$ that are not determined by the
+counts $s_i$ are collected in the following term:
+\begin{equation}
+\label{eq:checker-additional-correlations}
+ \begin{aligned}
+  \mathcal E(\mathbf x)
+  :={}&
+  2\sum_{i=1}^M
+   \sum_{\substack{j,\ell\in\mathcal R_i\\j\ne\ell}}
+  \bigl(
+   \mathcal{C}_{\mathbf x}(\alpha_\ell-\alpha_j)-\xi_j\xi_\ell
+  \bigr)
+  \\
+  &+2\sum_{\substack{i,t\in[M]\\i\ne t}}
+   \sum_{\substack{j\in\mathcal R_i\\\ell\in\mathcal R_t}}
+   \mathcal{C}_{\mathbf x}
+   (\beta_i-\beta_t-\alpha_j+\alpha_\ell)
+  \\
+  &+2\sum_{i,t\in[M]}
+   \sum_{\substack{j\in\mathcal R_i\\\ell\in\mathcal R_t}}
+   \mathcal{C}_{\mathbf x}
+   (\beta_i+\beta_t-\alpha_j-\alpha_\ell).
+ \end{aligned}
+\end{equation}
+The three lines record, respectively, the additional same-row
+correlations, the cross-row difference correlations, and the sum-offset
+correlations.
+
+\begin{theorem}
+\label{thm:checker-score}
+Assume that $q\equiv3\pmod4$.
+For every $\mathbf x\in\{0,1\}^{\F_q}$ of weight $h$, define
+$\boldsymbol\xi\in\{0,1\}^n$ by $\xi_j:=x_{\alpha_j}$ for $j\in[n]$.  Then
+\begin{equation}
+\label{eq:checker-score-exact}
+ \|Uv_{\mathbf x}-V\|^2
+ =B_0+2\|\mathbf A\boldsymbol\xi-\mathbf1_M\|_2^2
+   +\mathcal E(\mathbf x),
+\end{equation}
+where
+\begin{equation}
+\label{eq:checker-baseline}
+ B_0:=H+\|V\|^2+2Wh-2M
+       +\frac{2hW-4h^2W^2}{q}
+\end{equation}
+is a rational quantity determined by the constructed checker and
+independent of $\mathbf x$.  Moreover,
+$\mathcal E(\mathbf x)\ge0$ for every binary $\mathbf x$.
+\end{theorem}
+
+\begin{proof}
+\noindent\textbf{Quadratic term.}
+For $a\in\F_q$, define
+\begin{equation*}
+ y_a:=\sum_{(i,j)\in\mathcal I}
+      (x_{a-d_{ij}}+x_{a+d_{ij}}).
+\end{equation*}
+Then $pv_{\mathbf x}=\sum_a y_a\zeta^a$.  Each of the $2W$ shifted copies
+of $\mathbf x$ has coefficient sum $h$, so $\sum_a y_a=2Wh$.  For
+$r,s\in\F_q$, cyclic reindexing gives
+\[
+ \sum_{a\in\F_q}x_{a-r}x_{a-s}
+ =\mathcal{C}_{\mathbf x}(r-s),
+ \qquad
+ \mathcal{C}_{\mathbf x}(-r)=\mathcal{C}_{\mathbf x}(r).
+\]
+For $e=(i,j)$ and $f=(t,\ell)$ in $\mathcal I$, write
+$d_e:=d_{ij}$ and $d_f:=d_{t\ell}$.  Expanding $\sum_a y_a^2$ and using
+the preceding identities gives
+\begin{equation*}
+ \sum_{a\in\F_q}y_a^2
+ =2Wh+2\sum_{\substack{e,f\in\mathcal I\\e\ne f}}\mathcal{C}_{\mathbf x}(d_e-d_f)
+ +2\sum_{e,f\in\mathcal I}\mathcal{C}_{\mathbf x}(d_e+d_f).
+\end{equation*}
+The diagonal products contribute $2Wh$, and the remaining correlations fall
+into three classes.
+
+\smallskip
+\noindent\emph{Case 1: $d_e-d_f$ with $e\ne f$ and $i=t$.}
+Here $e=(i,j)$ and $f=(i,\ell)$, so $j\ne\ell$ and
+$d_{ij}-d_{i\ell}=\alpha_\ell-\alpha_j$.
+Since
+$\sum_{\substack{j,\ell\in\mathcal R_i\\j\ne\ell}}
+\xi_j\xi_\ell=s_i^2-s_i$, this class contributes
+$2\sum_i(s_i^2-s_i)$ together with the first line of
+\cref{eq:checker-additional-correlations}.
+
+\smallskip
+\noindent\emph{Case 2: $d_e-d_f$ with $i\ne t$.}
+Here $d_{ij}-d_{t\ell}=\beta_i-\beta_t-\alpha_j+\alpha_\ell$.
+These terms form the second line of
+\cref{eq:checker-additional-correlations}.
+
+\smallskip
+\noindent\emph{Case 3: $d_e+d_f$.}
+For all $(i,j),(t,\ell)\in\mathcal I$, one has
+$d_{ij}+d_{t\ell}=\beta_i+\beta_t-\alpha_j-\alpha_\ell$.
+These terms form the third line of
+\cref{eq:checker-additional-correlations}.
+
+Combining the diagonal term and the three cases yields
+\begin{equation*}
+ \sum_a y_a^2
+ =2Wh+2\sum_{i=1}^M(s_i^2-s_i)+\mathcal E(\mathbf x).
+\end{equation*}
+
+For $j\ne\ell$, the difference
+$\mathcal C_{\mathbf x}(\alpha_\ell-\alpha_j)-\xi_j\xi_\ell$
+counts the ordered pairs
+$(a,a+\alpha_\ell-\alpha_j)\ne(\alpha_j,\alpha_\ell)$ for which
+$x_a=x_{a+\alpha_\ell-\alpha_j}=1$.  The remaining two lines of
+\cref{eq:checker-additional-correlations} are sums of correlation
+counts.  Thus $\mathcal E(\mathbf x)\ge0$.
+
+Using \cref{lem:cyclotomic-form} and $\sum_a y_a=2Wh$, we obtain
+\begin{equation*}
+ \|pv_{\mathbf x}\|^2
+ =q\left(
+ 2Wh+2\sum_i(s_i^2-s_i)+\mathcal E(\mathbf x)
+ \right)-4W^2h^2.
+\end{equation*}
+
+\smallskip
+\noindent\textbf{Linear term.}
+The coefficient sum of $D$ is $-W$.  Since each selected set contains three
+universe elements, $3\sum_j\xi_j=\sum_i s_i$.  Hence
+\cref{lem:cyclotomic-form} gives
+\begin{equation*}
+ \langle v_{\mathbf x},D\rangle
+ =-3q\sum_j\xi_j+hW
+ =-q\sum_i s_i+hW.
+\end{equation*}
+
+\begin{samepage}
+\smallskip
+\noindent\textbf{Combining the terms.}
+Part~(i) of \cref{lem:checker-U-properties}, the definition of
+$V$, the equality $\|v_{\mathbf x}\|^2=H$, and the two preceding identities
+give
+\[
+\begin{aligned}
+ \|Uv_{\mathbf x}-V\|^2
+ &=H+\frac1q\|pv_{\mathbf x}\|^2
+   +\frac2q\langle v_{\mathbf x},D\rangle+\|V\|^2\\
+ &=H+\|V\|^2+2Wh+\frac{2hW-4h^2W^2}{q}
+   +2\sum_i(s_i^2-2s_i)+\mathcal E(\mathbf x)\\
+ &=B_0+2\sum_i(s_i-1)^2+\mathcal E(\mathbf x).
+\end{aligned}
+\]
+\end{samepage}
+Since $s_i=(\mathbf A\boldsymbol\xi)_i$, the last line is
+\cref{eq:checker-score-exact}.  The formula for $B_0$ is independent
+of $\mathbf x$, and $B_0\in\Q$ because
+$\|V\|^2=\Tr_{K/\Q}(V\overline V)$.
+\end{proof}
+
+\subsection{Clean completions}
+\label{sec:clean-representatives}
+
+Put $P:=\{\alpha_1,\ldots,\alpha_n\}$.  For each selection vector
+$\boldsymbol\xi\in\{0,1\}^n$, define
+$\boldsymbol\eta^{\boldsymbol\xi}\in\{0,1\}^P$ by
+$\eta^{\boldsymbol\xi}_{\alpha_j}:=\xi_j$.
+For $\mathbf u\in\F_q^k$ with $u_0=h$, a \emph{completion} of
+$\boldsymbol\xi$ with syndrome $\mathbf u$ is a vector
+$\mathbf x\in\mathcal F(\mathbf u;P,\boldsymbol\eta^{\boldsymbol\xi})$.
+Thus $\mathbf x$ is binary, has weight $h$ and syndrome $\mathbf u$, and
+satisfies $x_{\alpha_j}=\xi_j$ for every $j\in[n]$.
+
+A completion $\mathbf x$ is \emph{clean} if
+\begin{equation}
+\label{eq:enhanced-clean-correlations}
+ \mathcal{C}_{\mathbf x}(\alpha_\ell-\alpha_j)=\xi_j\xi_\ell
+ \quad(j,\ell\in[n],\ j\ne\ell),
+ \qquad
+ \mathcal{C}_{\mathbf x}(d)=0
+ \quad(d\in\mathcal D_{\mathrm{bad}}).
+\end{equation}
+The first equality allows only the ordered pair
+$(\alpha_j,\alpha_\ell)$ to contribute at the witness offset
+$\alpha_\ell-\alpha_j$.  This ordered pair contributes $\xi_j\xi_\ell$.
+The second equality excludes every ordered
+pair at a bad offset.  Hence every term in
+\cref{eq:checker-additional-correlations} vanishes and
+$\mathcal E(\mathbf x)=0$.
+
+The next theorem combines \cref{thm:uniform-completions} with the
+fixed-coordinate bound in \cref{cor:fixed-coordinate-ratio} to prove that a
+clean completion always exists.
+\begin{theorem}
+\label{thm:enhanced-clean}
+Suppose that $q$ is a sufficiently large prime, $n+2\le T$,
+and \mbox{\cref{eq:row-shift-q-bound}} holds.  For every syndrome
+$\mathbf u\in\F_q^k$ with $u_0=h$, and every
+$\boldsymbol\xi\in\{0,1\}^n$, there is a clean completion
+$\mathbf x\in\{0,1\}^{\F_q}$ such that
+\[
+ \mathbf H_q(k)\mathbf x=\mathbf u,
+ \qquad
+ \sum_a x_a=h,
+ \qquad
+ x_{\alpha_j}=\xi_j\quad(j\in[n]).
+\]
+\end{theorem}
+
+\begin{proof}
+Write
+$\mathcal F:=\mathcal F(\mathbf u;P,\boldsymbol\eta^{\boldsymbol\xi})$.  By
+\cref{thm:uniform-completions}, one has $|\mathcal F|>0$.
+For a set $Q\subseteq\F_q\setminus P$ of one or two additional
+coordinates, put
+\[
+ \mathcal F_Q:=\{\mathbf x\in\mathcal F:x_a=1
+ \text{ for every }a\in Q\}.
+\]
+Applying \cref{cor:fixed-coordinate-ratio} gives
+\[
+ \frac{|\mathcal F_Q|}{|\mathcal F|}
+ =O((h/q)^{|Q|}).
+\]
+
+\smallskip
+\noindent\emph{Case 1: $d=\alpha_\ell-\alpha_j\in\mathcal D_{\mathrm{wit}}$.}
+By \cref{lem:sidon,eq:row-shift-q-bound},
+$(\alpha_j,\alpha_\ell)$ is the unique ordered pair in $P$ at offset $d$.
+This ordered pair contributes $\xi_j\xi_\ell$ to
+$\mathcal C_{\mathbf x}(d)$.  For every $a\ne\alpha_j$, the
+first equality in \cref{eq:enhanced-clean-correlations} requires
+$x_ax_{a+d}=0$, and at least one of $a,a+d$ lies outside $P$.
+
+\smallskip
+\noindent\emph{Case 2: $d\in\mathcal D_{\mathrm{bad}}$.}
+The second equality in \cref{eq:enhanced-clean-correlations}
+requires $x_ax_{a+d}=0$ for every $a\in\F_q$.
+By \cref{lem:row-shift-separation}, $d\notin\mathcal D_{\mathrm{wit}}$ and
+$d\ne0$.  Thus no ordered pair in $P$ has offset $d$, so at least one of
+$a,a+d$ lies outside $P$.
+
+Every required zero product from the two cases has at least one endpoint
+outside $P$.  If exactly one endpoint lies outside $P$, no completion
+violates the condition when the endpoint in $P$ is fixed to zero.  When
+the endpoint in $P$ is fixed to one, the violating completions lie in
+$\mathcal F_Q$ with $|Q|=1$ and occupy an
+$O(h/q)$ fraction of $\mathcal F$.  If both endpoints lie outside $P$, the
+corresponding fraction is $O((h/q)^2)$.
+
+The definition of $\mathcal D_{\mathrm{wit}}$ and
+\cref{lem:row-shift-separation} give
+$|\mathcal D_{\mathrm{wit}}\cup\mathcal D_{\mathrm{bad}}|=O(n^2)$.  For each
+of these offsets, at most $2n$ ordered pairs have exactly one endpoint outside
+$P$, and at most $q$ have both endpoints outside $P$.  A union bound shows
+that the number of completions violating at least one required zero-product
+condition is at most
+\[
+ O\left(\frac{n^3h}{q}+\frac{n^2h^2}{q}\right)|\mathcal F|.
+\]
+Since $n\le T=O(q^{1/2000})$ and $h=O(q^{1/1000})$, the relative factor is
+$o(1)$.  Therefore some completion in $\mathcal F$ is clean.
+\end{proof}
+
+We summarize the checker bounds used in \cref{sec:reduction}.
+\begin{corollary}
+\label{cor:checker-interface}
+For every sufficiently large prime $q\equiv3\pmod4$ satisfying
+$n+2\le T$ and the bound in \cref{eq:row-shift-q-bound}, the
+following statements hold.
+\begin{enumerate}[label=(\roman*)]
+ \item Every $\mathbf x\in\{0,1\}^{\F_q}$ of weight $h$, with
+ $\xi_j:=x_{\alpha_j}$, satisfies
+ \[
+  \|Uv_{\mathbf x}-V\|^2
+  \ge B_0+2\|\mathbf A\boldsymbol\xi-\mathbf1_M\|_2^2.
+ \]
+ \item For the center $c$ and syndrome $\mathbf u_c$ defined in
+ \cref{sec:descent}, every $\boldsymbol\xi\in\{0,1\}^n$ has a clean completion
+ $\mathbf x\in\mathcal F(\mathbf u_c;P,\boldsymbol\eta^{\boldsymbol\xi})$
+ such that
+ \begin{equation}
+ \label{eq:clean-checker-interface}
+  v_{\mathbf x}\in c+\mathfrak a_{q,k},
+  \qquad \|Uv_{\mathbf x}-V\|^2
+  =B_0+2\|\mathbf A\boldsymbol\xi-\mathbf1_M\|_2^2.
+ \end{equation}
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+Part~(i) follows directly from \cref{thm:checker-score}.
+For part~(ii), choose $\mathbf x$ by
+\cref{thm:enhanced-clean} with $\mathbf u=\mathbf u_c$.  Cleanliness gives
+$\mathcal E(\mathbf x)=0$, so
+\cref{eq:checker-score-exact} gives
+the norm equality in \cref{eq:clean-checker-interface}.  The vectors
+$\mathbf x$ and $\mathbf c$ have syndrome $\mathbf u_c$ and coefficient sum
+$h$.  Hence \cref{lem:coset-syndrome} gives
+$v_{\mathbf x}=[\mathbf x]\in c+\mathfrak a_{q,k}$.
+\end{proof}

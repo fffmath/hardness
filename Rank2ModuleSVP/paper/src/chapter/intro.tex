@@ -1,0 +1,330 @@
+A lattice $\mathcal L\subseteq\R^m$ is the set of all integer linear
+combinations of linearly independent vectors.  Given a basis of
+$\mathcal L$, the decision shortest vector problem ($\SVP$) asks whether
+the lattice contains a nonzero vector of squared norm at most a given
+threshold.  Its search version asks for a shortest nonzero lattice vector.
+In 1981, Van Emde Boas asked whether exact
+$\SVP$ is $\NP$-hard~\cite{vanEmdeBoas81}.  Later, Ajtai's breakthrough
+result established that exact Euclidean $\SVP$ is $\NP$-hard under randomized
+reductions~\cite{Ajtai98}.  For Euclidean $\SVP$, later randomized
+reductions gave hardness within $1+n^{-\varepsilon}$ for every fixed
+$\varepsilon>0$, within every constant below $\sqrt2$, and within every
+constant factor~\cite{cai1998approximating,Micciancio01,Khot05,Micciancio12}.
+Stronger randomized-time assumptions yield superconstant and
+almost-polynomial factors~\cite{Khot05,HavivRegev12}.
+
+However, a deterministic
+$\NP$-hardness proof for exact Euclidean $\SVP$ remained open for decades.
+Along one route, Hair and Sahai used probabilistically checkable
+proofs (PCPs) to obtain deterministic hardness for
+$\ell_p$-norms with $p>2$ and, under a subexponential-time assumption,
+approximation hardness for every finite $p$
+~\cite{HairSahai26STOC,HairSahai26FOCS}.  In two recent preprints,
+Wan proved deterministic hardness for every constant approximation factor in
+the Euclidean norm~\cite{wan2026euclidean}, extending an earlier result for
+factors below $\sqrt2$, including the exact problem~\cite{wan2026np}.
+
+At an intuitive level, Micciancio's \emph{local-density} program asks
+for an explicit lattice $\mathcal L$ and a coset $\mathbf t+\mathcal L$
+containing many points of norm strictly below $\lambda_1(\mathcal L)$
+~\cite{Micciancio01,Micciancio12}.  The minimum of $\mathcal L$
+protects the soundness gap, while the abundance of short coset points allows
+the reduction to encode a solution to the input problem.  For derandomization,
+these points must realize every prescribed assignment on a designated set of
+coordinates.  Bennett and Peikert proposed a transparent candidate by lifting
+Reed--Solomon codes~\cite{BennettPeikert23}.  Wan used finite-field point
+counts to prove that an explicit Reed--Solomon coset has the required
+representatives with prescribed coordinates~\cite{wan2026np}.  Wan's
+result supplies the local-density statement needed for deterministic
+hardness results for general lattices in the $\ell_2$-norm.  It does not by itself
+show that the reduction remains sound when the output is required to have
+a prescribed cyclotomic module structure.
+
+Under the canonical embedding of a number field, ideals yield
+ideal lattices~\cite{lyubashevsky2013ideal}.  Higher-rank modules similarly
+yield module lattices~\cite{LangloisStehle15,FelderhoffPelletMaryStehle22}.
+The ring action supports compact representations and fast arithmetic
+~\cite{HoffsteinPipherSilverman98,LyubashevskyPeikertRegev13}, underlies Ring-LWE
+and Module-LWE~\cite{lyubashevsky2013ideal,LangloisStehle15}, and enables
+specialized algorithms for module lattices~\cite{LeePelletMaryStehleWallet19}.
+This algebraic structure is no longer just a theoretical design choice.  In
+2024, NIST standardized ML-KEM (FIPS~203), a module-lattice-based scheme
+derived from CRYSTALS--Kyber and based on Module-LWE
+~\cite{BosDucasKiltzEtAl18,NISTFIPS203}.  It also standardized ML-DSA
+(FIPS~204), derived from CRYSTALS--Dilithium and relying on Module-LWE and a
+variant of Module-SIS~\cite{DucasKiltzLepointEtAl18,NISTFIPS204}.
+
+The cryptographic importance of module lattices has motivated broad
+work on structured lattices.  Prior work
+studies cyclic-lattice problems
+~\cite{Micciancio07}, module unique-SVP and NTRU
+~\cite{FelderhoffPelletMaryStehle22}, probabilistic reductions for
+approximation problems from arbitrary modules to free modules
+~\cite{DeMicheliMicciancioPelletMaryTran23}, worst-case to average-case
+reductions for the approximate shortest independent vectors problem
+($\mathsf{SIVP}$) at fixed module rank under the
+Extended Riemann Hypothesis
+~\cite{deBoerPageTomaWesolowski26}, and the geometry of shortest vectors in
+random modules~\cite{GargavaSerbanViazovskaViglino25}.  To the best
+of our knowledge, none of these results establishes $\NP$-hardness of exact
+Euclidean $\SVP$ for rank-two modules under
+deterministic polynomial-time reductions.  Most closely related to
+the present question, a recent preprint proves that exact Euclidean
+decision-$\mathsf{CVP}$ is $\NP$-complete on coefficient lattices of nonzero
+principal ideals in power-of-two cyclotomic rings, with a lift to principal
+cyclic ideal lattices~\cite{LiuFengPan26}.
+
+\enlargethispage{\baselineskip}
+\begin{samepage}
+This leads to the question addressed in this work:
+\begin{quote}
+\emph{Is Euclidean $\SVP$ $\NP$-hard for rank-two modules
+over cyclotomic rings?}
+\end{quote}
+ We answer this question affirmatively, even for full-rank free
+ submodules of $\mathcal{O}_K^2$.
+\end{samepage}
+
+\subsection{Our result}
+
+For every prime $q\equiv3\pmod4$, let $\zeta:=\zeta_q$ be a primitive
+$q$th root of unity.  Write $K:=\Q(\zeta)$ and
+$\mathcal{O}_K:=\Z[\zeta]$.  For $\mathbf x=(x_1,x_2)\in K^2$, define
+\[
+ \|\mathbf x\|^2
+ :=\sum_{\sigma:K\hookrightarrow\C}
+   \bigl(|\sigma(x_1)|^2+|\sigma(x_2)|^2\bigr)
+\]
+ for the canonical product norm.  An $\mathcal{O}_K$-submodule
+$\mathcal M\subseteq\mathcal{O}_K^2$ is called \emph{full rank} if it has finite index
+in $\mathcal{O}_K^2$.
+
+We consider the following decision problem.  An input consists of a prime
+$q\equiv3\pmod4$, two vectors $\mathbf m_1,\mathbf m_2\in\mathcal{O}_K^2$
+with $\det[\,\mathbf m_1\ \mathbf m_2\,]\ne0$, and an integer
+ $S\ge0$.  Each of the four ring coordinates of
+ $\mathbf m_1$ and $\mathbf m_2$ is specified by its $q-1$ integer
+ coefficients in the basis $1,\zeta,\ldots,\zeta^{q-2}$.  For
+$\mathcal M:=\mathcal{O}_K\mathbf m_1+\mathcal{O}_K\mathbf m_2$, the question
+is whether
+\[
+ \lambda_1(\mathcal M)^2\le S.
+\]
+We call this problem \emph{decision-$\SVP$ in the $\ell_2$-norm
+on rank-two cyclotomic modules}.  The determinant condition makes $\mathcal M$ a full-rank free
+submodule of $\mathcal{O}_K^2$ generated by two vectors.
+
+\begin{theorem}
+\label{thm:main-intro}
+As $q$ ranges over primes congruent to $3$ modulo $4$,
+decision-$\SVP$ in the $\ell_2$-norm on rank-two cyclotomic modules is
+$\NP$-complete.  The hardness holds under deterministic
+polynomial-time many-one reductions.
+\end{theorem}
+
+Our reduction is from Exact Cover by 3-Sets (X3C), which is
+$\NP$-complete~\cite{GareyJohnson79}.  Given an X3C instance, the
+reduction outputs a tuple $(q,\mathbf m_1,\mathbf m_2,S)$ of the form above.
+Here $q\equiv3\pmod4$ is prime, $\mathbf m_1,\mathbf m_2\in\mathcal{O}_K^2$
+generate the output module and have nonzero determinant, and $S$ is an integer
+squared threshold.  The tuple has polynomial encoding length.  The generator
+ construction and the denominator-clearing argument appear in
+ \cref{subsec:denominator-clearing}.
+ \Cref{subsec:prime-and-euclidean} chooses $q$ and computes an
+ integer basis whose Euclidean lattice is isometric to the canonically
+ embedded output module.  This basis is used by the
+$\NP$ verifier and the search reduction.
+
+The output module is a full-rank free submodule of the rank-two
+module $\mathcal{O}_K^2$.  As a $\Z$-lattice, the output module has
+rank $2(q-1)$.  The same construction also gives the search consequence
+stated below.  This is a worst-case hardness result in which the
+cyclotomic ring varies with $q$.  The theorem does not establish hardness for a
+single fixed cyclotomic ring, for the power-of-two cyclotomic family, on
+average, or through a cryptographic security reduction.
+
+\begin{corollary}
+\label{cor:search-hardness}
+As $q$ ranges over primes congruent to $3$ modulo $4$,
+search-$\SVP$ in the $\ell_2$-norm on full-rank free rank-two
+$\mathcal{O}_K$-module lattices is $\NP$-hard.  The hardness holds under
+polynomial-time Turing reductions.
+\end{corollary}
+
+\subsection{Proof overview}
+Our goal is to give a deterministic polynomial-time reduction from
+X3C to decision-$\SVP$ on rank-two modules over
+cyclotomic rings.  Before clearing denominators, the reduction constructs an
+intermediate rank-two $\mathcal{O}_K$-module $\mathcal M\subset K^2$ and a
+squared threshold $S$ such that
+\[
+ \lambda_1(\mathcal M)^2\le S
+ \quad\Longleftrightarrow\quad
+ \text{the X3C instance is positive}.
+\]
+A common integer scaling later produces the integral output module in
+$\mathcal{O}_K^2$ and an integer squared threshold without changing this
+equivalence.  The main challenge is to prove the strict lower bound
+$\lambda_1(\mathcal M)^2>S$ for every negative instance despite closure under
+multiplication by $\mathcal{O}_K$.
+
+X3C asks whether a given matrix
+$\mathbf A\in\{0,1\}^{M\times n}$ admits a vector
+$\boldsymbol\xi\in\{0,1\}^n$ satisfying
+\begin{equation}
+\label{eq:intro-x3c}
+ \mathbf A\boldsymbol\xi=\mathbf1_M,
+\end{equation}
+where $\mathbf1_M$ is the all-one vector in $\{0,1\}^M$.
+
+The proof of the reduction has three layers.  First, it extends
+$\boldsymbol\xi$ to a binary coefficient vector $\mathbf x$ and evaluates
+$\mathbf x$ at $\zeta$ to obtain an element of one fixed ideal coset in
+$\mathcal{O}_K$.  Second, it transforms this element into an X3C checker
+expression whose squared norm measures
+$\mathbf A\boldsymbol\xi-\mathbf1_M$.  Third, it places the checker expression
+in a rank-two module.  Writing a module vector as an
+$\mathcal{O}_K$-linear combination of the two generators introduces a
+coefficient $w\in\mathcal{O}_K$ for the second generator.  Completeness uses
+the intended choice $w=1$, whereas soundness must control every possible
+$w\in\mathcal{O}_K$.
+
+\paragraph{The ideal coset.}
+The first step embeds $\boldsymbol\xi\in\{0,1\}^n$ into
+$\mathbf x=(x_a)_{a\in\F_q}\in\{0,1\}^{\F_q}$.  The reduction chooses distinct
+field elements $\alpha_1,\ldots,\alpha_n\in\F_q$ and stores $\xi_j$ in the
+coordinate $x_{\alpha_j}$.  Let $\zeta:=\zeta_q$ be a primitive $q$th
+root of unity and put $\pi:=1-\zeta$.  For a chosen integer $k$, define
+$\mathfrak a:=\pi^k\mathcal{O}_K$.  For
+$\mathbf x=(x_a)_{a\in\F_q}\in\Z^{\F_q}$, evaluation at $\zeta$ gives the
+corresponding ring element
+\[
+ v_{\mathbf x}:=\sum_{a\in\F_q}x_a\zeta^a\in\mathcal{O}_K.
+\]
+
+By \cref{thm:cyclotomic-descent}, which uses the Bennett--Peikert minimum
+bound~\cite{BennettPeikert23}, evaluation maps the Reed--Solomon lattice to
+$\mathfrak a$ and $\lambda_1(\mathfrak a)^2\ge2kq$.  Wan's point-count
+estimate~\cite{wan2026np}, in the uniform form of
+\cref{thm:uniform-completions}, supplies many binary vectors whose ring
+elements lie in a fixed coset.  The reduction chooses one coset
+$c+\mathfrak a$.  By
+\cref{lem:coset-syndrome,thm:uniform-completions}, every
+$\boldsymbol\xi\in\{0,1\}^n$ has many extensions
+$\mathbf x\in\{0,1\}^{\F_q}$ such that
+\[
+ v_{\mathbf x}\in c+\mathfrak a,
+ \qquad \sum_{a\in\F_q}x_a=h,
+ \qquad x_{\alpha_j}=\xi_j\quad(1\le j\le n),
+\]
+where $h$ is the prescribed Hamming weight.  Thus
+$x_{\alpha_j}=\xi_j$ stores $\boldsymbol\xi$ in designated coordinates of
+$\mathbf x$, while $v_{\mathbf x}$ places the resulting ring element in the
+fixed ideal coset.  This encoding does not yet test
+\cref{eq:intro-x3c}.
+
+\paragraph{The X3C checker.}
+ The second step encodes \cref{eq:intro-x3c} in the canonical norm.
+The reduction
+constructs $U,V\in K$.  By \cref{thm:checker-score}, every weight-$h$ binary
+vector $\mathbf x$, with $\xi_j=x_{\alpha_j}$, satisfies
+\begin{equation}
+ \|Uv_{\mathbf x}-V\|^2
+ =B_0+2\|\mathbf A\boldsymbol\xi-\mathbf1_M\|_2^2
+   +\mathcal E(\mathbf x).
+\end{equation}
+Here $B_0$ depends only on the constructed instance, and
+$\mathcal E(\mathbf x)\ge0$ collects the additional terms not determined by
+$\boldsymbol\xi$.  Thus $Uv_{\mathbf x}-V$ is the \emph{checker value} whose
+squared norm encodes the residual
+$\mathbf A\boldsymbol\xi-\mathbf1_M$.  We call a representative
+$\mathbf x$ \emph{clean} if it satisfies the correlation conditions in
+\cref{sec:clean-representatives}, and these conditions imply
+$\mathcal E(\mathbf x)=0$.  The uniform coset count in
+\cref{thm:uniform-completions} and the union bound in the proof of
+ \cref{thm:enhanced-clean} show that every
+ $\boldsymbol\xi\in\{0,1\}^n$ has a clean coefficient vector
+ $\mathbf x$ with $v_{\mathbf x}\in c+\mathfrak a$.
+Consequently, an exact cover gives squared checker norm $B_0$, whereas every
+binary coefficient vector in a negative instance has squared checker norm at
+least $B_0+2$.
+
+\paragraph{The rank-two module.}
+ The third step places the checker value in a module.  Choose a
+ positive integer $\Gamma$ to control the second module coordinate.  Define
+ the rank-two $\mathcal{O}_K$-submodule of $K^2$
+\[
+ \mathcal M
+ :=\mathcal{O}_K(U\pi^k,0)
+   +\mathcal{O}_K(Uc-V,-\Gamma)
+ \subset K^2.
+\]
+Every vector in $\mathcal M$ has the unique form
+\begin{equation}
+\label{eq:intro-module-vector}
+ \mathbf v(z,w)
+ :=\bigl(U(\pi^kz+wc)-Vw,-\Gamma w\bigr),
+ \qquad z,w\in\mathcal{O}_K.
+\end{equation}
+ When $w=1$ and $\pi^kz+c=v_{\mathbf x}$, the first coordinate is
+ the checker value $Uv_{\mathbf x}-V$.  For arbitrary $w$, the
+ element $\pi^kz+wc$ lies in $wc+\mathfrak a$, and the first coordinate is
+ $U(\pi^kz+wc)-Vw$.  The second coordinate contributes
+$\Gamma^2\|w\|^2$ to the squared norm.  Set
+ $S:=B_0+\Gamma^2(q-1)$.  If $\boldsymbol\xi$ is an exact cover, choose
+ a clean coefficient vector $\mathbf x$ and write
+ $v_{\mathbf x}=\pi^kz+c$.  Taking $w=1$ in
+\cref{eq:intro-module-vector} then gives
+$\|\mathbf v(z,1)\|^2=S$.
+
+\paragraph{Soundness under multiplication.}
+It remains to control all vectors in this module when the X3C instance is
+negative.  The main issue is possible cancellation between
+$U(\pi^kz+wc)$ and $Vw$.
+ Set $y:=\pi^kz+wc\in wc+\mathfrak a$.
+ Then $\|y\|\ge\dist(wc,\mathfrak a)$.
+The stability estimate in \cref{lem:gap-and-stability} gives an explicit
+$\nu=o(1)$ and the following lower bound for the squared norm of the module
+vector.
+\begin{equation}
+\label{eq:intro-stability}
+ \|Uy-Vw\|^2+\Gamma^2\|w\|^2
+ \ge(1-\nu)\bigl(\|y\|^2+\Gamma^2\|w\|^2\bigr).
+\end{equation}
+This inequality transfers the geometric bounds from the ideal cosets to the
+module.  The argument considers four cases.
+\begin{enumerate}[label=(\roman*),leftmargin=*]
+ \item If $w=0$, Part~(iii) of
+ \cref{lem:checker-U-properties} gives $\|Uy\|\ge\|y\|$.  This preserves the
+ lower bound for the minimum of $\mathfrak a$ and puts every nonzero vector
+ above $S$.
+ \item If $w$ is a root of unity, write $y=wu$ with
+  $u\in c+\mathfrak a$.  Multiplication by $w$ is an isometry.  Let
+  $\mathbf x$ be the integral coefficient representative of $u$ from
+  \cref{lem:binary-shell}.  If $\mathbf x$ is binary, the checker identity gives
+  a squared first-coordinate norm at least $B_0+2$ in a negative instance.
+  If $\mathbf x$ is not binary,
+  \cref{lem:binary-shell} gives $\|u\|^2\ge H+2q$.  Applying
+  \cref{eq:intro-stability} to $u$ and $1$ therefore puts the
+  module vector above $S$.
+ \item If $w$ is not a root of unity and $0<\|w\|^2\le3q$,
+ \cref{thm:robust-center} separates $wc$ from $\mathfrak a$, while
+ \cref{lem:second-shell} gives $\|w\|^2\ge2q-4$.  These bounds and
+ \cref{eq:intro-stability} put the module vector above $S$.
+ \item If $w$ is not a root of unity and $\|w\|^2>3q$, the coordinate
+ $-\Gamma w$ alone puts the module vector above $S$.
+\end{enumerate}
+
+\paragraph{Organization.}
+\Cref{sec:preliminaries} recalls Euclidean lattices, prime
+cyclotomic rings, X3C, and Sidon sequences, and records the power-sum
+estimates used to count binary representatives in ideal cosets.
+\Cref{sec:descent} maps the lifted Reed--Solomon lattice to a principal
+ cyclotomic ideal, proves the fixed-coordinate count, and
+ establishes the
+norm-separation bounds used for soundness.
+\Cref{sec:x3c-checker} constructs the X3C checker and proves
+the existence of clean completions.  \Cref{sec:reduction}
+gives the main reduction.  It assembles the rank-two module, proves
+completeness and soundness, clears denominators, and establishes the claimed
+input representations and complexity bounds.

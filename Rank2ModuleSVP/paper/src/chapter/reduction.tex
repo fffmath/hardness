@@ -1,0 +1,589 @@
+\section{The rank-two reduction}
+\label{sec:reduction}
+
+Let $q\equiv3\pmod4$ be prime.  This section assembles the checker
+and the ideal coset into a rank-two module and chooses the scale $\Gamma$ for
+its second coordinate.  Let $U,V\in K$ be the checker elements constructed in
+\cref{sec:checker-construction} for the given X3C instance.  The reduction uses the ideal
+$\mathfrak a:=\mathfrak a_{q,k}=\pi^k\mathcal{O}_K$ and the center
+$c\in\mathcal{O}_K$ from \cref{eq:robust-center}.
+Until \cref{subsec:prime-and-euclidean}, assume that $M,n\ge1$,
+that every universe element occurs in at least one set, that $n+2\le T$, and
+that \cref{eq:row-shift-q-bound} holds.  That subsection enforces these
+conditions when choosing $q$ and handles isolated elements separately.
+The center $c$ fixes the ideal coset whose representatives encode
+X3C selections.  The elements $U$ and $V$ test the X3C equations in the first
+coordinate.  The integer $\Gamma$ weights the second coordinate.
+Before clearing denominators, define the generators and their span by
+\begin{gather*}
+ \mathbf m_1:=(U\pi^k,0),
+ \qquad
+ \mathbf m_2:=(Uc-V,-\Gamma),
+ \\
+ \mathcal M:=\mathcal{O}_K\mathbf m_1
+ +\mathcal{O}_K\mathbf m_2\subset K^2.
+\end{gather*}
+\Cref{lem:checker-U-properties} gives $U\ne0$, and the choice of
+$\Gamma$ below is positive.  Hence every vector in $\mathcal M$ has the unique
+form
+\begin{equation}
+\label{eq:module-vector-exact}
+ \mathbf v(z,w)
+ :=\bigl(U(\pi^kz+wc)-Vw,-\Gamma w\bigr),
+ \qquad z,w\in\mathcal{O}_K.
+\end{equation}
+When $w=1$ and $\pi^kz+c=v_{\mathbf x}$ for some
+$\mathbf x\in\{0,1\}^{\F_q}$, the first coordinate is the checker value
+ $Uv_{\mathbf x}-V$.  Part~(ii) of
+ \cref{cor:checker-interface} guarantees the existence of such a clean
+ completion for the completeness branch $w=1$.  The reduction does not compute this
+ completion.  Part~(i) gives a lower bound for every binary coefficient
+ vector.  The second coordinate contributes
+$\Gamma^2\|w\|^2$ to the squared norm.  For soundness, we consider separately
+$w=0$, roots of unity, and elements that are not roots of unity.
+
+\subsection{Gap parameters}
+
+Recall from \cref{eq:HL-parameters} that every
+$\mathbf x\in\{0,1\}^{\F_q}$ of weight $h$ satisfies
+$\|v_{\mathbf x}\|^2=H=h(q-h)$, and
+that $L$ is the lower bound on the squared norm of a nonzero element of
+$\mathfrak a$.  By \cref{eq:incidence-count}, $W=3n$.  The constant
+$b=1/100$ is used in \cref{thm:robust-center}, and $B_0$ is defined in
+\cref{eq:checker-baseline}.
+Let $\Gamma$ be the nearest positive integer to
+$\sqrt{99L/(200(q-1))}$, with ties rounded upward.  Then
+$\Gamma$ can be computed exactly in time polynomial in $\log q$.
+\begin{equation}
+\label{eq:Gamma-target-exact}
+ \Gamma
+ =\sqrt{\frac{99L}{200(q-1)}}+O(1)
+ =\Theta(\sqrt{k}).
+\end{equation}
+Squaring the estimate in \cref{eq:Gamma-target-exact} gives
+$\Gamma^2=99k/100+O(\sqrt{k})$.  Since $L=2kq$, the error contributes
+$O(q\sqrt{k})=o(L)$ after multiplication by $q-1$.  Define
+\begin{equation}
+\label{eq:F-S-nu-exact}
+ F:=\Gamma^2(q-1)
+   =\frac{198}{400}L+o(L)
+   =\Theta(L),
+ \qquad
+ S:=B_0+F,
+ \qquad
+ \nu:=\frac{W}{q\Gamma}.
+\end{equation}
+A root of unity $w$ contributes
+$\Gamma^2\|w\|^2=F$ through the second coordinate, so $S$ is the completeness
+threshold.  The parameter $\nu$ bounds the cancellation caused by $Vw$.
+
+\begin{lemma}
+\label{lem:gap-and-stability}
+Under the standing assumptions of this section, for every
+sufficiently large prime $q\equiv3\pmod4$, one has $B_0>0$, $0<\nu<1$, and
+\[
+\begin{aligned}
+ (1-\nu)(H+2q+F)&>S,
+ &\quad S&<L,\\
+ (1-\nu)\bigl(bL+\Gamma^2(2q-4)\bigr)&>S,
+ &\quad 3F&>S.
+\end{aligned}
+\]
+Moreover, every $y,w\in K$ satisfy the stability estimate
+\begin{equation}
+\label{eq:global-stability-exact}
+ \|Uy-Vw\|^2+\Gamma^2\|w\|^2
+ \ge
+ (1-\nu)\bigl(\|y\|^2+\Gamma^2\|w\|^2\bigr).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+The definitions of $h$ and $L$, together with $k=o(q)$, give
+\[
+ h=\frac{201}{200}k+O(1),
+ \quad
+ H=\frac{201}{400}L+o(L).
+\]
+The estimate for $\Gamma^2$ preceding
+\cref{eq:F-S-nu-exact} also gives
+$\Gamma^2(2q-4)=(99/100)L+o(L)$.
+For every embedding $\sigma:K\hookrightarrow\C$, Part~(ii) of
+\cref{lem:checker-U-properties} gives
+\[
+ |\sigma(q\overline U)|=q|\sigma(U)|\ge q.
+\]
+The triangle inequality gives $|\sigma(D)|\le W$.  Since
+$V=-D/(q\overline U)$, it follows that
+\[
+ \max_\sigma|\sigma(V)|\le\frac Wq,
+ \qquad
+ \|V\|^2\le\frac{(q-1)W^2}{q^2}<\frac{W^2}{q}.
+\]
+Since
+$W=3n=O(T)$ and $M\le W$, the checker formula
+in \cref{eq:checker-baseline} and the scale relations following
+\cref{eq:rs-parameters} give
+\[
+ |B_0-H|=o(q),
+ \qquad
+ \nu L=O(W\sqrt{k})=o(q).
+\]
+In particular, $B_0>0$ and $0<\nu<1$ for large $q$.
+Since $q=o(L)$, the same estimates give
+$B_0=(201/400)L+o(L)$ and $S=(399/400)L+o(L)$.  Therefore,
+\[
+\begin{aligned}
+ (1-\nu)(H+2q+F)-S&=2q+o(q)>0,
+ &\quad L-S&=\frac1{400}L+o(L)>0,\\
+ (1-\nu)\bigl(bL+\Gamma^2(2q-4)\bigr)-S
+   &=\frac1{400}L+o(L)>0,
+ &\quad 3F-S&=\frac{39}{80}L+o(L)>0.
+\end{aligned}
+\]
+For the first line, expanding $S=B_0+F$ cancels the $F$ terms.
+The remaining error is $o(q)$ because $B_0-H=o(q)$ and
+$\nu(H+2q+F)=O(\nu L)=o(q)$.
+This proves every assertion of the lemma except the stability
+estimate.
+
+For the stability estimate, the bound
+$\max_\sigma|\sigma(V)|\le W/q$ gives
+$\|Vw\|\le(W/q)\|w\|=\nu\Gamma\|w\|$.  Hence
+\[
+ 2|\langle Uy,Vw\rangle|
+ \le \nu\|Uy\|^2+\nu^{-1}\|Vw\|^2
+ \le \nu\|Uy\|^2+\nu\Gamma^2\|w\|^2.
+\]
+Using this inequality together with
+$\|Uy\|\ge\|y\|$ from Part~(iii) of
+\cref{lem:checker-U-properties}, we obtain
+\begin{align*}
+ \|Uy-Vw\|^2+\Gamma^2\|w\|^2
+ &\ge (1-\nu)\|Uy\|^2+\|Vw\|^2
+   +(1-\nu)\Gamma^2\|w\|^2\\
+ &\ge (1-\nu)
+   \bigl(\|y\|^2+\Gamma^2\|w\|^2\bigr),
+\end{align*}
+which is \cref{eq:global-stability-exact}.
+
+\end{proof}
+
+\subsection{Completeness and soundness}
+
+\begin{theorem}
+\label{thm:exact-X3C-encoding}
+For every sufficiently large prime $q\equiv3\pmod4$, the
+following implications hold for every X3C instance such that each universe
+element occurs in at least one set, $n+2\le T$, and
+\cref{eq:row-shift-q-bound} holds:
+\begin{align*}
+ \exists\boldsymbol\xi\in\{0,1\}^n:
+ \mathbf A\boldsymbol\xi=\mathbf1_M
+ &\quad\Longrightarrow\quad
+ \lambda_1(\mathcal M)^2\le S,\\
+ \forall\boldsymbol\xi\in\{0,1\}^n:
+ \mathbf A\boldsymbol\xi\ne\mathbf1_M
+ &\quad\Longrightarrow\quad
+ \lambda_1(\mathcal M)^2>S.
+\end{align*}
+\end{theorem}
+
+\begin{proof}
+\noindent\textbf{Completeness.}
+Suppose $\mathbf A\boldsymbol\xi=\mathbf1_M$.
+Part~(ii) of \cref{cor:checker-interface} gives a clean
+$\mathbf x\in\{0,1\}^{\F_q}$ such that
+$v_{\mathbf x}\in c+\mathfrak a$ and $\|Uv_{\mathbf x}-V\|^2=B_0$.
+Hence $v_{\mathbf x}=\pi^kz+c$ for some
+$z\in \mathcal{O}_K$.  Taking $w=1$ in
+\cref{eq:module-vector-exact} gives
+\[
+ \|\mathbf v(z,1)\|^2
+ =B_0+\Gamma^2\|1\|^2
+ =B_0+\Gamma^2(q-1)=S.
+\]
+
+\medskip
+\noindent\textbf{Soundness.}
+Assume that the X3C instance is negative, and consider any nonzero
+$\mathbf v(z,w)\in\mathcal M$.
+
+\smallskip
+\noindent\emph{Case 1: $w=0$.}
+Then $z\ne0$.  \Cref{lem:checker-U-properties,thm:cyclotomic-descent}
+give
+\[
+ \|\mathbf v(z,0)\|^2
+ =\|U\pi^kz\|^2
+ \ge\|\pi^kz\|^2
+ \ge L>S,
+\]
+where the final inequality follows from
+\cref{lem:gap-and-stability}.
+
+\smallskip
+\noindent\emph{Case 2: $w$ is a root of unity.}
+Write $w=\pm\zeta^a$ for some $a\in\F_q$.  Since
+$w\mathfrak a=\mathfrak a$, the element
+$u:=w^{-1}\pi^kz+c$ belongs to $c+\mathfrak a$, and
+$\pi^kz+wc=wu$.  The first coordinate is $w(Uu-V)$.
+Since multiplication by $w$ is an isometry and $\|w\|^2=q-1$,
+both subcases below satisfy
+$\|\mathbf v(z,w)\|^2=\|Uu-V\|^2+F$.  By
+\cref{lem:binary-shell}, $u$ has a
+unique integral coefficient representative
+$\mathbf x\in\Z^q$ with coefficient sum $h$.
+
+\begin{enumerate}[label=(\alph*)]
+\item If $\mathbf x\in\{0,1\}^{\F_q}$, the coefficient-sum condition shows that
+$\mathbf x$ has weight $h$.  Define
+$\xi_j:=x_{\alpha_j}$ for $j\in[n]$.  Since the instance is negative,
+$\|\mathbf A\boldsymbol\xi-\mathbf1_M\|_2^2\ge1$.  Thus
+\cref{cor:checker-interface} yields
+\[
+ \|\mathbf v(z,w)\|^2
+ =\|Uu-V\|^2+\Gamma^2(q-1)\ge B_0+2+F=S+2>S.
+\]
+
+\item If $\mathbf x\notin\{0,1\}^{\F_q}$, then \cref{lem:binary-shell} gives
+$\|u\|^2\ge H+2q$.  Apply
+\cref{eq:global-stability-exact} to the arguments $u$ and $1$, and then use
+the inequality $(1-\nu)(H+2q+F)>S$ from
+\cref{lem:gap-and-stability}:
+\[
+ \|\mathbf v(z,w)\|^2
+ =\|Uu-V\|^2+F
+ \ge(1-\nu)(H+2q+F)>S.
+\]
+\end{enumerate}
+
+\smallskip
+\noindent\emph{Case 3: $w$ is not a root of unity and
+$0<\|w\|^2\le3q$.}
+Put $y:=\pi^kz+wc$.  Since $\pi^kz\in\mathfrak a$, the
+coset-separation bound in \cref{thm:robust-center} gives
+\[
+ \|y\|^2\ge\dist(wc,\mathfrak a)^2>bL.
+\]
+Because $w$ is not a root of unity, \cref{lem:second-shell} also gives
+$\|w\|^2\ge2q-4$.  The stability estimate and
+the inequality
+$(1-\nu)\bigl(bL+\Gamma^2(2q-4)\bigr)>S$ from
+\cref{lem:gap-and-stability} imply
+\[
+ \|\mathbf v(z,w)\|^2
+ >(1-\nu)\bigl(bL+\Gamma^2(2q-4)\bigr)>S.
+\]
+
+\smallskip
+\noindent\emph{Case 4: $w$ is not a root of unity and
+$\|w\|^2>3q$.}
+The second coordinate alone gives
+\[
+ \|\mathbf v(z,w)\|^2
+ \ge\Gamma^2\|w\|^2
+ >3q\Gamma^2>3F>S,
+\]
+using the last inequality in \cref{lem:gap-and-stability}.  These cases exhaust every nonzero module
+vector.
+\end{proof}
+
+\subsection{Integral module and encoding length}
+\label{subsec:denominator-clearing}
+
+The generators of $\mathcal M$ may have denominators.  We multiply
+both generators by a common positive integer.  This scales every squared norm
+and the threshold by the same square and preserves the gap.
+\paragraph{A common denominator.}
+Put $r:=q-\vartheta p=q\overline U\in \mathcal{O}_K\setminus\{0\}$, the
+denominator of $V$ in \cref{eq:checker-V}.  Let
+\begin{equation*}
+ N_r:=\prod_{a\in\F_q^\times}\sigma_a(r)
+ \in\Z\setminus\{0\},
+ \qquad
+ \rho:=q|N_r|.
+\end{equation*}
+Every $\sigma_a$ permutes the factors defining $N_r$, so $N_r$ is
+rational.  It is also an algebraic integer and therefore lies in $\Z$.
+Since $\sigma_1$ is the identity embedding,
+$N_r/r=\prod_{a\in\F_q^\times\setminus\{1\}}\sigma_a(r)\in \mathcal{O}_K$.
+Using \cref{eq:checker-U,eq:checker-V},
+\begin{equation}
+\label{eq:cleared-UV-exact}
+ \rho U=|N_r|(q+\vartheta p)\in \mathcal{O}_K,
+ \qquad
+ \rho V=-qD\frac{|N_r|}{r}\in \mathcal{O}_K.
+\end{equation}
+Define
+\begin{equation}
+\label{eq:integral-module-exact}
+ \widehat{\mathbf m}_i:=\rho\mathbf m_i\in \mathcal{O}_K^2
+ \quad(i\in\{1,2\}),
+ \qquad
+ \widehat{\mathcal M}
+ :=\mathcal{O}_K\widehat{\mathbf m}_1+\mathcal{O}_K\widehat{\mathbf m}_2,
+ \qquad
+ \widehat S:=\rho^2S.
+\end{equation}
+Its generator matrix
+\[
+ \widehat{\mathbf B}=
+ \begin{pmatrix}
+  \rho U\pi^k&\rho(Uc-V)\\
+  0&-\rho\Gamma
+ \end{pmatrix}\in \mathcal{O}_K^{2\times2},
+\]
+has determinant $-\rho^2\Gamma U\pi^k\ne0$.  By the module-lattice
+facts in \cref{sec:preliminaries}, $\widehat{\mathcal M}$ is therefore a
+full-rank free submodule of $\mathcal{O}_K^2$.
+Since $\widehat{\mathcal M}=\rho\mathcal M$ and
+$\lambda_1(\widehat{\mathcal M})=\rho\lambda_1(\mathcal M)$,
+\cref{thm:exact-X3C-encoding} yields
+\begin{align}
+\label{eq:scaled-exact-encoding}
+ \text{positive X3C}&\Longrightarrow
+ \lambda_1(\widehat{\mathcal M})^2\le\widehat S,
+ \nonumber\\
+ \text{negative X3C}&\Longrightarrow
+ \lambda_1(\widehat{\mathcal M})^2>\widehat S.
+\end{align}
+
+\paragraph{Integral threshold.}
+Since $\rho V\in\mathcal{O}_K$,
+\[
+ \rho^2\|V\|^2=\|\rho V\|^2
+ =\Tr_{K/\Q}((\rho V)\overline{\rho V})
+\]
+is an integer.  Every denominator $q$ in \cref{eq:checker-baseline} is
+cleared because $\rho^2/q=qN_r^2\in\Z$.  Hence $\widehat S\in\Z$.
+Since $\rho>0$ and $S>0$, we have
+$\widehat S=\rho^2S>0$.
+
+\paragraph{Encoding length.}
+For the module $\widehat{\mathcal M}$ constructed above, we bound
+the power-basis coefficients of its two generators and the bit length of
+$\widehat S$ polynomially in $q$ and the X3C input length.  By
+\cref{eq:integral-module-exact}, the generator bounds amount to controlling
+$\rho U\pi^k$, $\rho(Uc-V)$, and $\rho\Gamma$.  In view of
+\cref{eq:cleared-UV-exact}, the only new quantities requiring estimates are
+$N_r$ and the power-basis coefficients of $N_r/r$.  Write
+\[
+ r=\sum_{i=0}^{q-2}r_i\zeta^i,
+ \qquad
+ B_r:=\max\left\{1,\max_i|r_i|\right\}.
+\]
+Since $q\equiv3\pmod4$, one has $\chi(-1)=-1$.  Using
+$\zeta^{q-1}=-(1+\zeta+\cdots+\zeta^{q-2})$, we obtain
+\[
+ \vartheta
+ =\sum_{a=1}^{q-2}\chi(a)\zeta^a-\zeta^{q-1}
+ =1+\sum_{a=1}^{q-2}(1+\chi(a))\zeta^a.
+\]
+Thus the power-basis coefficients of $\vartheta$ lie in $\{0,1,2\}$ and are
+efficiently computable from $a^{(q-1)/2}\bmod q$.  The power-basis
+coefficient bounds for $p$, $D$, and $\vartheta$ are therefore $1$, $3$, and
+$2$, respectively.  In $q$-coordinates, $p$ has $2W$
+nonzero coefficients and every coefficient of $\vartheta$ has absolute value
+at most one.  Each coefficient of $\vartheta p$ is therefore a sum of at most
+$2W$ coefficients of $\vartheta$.  Hence the coefficients of $\vartheta p$
+are bounded by $2W$ in $q$-coordinates and by $4W$ in the power basis.
+Consequently,
+\[
+ B_r\le q+4W.
+\]
+Let $\mathbf M_r\in\Z^{(q-1)\times(q-1)}$ be the matrix of multiplication
+by $r$ in the power basis $1,\zeta,\ldots,\zeta^{q-2}$.  For
+$0\le j\le q-2$, the column indexed by $j$ is the coefficient vector of
+$r\zeta^j$.  First use $\zeta^q=1$ to reduce its exponents to
+$0,\ldots,q-1$.  The resulting powers are distinct, and the only power
+outside the power basis is $\zeta^{q-1}$.  Replacing this term with
+\[
+ \zeta^{q-1}=-(1+\zeta+\cdots+\zeta^{q-2})
+\]
+shows that every entry of $\mathbf M_r$ is a sum of at most two terms of the
+form $\pm r_i$.  Hence every entry has absolute value at most $2B_r$, and
+every row has $\ell_2$-norm at most $2\sqrt{q-1}\,B_r$.
+
+Over $\C$, the eigenvalues of multiplication by $r$ are the conjugates
+$\sigma_a(r)$ for $a\in\F_q^\times$.
+Consequently, the determinant identity and Hadamard's determinant
+bound give
+\begin{equation}
+\label{eq:hadamard-norm-r}
+ \det(\mathbf M_r)=\prod_{a\in\F_q^\times}\sigma_a(r)=N_r,
+ \qquad
+ |N_r|\le\left(2\sqrt{q-1}\,B_r\right)^{q-1}.
+\end{equation}
+
+We also need to control the coefficients of $N_r/r$.  Its multiplication
+matrix is $N_r\mathbf M_r^{-1}$.  For $1\le i,j\le q-1$, let
+$\mathbf M_r^{(j,i)}$ be the matrix obtained from $\mathbf M_r$ by deleting
+row $j$ and column $i$.  The cofactor formula for the inverse gives
+\[
+ \bigl(N_r\mathbf M_r^{-1}\bigr)_{ij}
+ =(-1)^{i+j}\det\bigl(\mathbf M_r^{(j,i)}\bigr).
+\]
+Every row of this $(q-2)\times(q-2)$ matrix has $\ell_2$-norm at most
+$2\sqrt{q-2}\,B_r$.  A second application of Hadamard's bound therefore
+shows that
+\begin{equation}
+\label{eq:hadamard-quotient-r}
+ \left|\bigl(N_r\mathbf M_r^{-1}\bigr)_{ij}\right|
+ \le\left(2\sqrt{q-2}\,B_r\right)^{q-2}.
+\end{equation}
+Applying $N_r\mathbf M_r^{-1}$ to the coefficient vector of $1$
+shows that its first column is the power-basis coefficient vector of $N_r/r$.
+Thus \cref{eq:hadamard-norm-r,eq:hadamard-quotient-r} show that
+$N_r$ and every coefficient of $N_r/r$ have bit length
+$O\bigl(q(\log B_r+\log q)\bigr)$.  The matrix $\mathbf M_r$ is computable
+from the coefficients of $r$.  Standard polynomial-time exact integer linear
+algebra computes its determinant and the first column of its adjugate, and
+hence computes $N_r$ and the coefficients of $N_r/r$ within these bounds.
+
+The bound $B_r\le q+4W$ and
+\cref{eq:hadamard-norm-r} show that $\rho=q|N_r|$ has polynomial bit length.
+The coefficients of $\pi^k$ and
+$c=h+\pi^{\lfloor k/2\rfloor}$ have $O(k)$ bit length, and $\Gamma$ has
+$O(\log k)$ bit length by \cref{eq:Gamma-target-exact}.  Addition and
+multiplication in the power basis use $q-1$ integer coefficients and increase
+their bit lengths by only a polynomial amount.  Since the next subsection
+chooses $q$ polynomially
+bounded in the X3C input length, the two generators in
+\cref{eq:integral-module-exact} are computable in deterministic polynomial
+time and have polynomial encoding length.
+
+The bit-length bound for $\rho$ and the coefficient bounds for
+$\rho V$, together with
+\cref{eq:checker-baseline,eq:F-S-nu-exact},
+show that $\widehat S$ has bit length
+polynomial in $q$ and the X3C input length.
+It is also computable in deterministic polynomial time.  Compute
+$\|\rho V\|^2$ from the power-basis coefficients of $\rho V$ using
+\cref{lem:cyclotomic-form}, and then compute $\widehat S=\rho^2S$ from
+\cref{eq:checker-baseline,eq:F-S-nu-exact} using exact integer
+arithmetic.
+
+\subsection{Prime choice and Euclidean input}
+\label{subsec:prime-and-euclidean}
+
+For an X3C instance with an isolated universe element, the
+reduction outputs the fixed module lattice over $\Z[\zeta_3]$ generated by
+$(2,0)$ and $(0,2)$, with squared threshold $1$.  Its squared minimum is
+$8>1$, so this is a NO instance.  For every remaining instance,
+adjoin a disjoint three-element block together with its unique set, as in
+\cref{sec:preliminaries}.  This answer-preserving preprocessing ensures
+$M,n\ge1$.  We retain the notation $M$, $n$, and $\mathbf A$ for the resulting
+instance, in which every universe element occurs in at least one set.
+
+Let $\ell$ be the bit length of this preprocessed X3C instance, and
+recall from \cref{eq:rs-parameters} that $T$ is the number of coordinates
+that may be prescribed.  By the prime number theorem for
+arithmetic progressions~\cite[Equation~(17.2)]{IwaniecKowalski04}, choose an
+absolute integer $X_0$ exceeding the threshold implicit in
+\cref{thm:exact-X3C-encoding} and large enough that every interval $[Y,2Y]$
+with $Y\ge X_0$ contains a prime congruent to $3$ modulo $4$.
+Since $n=O(\ell)$ for this explicit encoding,
+\cref{lem:sidon} and \cref{eq:incidence-count,eq:row-shifts} give
+$4\tau M=O(n^3)=O(\ell^3)$.  Since $T=\lfloor q^{1/2000}\rfloor$, an
+absolute constant $C_0$ can therefore be chosen so that every
+$q\ge(\ell+2)^{C_0}$ satisfies $n+2\le T$ and
+the inequality in \cref{eq:row-shift-q-bound}.  Put
+\[
+ X:=\max\left\{X_0,\left\lceil(\ell+2)^{C_0}\right\rceil\right\}.
+\]
+
+ By the defining property of $X_0$, the interval $[X,2X]$ contains
+ a prime congruent to $3$ modulo $4$.  The reduction scans the
+integers in this interval that are congruent to $3$ modulo $4$ and applies
+deterministic primality testing~\cite{AgrawalKayalSaxena04}.  It finds a
+prime $q\equiv3\pmod4$ with $q=\ell^{O(1)}$ in deterministic polynomial
+time.
+
+It remains to represent the canonical norm by the standard
+coordinate $\ell_2$-norm.
+Let $d:=q-1$.  Using the integral basis of $\mathcal{O}_K$ from
+\cref{sec:preliminaries}, consider the vectors
+\[
+ \zeta^t\widehat{\mathbf m}_i,
+ \qquad 0\le t<d,
+ \quad i\in\{1,2\},
+\]
+which form a $\Z$-basis of $\widehat{\mathcal M}$.  Let
+$\mathbf C_{\widehat{\mathcal M}}\in\Z^{2d\times2d}$ be the matrix whose
+columns are their power-basis coefficient vectors.
+
+To realize the canonical inner product, let
+$\mathbf E_q\in\Z^{\binom q2\times d}$ be an oriented incidence matrix of
+the complete graph on $q$ vertices with one vertex column deleted.  Its Gram
+matrix is
+\[
+ \mathbf E_q^{\mathsf T}\mathbf E_q
+ =q\mathbf I_d-\mathbf1_d\mathbf1_d^{\mathsf T}.
+\]
+Thus \cref{lem:cyclotomic-form}
+gives the following integer basis matrix:
+\begin{equation}
+\label{eq:standard-Euclidean-basis-exact}
+ \mathbf B
+ :=(\mathbf I_2\otimes\mathbf E_q)
+\mathbf C_{\widehat{\mathcal M}}
+  \in\Z^{2\binom q2\times2d},
+\end{equation}
+The lattice $\mathcal L(\mathbf B)$ is isometric to
+$\widehat{\mathcal M}$.  The
+Gram identity
+above shows that $\mathbf I_2\otimes\mathbf E_q$ has full column rank, while
+$\det(\widehat{\mathbf B})\ne0$ shows that
+$\mathbf C_{\widehat{\mathcal M}}$ has full rank.  Hence $\mathbf B$ has full
+column rank.  Its dimensions and encoding length are polynomial in $\ell$.
+
+\subsection{Proof of the main theorem}
+
+\begin{proof}[Proof of \cref{thm:main-intro}]
+Every output of the reduction is a full-rank free $\mathcal{O}_K$-submodule of
+$\mathcal{O}_K^2$ and hence has module rank two.  As a $\Z$-lattice,
+each output has rank $2(q-1)$.
+For $\NP$-hardness, consider the two branches in
+\cref{subsec:prime-and-euclidean}.  If the input has an isolated universe
+element, then both the input and the fixed output are negative.  Otherwise,
+the reduction maps the preprocessed X3C instance to
+$(q,\widehat{\mathbf m}_1,\widehat{\mathbf m}_2,\widehat S)$.  On this branch,
+the construction is deterministic and runs in polynomial time.  The two
+module generators lie in $\mathcal{O}_K^2$ and have nonzero determinant, and
+\cref{eq:scaled-exact-encoding} proves the exact YES--NO equivalence.
+For the polynomial-time computable integer matrix $\mathbf B$
+in \cref{eq:standard-Euclidean-basis-exact}, the lattice
+$\mathcal L(\mathbf B)$ is isometric to the canonically embedded module
+$\widehat{\mathcal M}$.
+
+For membership in $\NP$, first parse the encoded string and check the
+coefficient format, the nonnegative integer threshold, primality,
+$q\equiv3\pmod4$, and the nonzero determinant condition.  Reject the input if
+ any check fails.  For a valid input, apply the coefficient-matrix construction
+ in \cref{subsec:prime-and-euclidean} to the input generators
+ $\mathbf m_1,\mathbf m_2$.  This produces in polynomial time an
+ integer matrix $\mathbf B$ such that $\mathcal L(\mathbf B)$
+ is isometric to the module lattice defined by the input generators.  The
+ nonzero $K$-determinant
+ guarantees that $\mathbf B$ has full column rank.  The standard verifier
+ for decision-$\SVP$ from \cref{sec:preliminaries} then
+ applies.  This proves
+\cref{thm:main-intro}.
+\end{proof}
+
+\begin{proof}[Proof of \cref{cor:search-hardness}]
+Given an X3C instance, first check for an isolated universe
+element.  If one exists, return NO without calling the oracle.  Otherwise,
+apply the answer-preserving preprocessing above, carry out the reduction, and
+construct the integer basis $\mathbf B$ from
+\cref{subsec:prime-and-euclidean}.  The lattice
+$\mathcal L(\mathbf B)$ is isometric to the full-rank free module lattice
+$\widehat{\mathcal M}\subseteq\mathcal{O}_K^2$.  A search-$\SVP$ oracle
+therefore returns a shortest nonzero vector
+$\mathbf y\in\mathcal L(\mathbf B)$.
+By \cref{eq:scaled-exact-encoding}, the X3C
+instance is positive exactly when $\|\mathbf y\|_2^2\le\widehat S$.
+Thus at most one oracle call decides X3C in polynomial time,
+which proves the claimed Turing hardness.
+\end{proof}
