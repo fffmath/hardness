@@ -23,7 +23,7 @@ Remaining for the unconditional `moduleSVP_npComplete`:
 2. Concrete frontend `flatFrontend` (100a3e7); all rational enclosures proved (29b9df8);
    `flatFrontend_preparation_of_geometry (hG : MarkedRunGeometryHypothesis)` -- remaining
    six marked-run geometry estimates -- job p2s-frontend3.
-3. `FlatSeedFrontendRuntimeHypothesis flatFrontend` -- job p2s-frontrt.
+3. DONE: `flatFrontend_runtime : FlatSeedFrontendRuntimeHypothesis flatFrontend` (FlatFrontendRuntime.lean), unconditional.
 
 Resume protocol: check `cx-status p2s-*`, `git status`, this file; prompts in /workspace/shared/jobs/_p2s.
 Historical sections below (per job) are kept for detail; the Phase-1 text further down is superseded.
@@ -1514,3 +1514,63 @@ is introduced. All six audited principal exports report only
 `propext`, `Classical.choice`, and `Quot.sound`. Job-local scratch was removed.
 No native runtime
 certificate is claimed by this job. No private source text was copied.
+
+## Flat seed frontend runtime (p2s-frontrt)
+
+**Complete for the original `flatFrontend`.** `FlatFrontendRuntime.lean`
+exports the unconditional theorem
+
+```lean
+Power2ModuleSVP.flatFrontend_runtime :
+  FlatSeedFrontendRuntimeHypothesis flatFrontend
+```
+
+All three fields certify the actual total preprocessing functions, including
+zero, malformed degrees and arbitrary second-input rational lists. There is
+no added arithmetic, size, geometry or coloring hypothesis. This result does
+not discharge the frontend's separate analytic preparation contract.
+
+Six new files, all under this job's `FlatFrontendRuntime*` prefix:
+
+- `FlatFrontendRuntimeTaylor.lean`: period-four phase lookup, exact finite-sum
+  implementation of the rational Taylor pair, arctangent/Machin sums,
+  precision/order counters and binary floor-square-root approximation.
+  Rational powers, unary factorials and common-denominator summation reuse
+  `ColoringNativeArithmetic` and the repair runtime certificates. Truncation
+  orders and square-root precisions are independent unary inputs, so these
+  certificates transfer to other polynomial-time precision policies.
+- `FlatFrontendRuntimeParameters.lean`: bounded stage search, binary powers,
+  rational height, first threshold, and certified unary conversions. The
+  coarse raw-input bounds are `blockShift N <= 2048*(N+1)^2`,
+  `height N >= 1/2^212` for positive `N`, and
+  `gridRatio N <= 2*(64*N*2^212+1)`. The zero branch is proved separately.
+  A short list-search helper mirrors complexitylib's `Nat.Search` proof
+  locally because that dependency module has no built object in this checkout;
+  no shared dependency source or build artifact was changed for this helper.
+- `FlatFrontendRuntimeWords.lean`: capped RS word iteration, proved equal to
+  the requested prefixes of the original words. Every intermediate word has
+  at most the cap's number of sign entries. This certifies stable prefixes
+  and individual coefficient lookup without an exponential allocation.
+- `FlatFrontendRuntimeChebyshev.lean`: integer common-denominator iteration.
+  If the state is `(A,B)`, the next state is
+  `(B,2*q.num*B-q.den^2*A)`. The exact rational pair is recovered with
+  denominators `q.den^n` and `q.den^(n+1)`. A linear bound on each integer's
+  bit length certifies every intermediate state for arbitrary rational `q`.
+- `FlatFrontendRuntimeScan.lean`: a capped forward accumulator, proved equal
+  to `scanCells 0 none`. The input word length bounds every reachable index;
+  the cap gives a uniform additive encoded-state growth bound.
+- `FlatFrontendRuntime.lean`: background, reflected samples, marking, interval
+  matrices, clipped fractional coefficients, normalized derivative matrices,
+  both complete coloring inputs and the final structure. Exports polynomial
+  canonical numerator/denominator bit bounds for Taylor pairs, square roots,
+  Chebyshev pairs, kernel entries and derivative entries. These bounds come
+  from native certificates, not bounds on numerical absolute values alone.
+
+Validation: all six modules built individually and sequentially with
+`lake build Power2ModuleSVP.<module>`. The final
+`lake build Power2ModuleSVP.FlatFrontendRuntime` passed. A separate importing
+Lean check confirmed the exact exported type and all five bit-bound
+corollaries. `#print axioms Power2ModuleSVP.flatFrontend_runtime` reports only
+`[propext, Classical.choice, Quot.sound]`. The new Lean files contain no
+`sorry`, `admit`, new axiom or implementation override. Root, Lake configuration,
+existing Lean files and the concurrent jobs' sources were not edited.
