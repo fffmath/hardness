@@ -1,7 +1,7 @@
 name = "hardness"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["Hardness"]
+defaultTargets = ["IdealCVP", "Rank2ModuleSVP"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -15,7 +15,10 @@ scope = "leanprover-community"
 rev = "v4.36.0-rc1"
 
 [[lean_lib]]
-name = "Hardness"
+name = "IdealCVP"
+
+[[lean_lib]]
+name = "Rank2ModuleSVP"
 
 [[require]]
 name = "complexitylib"
