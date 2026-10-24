@@ -556,3 +556,6 @@ explicitly included in the union bound. Prefix branch averaging uses
 disjointness within a candidate's selected rows; it requires no independence
 between candidates. Bit-complexity of the full rational computation remains
 a separate, unproved algorithmic obligation.
+- 182db75: coset_npComplete UNCONDITIONAL; moduleSVP_npComplete_of hJ. ebdab28: Bernstein etc. 71afbbf: semantic repair (spectral seed ⇒ rigid), audit (AUDIT.md: no soundness defect).
+- Round 5 (05:05 UTC+8): p2s-seed2 (running since 04:49), p2s-repairpoly (repair_polytime, rigidAnchorFamily_of_seed), p2s-color (coloring algorithm + runtime).
+- Remaining chain to unconditional module theorem: SpectralSeedFamilyHypothesis (flat seed: Rudin–Shapiro, sine kernel, intervals, coloring, Taylor rounding, runtime) + repair runtime.
