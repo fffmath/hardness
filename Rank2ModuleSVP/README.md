@@ -1,14 +1,30 @@
 # Rank2ModuleSVP — SVP on rank-2 cyclotomic modules
 
-Lean 4 formalisation (in progress) of
+Lean 4 formalisation of
 
 > Jiaqi Liu, Yansong Feng, Yanbin Pan. **SVP Is NP-Hard for Some Rank-2 Cyclotomic Modules.**
-> arXiv:2609.01469 (IACR ePrint 2026/1856). PDF: `paper/2609.01469.pdf`, LaTeX source: `paper/src/`.
+> Target version: **v2**, `paper/rank2svp_v2.pdf` (text: `paper/rank2svp_v2.txt`).
+> The v1 source (arXiv:2609.01469, ePrint 2026/1856; `paper/2609.01469.pdf`, `paper/src/`) is background only;
+> `specs/v2_diff.md` lists the v1 → v2 changes.
 
-Main theorem: for primes q ≡ 3 (mod 4), decision-SVP (ℓ₂, canonical embedding) on full-rank free
-rank-2 submodules of ℤ[ζ_q]² is NP-complete under deterministic polynomial-time many-one
-reductions from X3C. See `specs/PLAN.md` for the proof outline and the phased plan,
-`NOTES.md` for the paper ↔ Lean map and `specs/STATUS.md` for progress.
+Theorem 1.1 (v2): as q ranges over **odd primes**, decision-SVP (ℓ₂, canonical embedding) on full-rank
+free rank-2 submodules of ℤ[ζ_q]² is NP-complete under deterministic polynomial-time many-one
+reductions from X3C.
 
-Modules: `Rank2ModuleSVP.*` (root `Rank2ModuleSVP.lean` at the repo root); it imports the
-shared `IdealCVP` infrastructure.
+## Main Lean results (namespace `Rank2ModuleSVP`, root `Rank2ModuleSVP.lean`)
+
+| Result | Lean name | File |
+| --- | --- | --- |
+| NP membership (unconditional) | `moduleSVP_mem_NP : ModuleSVPLang ∈ NP encSVP` | `MembershipCert.lean` |
+| Thm 5.2 exact X3C encoding | `exact_X3C_encoding` | `Reduction.lean` |
+| Total map correctness, X3C ↔ SVP | `reductionMap_correct (hWan) (x)` | `Main.lean` |
+| Outputs satisfy the SVP promises | `reductionMap_wellFormed` | `Main.lean` |
+| NP-completeness | `moduleSVP_npComplete_of_polytime (hWan) (hpoly)` | `Main.lean` |
+
+The only named mathematical hypothesis is `WanPowerSumEstimates` (`Wan.lean`, passed explicitly; it
+needs Weil/Deligne-strength point-count bounds, see `notes/weil-bound-research.md`). The
+Bennett–Peikert minimum is proved. All main theorems use only `propext`, `Classical.choice`, and
+`Quot.sound`. Corollary 1.2 (search-SVP, one-call Turing reduction) is not formalised.
+
+See `NOTES.md` and `notes/` for the paper ↔ Lean map and `specs/STATUS.md` for progress.
+Modules `Rank2ModuleSVP.*` import the shared `IdealCVP` infrastructure.
