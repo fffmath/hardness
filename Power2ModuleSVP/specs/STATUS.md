@@ -1420,3 +1420,96 @@ checks cover score ties, zero candidates, dependent/zero projector rows,
 zero normalization and a nonzero normalized vector. No unfinished proofs,
 new axioms or implementation overrides were introduced. Scratch was kept
 under `/tmp/p2s-scratch-p2s-colornative2` and removed after validation.
+
+## Flat seed frontend 2 (p2s-frontend2)
+
+**Partial completion: all rational enclosures discharged; marked-run analytic
+geometry remains open.** There is still no unconditional
+`flatFrontend_preparation : FlatSeedPreparationHypothesis flatFrontend`.
+The implementation and its precisions are unchanged. In particular, the
+runtime job should continue using `flatFrontend`, `precision`, and
+`taylorOrder` from the original frontend files; no corrected frontend is
+introduced here.
+
+Seven new owned modules, without changing committed Lean files, the root,
+or Lake configuration:
+
+- `FlatFrontend2Derivative.lean`: exact derivative phase identification and
+  an entry enclosure whose only premises are rational remainder bounds.
+- `FlatFrontend2Precision.lean`: geometric Machin bound, factorial Taylor
+  bound, automatic ratio test, uniform rounding budget, and the unconditional
+  `derivative_error`. This holds for every derivative order and every actual
+  derivative entry, without a large-degree premise. A stronger tolerance
+  `fineError N = 1/(2^80*(N+1)^10)` controls endpoint evaluation as well.
+- `FlatFrontend2Kernel.lean`: exact integral matrix interpretation and finite
+  coefficient sum, exact identification of the first rational input rows,
+  recomputation transfer, first-round discrepancy transfer, and reduction of
+  the fractional bound to a scalar threshold margin. The empty interval
+  family is handled explicitly.
+- `FlatFrontend2Endpoints.lean`: endpoint cosine enclosures, the real/rational
+  kernel-entry enclosure, a summed error budget, and `fractional_error` for
+  every geometry certificate of the computed runs. This theorem needs only
+  signs of the first output, not its discrepancy bound.
+- `FlatFrontend2Threshold.lean`: a uniform bound on the actual integer first
+  threshold and the resulting `firstThreshold_margin`. The key integer
+  inequality is `firstThresholdNat N J ^ 2 * J * 2^66 <= 841*N` whenever
+  `J > 0` and `J*2^66 <= N`. It allows the threshold to grow for sparse
+  interval families instead of incorrectly assuming it is always at most 29.
+- `FlatFrontend2Runs.lean`: the actual `scanCells` output has positive widths,
+  endpoints within the scanned range, and pairwise cell gaps. It defines the
+  canonical endpoints, the remaining six-field `MarkedRunEstimates`, and
+  constructs `geometryCertificate_of_estimates` from those estimates.
+- `FlatFrontend2Main.lean`: `enclosure_of_geometry` discharges **all three**
+  fields of the original `EnclosureHypothesis` using the original executable
+  frontend, and composes the preparation theorem below.
+
+Principal exports in `Power2ModuleSVP.FlatFrontend`:
+
+```lean
+derivative_error (k : Fin (16*N)) (ell : Nat) (j : Fin N) :
+  |derivativeRow N k ell j - (derivativeEntry N k ell j : Real)| <=
+    (seedRoundingError N : Real)
+
+enclosure_of_geometry (G : GeometryCertificate d) (hN : 0 < seedN d) :
+  EnclosureHypothesis G.kernelIntervals
+
+geometryCertificate_of_estimates (h : MarkedRunEstimates d) :
+  GeometryCertificate d
+
+flatFrontend_preparation_of_geometry (hG : MarkedRunGeometryHypothesis) :
+  FlatSeedPreparationHypothesis flatFrontend
+```
+
+**Exact residual hypothesis.** `MarkedRunGeometryHypothesis` asks for
+`MarkedRunEstimates d` at each relevant dyadic degree. Its fields refer to
+`runLeft` and `runRight`, which are precisely the computed list endpoints,
+and require only:
+
+1. At most six cells per run.
+2. One hundred cells of left-axis clearance.
+3. One hundred cells of right-axis clearance.
+4. `intervalCount d * 2^66 <= seedN d`.
+5. The required cosine margin outside these actual runs after folding.
+6. The even-part bound `6*sqrt(seedN d)`.
+
+Positive width, range, separation, endpoint alignment, all Taylor/Machin/sqrt
+precision bounds, recomputation error, derivative error, and the first
+fractional-coefficient bound are proved and are not residual premises.
+No spectral inequality or final seed conclusion is a field of this smaller
+hypothesis. Constructing the remaining geometry needs the background/RS
+identifications, ordered rational-grid error and coverage, and application of
+the existing wave/component estimates to the actual marked cells. This
+connection has not been formalized in this job. In particular, relevant
+`seedN d` is odd, so the unscanned half-cell at the right endpoint requires
+an axis-clearance argument. For the sharp count, use a reduced polynomial in
+`cos(2*theta)`; the full even Chebyshev polynomial has twice the desired
+degree bound. These are proof obligations, not identified counterexamples to
+the construction.
+
+Validation: each owned module checked separately; aggregate single-target
+`lake build Power2ModuleSVP.FlatFrontend2Main` checks all seven modules.
+No unfinished proof, new axiom, native decision, or implementation override
+is introduced. All six audited principal exports report only
+`propext`, `Classical.choice`, and `Quot.sound`. Job-local scratch was removed.
+No native runtime
+certificate is claimed by this job. No private source text was copied.
