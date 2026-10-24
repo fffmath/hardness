@@ -1331,3 +1331,92 @@ background signs/lengths, empty first input, threshold 29, floor square root,
 Taylor values, pi approximation and phase rotation). No unfinished proof or
 new axiom occurs in these sources. Job-local scratch was removed after the
 final checks. Root import integration remains with the dispatcher.
+
+## Coloring native runtime 2 (p2s-colornative2)
+
+**Partial completion. Neither whole-program native hypothesis is discharged.**
+This pass proves entropy-free intermediate weight bit bounds and adds exact
+native cached-projector, column-selection and direction programs. The
+projector/direction certificates remain conditional on a local arithmetic
+bound. It does not export `partialColoringNative_holds` or
+`fullColoringNative_partialColor`, and does not claim to derive those two
+hypotheses from the remaining arithmetic premise alone.
+
+Added seven owned modules, with aggregate import `ColoringNative2.lean`.
+No previously committed Lean source, root import, Lake configuration,
+dependency, or frontend job source was edited.
+
+- `ColoringNative2Weights.lean`: unconditional direction norm contraction;
+  an entropy-free row-increment bound; initialization between zero and two;
+  weight growth through every stopped-walk prefix; and explicit canonical
+  numerator-plus-denominator bit bounds. This finishes the earlier raw-input
+  weight-magnitude obligation for retained, normalized rows. In particular,
+  `prepared_walk_weight_bits_le_raw` needs only positive dimension, a cube
+  starting point and nonnegative original thresholds, not entropy. Its bound
+  is `2*(fuel+1)+1+2*(precision r preparedRowCount+2)`. Initialization is
+  bounded even on arbitrary thresholds. The row-increment argument includes
+  zero directions and dependent projectors.
+- `ColoringNative2Projector.lean`: the explicit reverse-list fold
+  `projectorBatch`, identity initialization and row truncation, with exact
+  agreement with the original canonical table. The theorem
+  `projectorBatch_polytime_of_size` certifies the entire loop from a uniform
+  bound on canonical table encodings for sublists of the input. Every
+  prefix accumulator is identified with such a table. Zero, dependent and
+  wrong-length raw rows are covered.
+- `ColoringNative2Height.lean`: projector entries have absolute value at
+  most one; numerator bits are at most denominator bits; an explicit bound
+  on the framed table encoding; and reduction of the preceding size premise
+  to `CanonicalProjectorDenominatorHypothesis`. This named structure has one
+  purely arithmetic field: there exist uniform constants `c,d` bounding each
+  canonical entry's denominator bits by `c*(inputEncodingLength+1)^d` for
+  every constraint sublist. It has no native-machine, walk, semantic
+  coloring, or full-recursion field. Proving it by a Gram determinant/rank
+  argument remains open here.
+- `ColoringNative2Column.lean`: exact list energies, Rayleigh scores and
+  candidate selection, with unconditional native certificates. The complete
+  scan stores an existing candidate or the empty zero vector, so its
+  accumulator size is bounded by its input encoding without an arithmetic
+  growth premise. `bestColumnList_spec` preserves the original tie and
+  zero-candidate rules for arbitrary raw lists.
+- `ColoringNative2Direction.lean`: native list normalization and the exact
+  normalized cached-projector column. Under the local denominator hypothesis,
+  `unorientedDirection_polytime` is a native certificate for this entire
+  data program. `direction_commonDen_polyBounded` and
+  `walk_direction_commonDen_of_projector` produce a polynomial shared
+  direction-denominator bound uniform in the point used for orientation.
+  The bound is charged to reified constraints and quadratic rows, excluding
+  the point's rational numerator/denominator encoding.
+- `ColoringNative2Walk.lean`: the entropy-free indexed `WeightBox` invariant
+  and its initial/one-step proofs. `walk_commonDen_of_weightBox` and
+  `run_commonDen_of_weightBox` instantiate finite-horizon denominator growth;
+  `run_coordinate_bits_of_weightBox` also bounds coordinate numerator bits.
+  Indexing matters: a fixed upper magnitude bound is not preserved by an
+  arbitrary extra step after the fuel budget has been exhausted.
+- `ColoringNative2.lean`: aggregate and
+  `run_coordinate_bits_of_projector`, composing the actual direction bridge
+  with the actual stopped walk, conditional on the local projector
+  denominator bound and a uniform reified-constraint encoding bound over
+  the explicit weight box. `walkDirectionInput_eq_of_weights_and_fixed`
+  proves that this data ignores unfrozen point values.
+
+Remaining work, precisely: prove
+`ColoringRuntime.CanonicalProjectorDenominatorHypothesis`; bound
+`encDirectionInput (walkDirectionInput a s)` uniformly over the proved
+`WeightBox`; certify preparation, exact heavy-row sorting and the stopped
+list walk as a composition; then construct and certify the full-recursion
+list evaluator with a uniform encoding bound for every recursive call.
+The final-output bound from `ColoringNativeRecursion.lean` is not used as a
+substitute for that last invariant. No counterexample to polynomial time of
+the concrete program was established, and the original program was not
+modified. The local denominator hypothesis is a smaller boundary for the
+projector/direction subpiece only, not a claimed complete replacement for
+both original whole-program hypotheses.
+
+Validation: all seven modules passed individual sequential `lake env lean`
+checks with local emitted artifacts and no final warnings. The aggregate
+import and twelve principal-export axiom audits passed, reporting only
+`propext`, `Classical.choice`, and `Quot.sound`. Five exact executable
+checks cover score ties, zero candidates, dependent/zero projector rows,
+zero normalization and a nonzero normalized vector. No unfinished proofs,
+new axioms or implementation overrides were introduced. Scratch was kept
+under `/tmp/p2s-scratch-p2s-colornative2` and removed after validation.
