@@ -998,3 +998,5 @@ separates that case. The major remaining issue is formalization scope,
 not a claimed paper defect: the rational frontend and its analytic/algebraic
 bridges above still require construction. These conditional exports must
 not be reported as an unconditional proof of `thm:spectral-seed`.
+- 54e53fa repair runtime + moduleSVP_npComplete_of_seed; 900e794 sine kernel/Rudin–Shapiro/components; 274b974 coloring algorithm (conditional).
+- Round 6 (06:20 UTC+8): p2s-seedmain (running since 05:25), p2s-traj (PartialColoringTrajectoryHypothesis), p2s-colornative (coloring TM certificates).
