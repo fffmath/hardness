@@ -13,7 +13,6 @@ coloring).
 namespace Power2ModuleSVP.ColoringNative
 
 open PartialColoringAlg
-set_option maxHeartbeats 600000
 
 /-- All numerically relevant state bounds for an entropy-free prefix. -/
 def WeightBox {r m : ℕ} (k : ℕ) (s : State r m) : Prop :=

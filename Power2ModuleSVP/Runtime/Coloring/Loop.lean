@@ -16,25 +16,29 @@ namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open PartialColoringAlg
-set_option maxHeartbeats 100000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 attribute [local irreducible] List.getD initialWeight dotPrefix normalizeList
 
+/-- Prepare the ambient dimension and rows for a partial-coloring input. -/
 def loopParameter (input : PartialColoringInput) : WalkParameter :=
   (input.2.1.length, prepareList (input.2.1.length, (input.1, input.2.2)))
 
+/-- Number of stopped walk steps, with zero steps for fallback inputs. -/
 def loopCount (input : PartialColoringInput) : ℕ :=
   if validInput input && !(loopParameter input).2.isEmpty then stepBudget input.2.1.length else 0
 
+/-- Initial point and weights for the stopped walk, including fallback signs. -/
 def loopInitial (input : PartialColoringInput) : ListState :=
   (if validInput input && !(loopParameter input).2.isEmpty then input.2.1
     else input.2.1.map nearestRationalSign,
    initializeList (loopParameter input))
 
+/-- Evaluate the stopped partial-coloring walk on list data. -/
 def partialList (input : PartialColoringInput) : List ℚ :=
   ((fun s => stoppedStep (loopParameter input, s))^[loopCount input] (loopInitial input)).1
 
+/-- Native polynomial-time certificate for `loopParameter`. -/
 @[fun_prop] theorem loopParameter_polytime :
     ComputableTidilyInPolyTime loopParameter encPartialColoring encWalkParameter := by
   have hr : ComputableTidilyInPolyTime (fun p : PartialColoringInput => p.2.1.length)
@@ -46,6 +50,7 @@ def partialList (input : PartialColoringInput) : List ℚ :=
         unfold encPartialColoring encPreparation; fun_prop)
   exact hr.prod ha
 
+/-- Native polynomial-time certificate for `loopCount`. -/
 @[fun_prop] theorem loopCount_polytime :
     ComputableTidilyInPolyTime loopCount encPartialColoring encUnary := by
   unfold loopCount
@@ -59,6 +64,7 @@ def partialList (input : PartialColoringInput) : List ℚ :=
   · exact stepBudget_polytime.comp (by unfold encPartialColoring; fun_prop)
   · exact .const 0
 
+/-- Native polynomial-time certificate for `loopInitial`. -/
 @[fun_prop] theorem loopInitial_polytime :
     ComputableTidilyInPolyTime loopInitial encPartialColoring encListState := by
   have hp := loopParameter_polytime
@@ -71,10 +77,12 @@ def partialList (input : PartialColoringInput) : List ℚ :=
   exact (ht.cond (by unfold encPartialColoring; fun_prop)
     malformedFallback_polytime).prod (initializeList_polytime.comp hp)
 
+/-- Interpret the prepared input rows as mathematical coloring constraints. -/
 def preparedInputRows (input : PartialColoringInput) : List (Row input.2.1.length) :=
   prepareRows (fun i : Fin input.1.length => fun j => (input.1.getD i []).getD j 0)
     (fun i => input.2.2.getD i 0)
 
+/-- The loop parameters encode the prepared mathematical input rows. -/
 theorem loopParameter_read (input : PartialColoringInput) :
     loopParameter input = reifyRows (preparedInputRows input).get := by
   unfold loopParameter reifyRows
@@ -86,6 +94,7 @@ theorem loopParameter_read (input : PartialColoringInput) :
     (congrArg (List.map (fun row : Row input.2.1.length =>
       (row.threshold, List.ofFn row.a))) h).symm
 
+/-- The initial list state agrees with the mathematical initial state on active inputs. -/
 theorem loopInitial_spec_of_active (input : PartialColoringInput)
     (hv : validInput input = true) (hne : (loopParameter input).2.isEmpty = false) :
     loopInitial input = reifyState
@@ -98,6 +107,7 @@ theorem loopInitial_spec_of_active (input : PartialColoringInput)
   congr 1
   apply List.ext_getElem <;> simp [List.getD_eq_getElem?_getD]
 
+/-- Polynomial encoding bound for every state of the stopped coloring walk. -/
 structure StoppedWalkEncodingHypothesis : Prop where
   bound : ∃ c d : ℕ, ∀ input : PartialColoringInput, ∀ k ≤ loopCount input,
     (encListState ((fun s => stoppedStep (loopParameter input, s))^[k]
@@ -119,7 +129,8 @@ private theorem ofFn_getD {α : Type} (xs : List α) (d : α) :
   apply List.ext_getElem <;> simp [List.getD_eq_getElem?_getD]
 
 /-- The list evaluator is the original program on every raw input. -/
-theorem partialList_spec (input : PartialColoringInput) : partialList input = partialColor input := by
+theorem partialList_spec (input : PartialColoringInput) :
+    partialList input = partialColor input := by
   let r := input.2.1.length
   let m := input.1.length
   let V : Fin m → Vec r := fun i j => (input.1.getD i []).getD j 0
@@ -147,7 +158,8 @@ theorem partialList_spec (input : PartialColoringInput) : partialList input = pa
     · have hpe : (loopParameter input).2.isEmpty = true := by
         rw [hp]
         simpa [reifyRows] using he
-      have hg : (validInput input && (!(loopParameter input).2.isEmpty)) = false := by simp [hv, hpe]
+      have hg : (validInput input && (!(loopParameter input).2.isEmpty)) = false := by
+        simp [hv, hpe]
       have hc : loopCount input = 0 := by simp [loopCount, hg]
       have hi : (loopInitial input).1 = input.2.1.map nearestRationalSign := by
         unfold loopInitial

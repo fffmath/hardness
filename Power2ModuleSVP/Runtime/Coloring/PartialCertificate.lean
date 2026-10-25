@@ -13,13 +13,14 @@ namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg ColoringNative
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
-set_option maxHeartbeats 600000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
+/-- Pair the prepared walk parameters with the input point and empty initial weights. -/
 def loopStartWire (input : PartialColoringInput) : WalkInput :=
   (loopParameter input, (input.2.1, []))
 
+/-- Native polynomial-time certificate for `loopStartWire`. -/
 theorem loopStartWire_polytime :
     ComputableTidilyInPolyTime loopStartWire encPartialColoring encWalkInput := by
   have hx : ComputableTidilyInPolyTime (fun p : PartialColoringInput => p.2.1)

@@ -11,7 +11,6 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
-set_option maxHeartbeats 600000
 
 private theorem matrix_encoding_le_input (p : PartialColoringInput) :
     (encList (encList encColoringRational) p.1).length ≤ (encPartialColoring p).length :=
@@ -33,6 +32,7 @@ private theorem dimensions_le_input (p : PartialColoringInput) :
     (length_le_length_encList _ _).trans (matrix_encoding_le_input p),
     (length_le_length_encList _ _).trans (thresholds_encoding_le_input p)⟩
 
+/-- Increase a threshold by four for each completed descent step. -/
 def thresholdShift (p : ℚ × ℕ) : ℚ := p.1 + 4 * (p.2 : ℚ)
 
 @[fun_prop] theorem thresholdShift_polytime :
@@ -44,7 +44,7 @@ def thresholdShift (p : ℚ × ℕ) : ℚ := p.1 + 4 * (p.2 : ℚ)
 
 /-- Matrix restriction and integral threshold shifts have a uniform size
 bound measured in the original input, at every recursive call. -/
- theorem recursive_static_encoding_polyBounded (F : PartialColoringInput → List ℚ) :
+theorem recursive_static_encoding_polyBounded (F : PartialColoringInput → List ℚ) :
     ∃ c d : ℕ, ∀ (p : PartialColoringInput) (i : ℕ), i ≤ p.2.1.length →
       (encPair (encList (encList encColoringRational)) (encList encColoringRational)
         ((recursionInput F p i).1, (recursionInput F p i).2.2)).length ≤
@@ -76,7 +76,8 @@ bound measured in the original input, at every recursive call. -/
     have hinner : ∀ row ∈ (recursionInput F p i).1,
         (encList encColoringRational row).length ≤ N * (2 * (N + C) + 1) := by
       intro row hrow'
-      exact (length_encList_le _ _ (fun q hq => hq0 (descent_matrix_entries F p i row hrow' q hq))).trans
+      exact (length_encList_le _ _
+        (fun q hq => hq0 (descent_matrix_entries F p i row hrow' q hq))).trans
         (Nat.mul_le_mul_right _ (descent_matrix_row_length F p N hr hrow i row hrow'))
     have hout := length_encList_le _ _ hinner
     rw [descent_matrix_length] at hout
@@ -109,7 +110,7 @@ bound measured in the original input, at every recursive call. -/
 
 /-- Only the changing coordinate encoding remains once the static-data
 invariant above has been proved. -/
- theorem recursiveInputEncoding_of_coordinate_encoding (F : PartialColoringInput → List ℚ)
+theorem recursiveInputEncoding_of_coordinate_encoding (F : PartialColoringInput → List ℚ)
     (hx : ∃ c d : ℕ, ∀ (p : PartialColoringInput) (i : ℕ), i ≤ p.2.1.length →
       (encList encColoringRational (recursionInput F p i).2.1).length ≤
         c * ((encPartialColoring p).length + 1) ^ d) : RecursiveInputEncodingHypothesis F := by

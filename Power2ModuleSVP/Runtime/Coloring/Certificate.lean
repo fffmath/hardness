@@ -33,10 +33,12 @@ theorem fullColoringNative_partialColor_of_projector
   fullColor_partialColor_native_of_denominator_growth
     (partialColoringNative_of_projector h) (partialDenominatorGrowth_of_projector h)
 
+/-- Derive the native partial-coloring certificate from the Gram projector formula. -/
 theorem partialColoringNative_of_gramFormula (h : GramProjectorFormulaHypothesis) :
     PartialColoringNativeHypothesis :=
   partialColoringNative_of_projector (canonicalProjectorDenominator_of_gramFormula h)
 
+/-- Derive the full-coloring runtime certificate from the Gram projector formula. -/
 theorem fullColoringNative_partialColor_of_gramFormula (h : GramProjectorFormulaHypothesis) :
     FullColoringNativeHypothesis partialColor :=
   fullColoringNative_partialColor_of_projector (canonicalProjectorDenominator_of_gramFormula h)

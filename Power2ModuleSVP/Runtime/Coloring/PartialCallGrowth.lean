@@ -14,15 +14,16 @@ namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
-set_option maxHeartbeats 200000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 attribute [local irreducible] List.getD
 
+/-- Truncate or zero-pad preparation rows and thresholds to their intended lengths. -/
 def canonicalPreparation (p : PreparationInput) : PreparationInput :=
   (p.1, (p.2.1.map (fun row => trimRow (p.1, row)),
     (List.range p.2.1.length).map fun i => p.2.2.getD i 0))
 
+/-- Native polynomial-time certificate for `canonicalPreparation`. -/
 theorem canonicalPreparation_polytime :
     ComputableTidilyInPolyTime canonicalPreparation encPreparation encPreparation := by
   let eL := encList encColoringRational

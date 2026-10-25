@@ -15,7 +15,6 @@ namespace Power2ModuleSVP.ColoringRuntime
 
 open PartialColoringAlg ColoringNative
 open Turing.MultiTapeTM
-set_option maxHeartbeats 400000
 
 /-- Reified direction data do not read unfrozen rational point values. -/
 theorem walkDirectionInput_eq_of_weights_and_fixed {r m : ℕ} (a : Fin m → Row r)

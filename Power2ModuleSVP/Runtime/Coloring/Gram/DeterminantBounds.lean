@@ -17,13 +17,13 @@ open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open PartialColoringAlg
 open scoped BigOperators
-set_option maxHeartbeats 700000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 /-- Clear every denominator in a raw row once. Extra columns are harmless. -/
 def rowDenominator (row : List ℚ) : ℤ := (row.map fun q => (q.den : ℤ)).prod
 
+/-- Clear row denominators to obtain integral coefficients. -/
 def scaledIntegerRow (row : List ℚ) : List ℤ :=
   row.map fun q => q.num * ((rowDenominator row).natAbs / q.den : ℕ)
 
@@ -62,11 +62,13 @@ theorem scaledIntegerRow_entry (row : List ℚ) (q : ℚ) (hq : q ∈ row) :
         (q.num : ℚ) * ((((rowDenominator row).natAbs / q.den : ℕ) : ℚ) * q.den) := by ring
     _ = (rowDenominator row : ℚ) * q.num := by rw [he']; ring
 
+/-- Native polynomial-time certificate for `rowDenominator`. -/
 @[fun_prop] theorem rowDenominator_polytime :
     ComputableTidilyInPolyTime rowDenominator (encList encColoringRational) encIntBin := by
   unfold rowDenominator
   fun_prop
 
+/-- Native polynomial-time certificate for `scaledIntegerRow`. -/
 @[fun_prop] theorem scaledIntegerRow_polytime :
     ComputableTidilyInPolyTime scaledIntegerRow (encList encColoringRational)
       (encList encIntBin) := by
@@ -86,6 +88,7 @@ theorem integerDot_eq_sum (p : ℕ × (List ℤ × List ℤ)) :
     integerDot p = ∑ j : Fin p.1, p.2.1.getD j 0 * p.2.2.getD j 0 := by
   simp [integerDot, range_map_ofFn, List.sum_ofFn]
 
+/-- Native polynomial-time certificate for `integerDot`. -/
 @[fun_prop] theorem integerDot_polytime :
     ComputableTidilyInPolyTime integerDot
       (encPair encUnary (encPair (encList encIntBin) (encList encIntBin))) encIntBin := by
@@ -99,6 +102,7 @@ def integerGramRows (p : ProjectorBatchInput) : List (List ℤ) :=
   let rows := p.2.map scaledIntegerRow
   rows.map fun a => rows.map fun b => integerDot (p.1, (a, b))
 
+/-- The computed integer Gram rows agree with finite sums of cleared coefficients. -/
 theorem integerGramRows_spec (p : ProjectorBatchInput) :
     integerGramRows p = List.ofFn (fun i : Fin p.2.length =>
       List.ofFn (fun j : Fin p.2.length =>
@@ -123,6 +127,7 @@ def integerGramMatrix (p : ProjectorBatchInput) :
     (scaledIntegerRow (p.2.get i)).getD k 0 *
       (scaledIntegerRow (p.2.get j)).getD k 0
 
+/-- Native polynomial-time certificate for `integerGramRows`. -/
 @[fun_prop] theorem integerGramRows_polytime :
     ComputableTidilyInPolyTime integerGramRows encProjectorBatch
       (encList (encList encIntBin)) := by
@@ -164,6 +169,7 @@ theorem integerGramDet_eq_gramDet (p : ProjectorBatchInput) :
   unfold integerGramDet
   rw [hrows, Cslib.Circuits.Rational.detRows_eq]
 
+/-- Native polynomial-time certificate for `integerGramDet`. -/
 @[fun_prop] theorem integerGramDet_polytime :
     ComputableTidilyInPolyTime integerGramDet encProjectorBatch encIntBin := by
   unfold integerGramDet

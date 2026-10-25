@@ -11,9 +11,8 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open PartialColoringAlg
-set_option maxHeartbeats 600000
 
- theorem partialColor_output_cube (p : PartialColoringInput) :
+theorem partialColor_output_cube (p : PartialColoringInput) :
     ∀ q ∈ partialColor p, |q| ≤ 1 := by
   intro q hq
   unfold partialColor at hq
@@ -41,7 +40,7 @@ set_option maxHeartbeats 600000
   · obtain ⟨q, _, rfl⟩ := List.mem_map.mp hq
     rcases nearestRationalSign_isSign q with h | h <;> rw [h] <;> norm_num
 
- theorem descent_point_original_or_cube (F : PartialColoringInput → List ℚ)
+theorem descent_point_original_or_cube (F : PartialColoringInput → List ℚ)
     (hF : ∀ p, ∀ q ∈ F p, |q| ≤ 1) (p : PartialColoringInput) (i : ℕ) :
     recursionInput F p i = p ∨ ∀ q ∈ (recursionInput F p i).2.1, |q| ≤ 1 := by
   induction i with
@@ -67,7 +66,7 @@ structure RecursiveCoordinateDenominatorHypothesis (F : PartialColoringInput →
     ∀ q ∈ (recursionInput F p i).2.1,
       q.den.size ≤ c * ((encPartialColoring p).length + 1) ^ d
 
- theorem recursiveInputEncoding_of_coordinate_denominator (F : PartialColoringInput → List ℚ)
+theorem recursiveInputEncoding_of_coordinate_denominator (F : PartialColoringInput → List ℚ)
     (hF : ∀ p, ∀ q ∈ F p, |q| ≤ 1) (hden : RecursiveCoordinateDenominatorHypothesis F) :
     RecursiveInputEncodingHypothesis F := by
   obtain ⟨cd, dd, hd⟩ := hden.denominator_bound
@@ -97,7 +96,8 @@ structure RecursiveCoordinateDenominatorHypothesis (F : PartialColoringInput →
       nlinarith [hmul]
   · exact hb N
 
- theorem fullColor_partialColor_native_of_coordinate_denominator
+/-- Polynomial coordinate-denominator sizes yield a native full-coloring implementation. -/
+theorem fullColor_partialColor_native_of_coordinate_denominator
     (hF : PartialColoringNativeHypothesis)
     (hden : RecursiveCoordinateDenominatorHypothesis partialColor) :
     FullColoringNativeHypothesis partialColor :=

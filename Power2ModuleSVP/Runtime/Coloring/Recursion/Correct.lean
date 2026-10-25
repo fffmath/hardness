@@ -11,7 +11,6 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open Coloring ColoringNative
 open Turing.MultiTapeTM
-set_option maxHeartbeats 700000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -32,7 +31,8 @@ private theorem nearest_ofFn_read (l : List ℚ) :
   simpa only [List.map_ofFn, Function.comp_def] using
     congrArg (List.map nearestRationalSign) (ofFn_read l)
 
- theorem canonicalColoringInput_spec (p : PartialColoringInput) :
+/-- The canonical list input agrees with the dependent-vector input representation. -/
+theorem canonicalColoringInput_spec (p : PartialColoringInput) :
     canonicalColoringInput p = partialColoringInput
       (fun i : Fin p.1.length => fun j : Fin p.2.1.length => (p.1.getD i []).getD j 0)
       (readColoringVector p.2.1.length p.2.1)
@@ -46,18 +46,18 @@ private theorem nearest_ofFn_read (l : List ℚ) :
   · simp only [range_map_ofFn, ofFn_read]
     rfl
 
-
- theorem fullColor_canonical (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
+theorem fullColor_canonical (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
     fullColor F (canonicalColoringInput p) = fullColor F p := by
   rw [canonicalColoringInput_spec, fullColor_on_input]
   rfl
 
- theorem recursionAssemble_signs_eq_safe (F : PartialColoringInput → List ℚ)
+theorem recursionAssemble_signs_eq_safe (F : PartialColoringInput → List ℚ)
     (p : PartialColoringInput) (z : List ℚ)
     (hlen : z.length = (ExplicitRecursion.activeIndices p.2.1.length (recursivePoint F p)).length)
     (hsign : ∀ q ∈ z, q = -1 ∨ q = 1) :
     recursionSafeAssemble F p z = recursionAssemble F p z := by
-  have he : (List.range (ExplicitRecursion.activeIndices p.2.1.length (recursivePoint F p)).length).map
+  have he :
+      (List.range (ExplicitRecursion.activeIndices p.2.1.length (recursivePoint F p)).length).map
       (fun j => nearestRationalSign (z.getD j 0)) = z := by
     apply List.ext_getElem
     · simp [hlen]
@@ -75,11 +75,11 @@ end Power2ModuleSVP.ColoringRuntime
 namespace Power2ModuleSVP.ColoringRuntime
 open Coloring ColoringNative
 open Turing.MultiTapeTM
-set_option maxHeartbeats 900000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
- theorem recursionNext_spec (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
+/-- The next list input realizes restriction to the active set of the partial point. -/
+theorem recursionNext_spec (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
     recursionNext F p =
       let y := readColoringVector p.2.1.length (F (canonicalColoringInput p))
       let A := activeSet y
@@ -104,7 +104,7 @@ set_option backward.isDefEq.respectTransparency.types false
         (recursivePoint F p) (recursivePoint F p)
     · exact range_map_ofFn _ _
 
- theorem recursionProgress_spec (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
+theorem recursionProgress_spec (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
     recursionProgress F p = true ↔
       64 < p.2.1.length ∧
       (activeSet (readColoringVector p.2.1.length (F (canonicalColoringInput p)))).card <
@@ -113,7 +113,7 @@ set_option backward.isDefEq.respectTransparency.types false
   rw [ExplicitRecursion.activeIndices_spec]
   simp only [recursivePoint, List.length_ofFn, Bool.and_eq_true_iff, decide_eq_true_eq]
 
- theorem fullColor_step (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
+theorem fullColor_step (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
     fullColor F p = if recursionProgress F p then
       recursionSafeAssemble F p (fullColor F (recursionNext F p))
       else p.2.1.map nearestRationalSign := by
@@ -160,7 +160,6 @@ end Power2ModuleSVP.ColoringRuntime
 namespace Power2ModuleSVP.ColoringRuntime
 open Coloring ColoringNative
 open Turing.MultiTapeTM
-set_option maxHeartbeats 900000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -202,11 +201,13 @@ private theorem descent_terminal_aux (F : PartialColoringInput → List ℚ) (n 
       rw [Function.iterate_fixed hfixed]
       exact hfalse
 
- theorem descent_terminal (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
+/-- The bounded descent stops at a frame with no further recursive progress. -/
+theorem descent_terminal (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
     recursionProgress F (descent F p).1 = false :=
   descent_terminal_aux F p.2.1.length (p, []) le_rfl
 
- theorem fullColorListEvaluator_eq (F : PartialColoringInput → List ℚ) :
+/-- The stack evaluator computes the mathematical full-coloring function. -/
+theorem fullColorListEvaluator_eq (F : PartialColoringInput → List ℚ) :
     fullColorListEvaluator F = fullColor F := by
   funext p
   have he := interpret_descent F p p.2.1.length
@@ -215,7 +216,8 @@ private theorem descent_terminal_aux (F : PartialColoringInput → List ℚ) (n 
   simp only [descent_terminal F p, Bool.false_eq_true] at he
   exact he
 
- theorem fullColoringNative_of_recursive_input_bound (F : PartialColoringInput → List ℚ)
+/-- A polynomial recursive-input bound certifies the native full-coloring runtime. -/
+theorem fullColoringNative_of_recursive_input_bound (F : PartialColoringInput → List ℚ)
     (hF : Turing.MultiTapeTM.ComputableTidilyInPolyTime F encPartialColoring
       (encList encColoringRational)) (hsize : RecursiveInputEncodingHypothesis F) :
     FullColoringNativeHypothesis F := by
@@ -223,7 +225,8 @@ private theorem descent_terminal_aux (F : PartialColoringInput → List ℚ) (n 
   rw [← fullColorListEvaluator_eq F]
   exact fullColorListEvaluator_polytime_of_input_bound F hF hsize
 
- theorem fullColor_partialColor_native_of_recursive_input_bound
+/-- The selected partial-coloring runtime lifts to full coloring under an input-size bound. -/
+theorem fullColor_partialColor_native_of_recursive_input_bound
     (hF : PartialColoringAlg.PartialColoringNativeHypothesis)
     (hsize : RecursiveInputEncodingHypothesis PartialColoringAlg.partialColor) :
     FullColoringNativeHypothesis PartialColoringAlg.partialColor :=

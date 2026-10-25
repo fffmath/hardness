@@ -24,8 +24,6 @@ namespace Power2ModuleSVP.ColoringNative
 open scoped BigOperators
 open PartialColoringAlg
 
-set_option maxHeartbeats 1000000
-
 /-- All canonical coordinate denominators divide the same natural. -/
 def CommonDen {r : ℕ} (D : ℕ) (x : Vec r) : Prop := ∀ j, (x j).den ∣ D
 

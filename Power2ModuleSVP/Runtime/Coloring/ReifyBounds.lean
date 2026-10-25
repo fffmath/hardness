@@ -12,24 +12,28 @@ namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
-set_option maxHeartbeats 500000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 attribute [local irreducible] List.getD
 
+/-- Walk input paired with a supplied list of heavy-row indices. -/
 abbrev ReifyInput := WalkInput × List ℕ
+/-- Binary encoding for `ReifyInput` runtime data. -/
 def encReifyInput : ReifyInput ↪ List Bool := encPair encWalkInput (encList encUnary)
 
+/-- List the coordinate constraints corresponding to already fixed coordinates. -/
 def fixedRowsList (p : WalkInput) : List (List ℚ) :=
   ((List.range p.1.1).filter fun j =>
     p.2.1.getD j 0 = -1 ∨ p.2.1.getD j 0 = 1).map fun j => coordinateList (p.1.1, j)
 
+/-- Reify direction data using a supplied heavy-row ordering. -/
 def directionGivenHeavy (p : ReifyInput) : DirectionInput :=
   (p.1.1.1, (constraintHead p.1 ::
     (fixedRowsList p.1 ++ p.2.map (fun i => (p.1.1.2.getD i (0, [])).2) ++
       ((List.range p.1.1.2.length).filter fun i => (p.1.1.2.getD i (0, [])).1 ≤ 1).map
         (fun i => (p.1.1.2.getD i (0, [])).2)), quadraticList p.1))
 
+/-- Native polynomial-time certificate for `fixedRowsList`. -/
 @[fun_prop] theorem fixedRowsList_polytime :
     ComputableTidilyInPolyTime fixedRowsList encWalkInput
       (encList (encList encColoringRational)) := by
@@ -45,6 +49,7 @@ def directionGivenHeavy (p : ReifyInput) : DirectionInput :=
       (encPair encWalkInput encUnary) (encPair encUnary encUnary) from by
         unfold encWalkInput encWalkParameter; fun_prop)
 
+/-- Native polynomial-time certificate for `directionGivenHeavy`. -/
 @[fun_prop] theorem directionGivenHeavy_polytime :
     ComputableTidilyInPolyTime directionGivenHeavy encReifyInput encDirectionInput := by
   have hhead := constraintHead_polytime.comp (fst encWalkInput (encList encUnary))
@@ -60,7 +65,8 @@ def directionGivenHeavy (p : ReifyInput) : DirectionInput :=
         unfold encReifyInput encWalkInput; fun_prop)
     exact hout.of_enc_eq fun _ => congrArg (encList encColoringRational) (by rfl)
   have hsmall : ComputableTidilyInPolyTime
-      (fun p : ReifyInput => ((List.range p.1.1.2.length).filter fun i => (p.1.1.2.getD i (0, [])).1 ≤ 1).map
+      (fun p : ReifyInput =>
+        ((List.range p.1.1.2.length).filter fun i => (p.1.1.2.getD i (0, [])).1 ≤ 1).map
         (fun i => (p.1.1.2.getD i (0, [])).2))
       encReifyInput (encList (encList encColoringRational)) := by
     apply mapWithInput (encA := encUnary)
@@ -82,6 +88,7 @@ def directionGivenHeavy (p : ReifyInput) : DirectionInput :=
   have hout := hr.prod (hc.prod hq)
   exact hout.of_enc_eq fun _ => congrArg encDirectionInput (by rfl)
 
+/-- The supplied heavy-row order gives the exact reified walk direction data. -/
 theorem directionGivenHeavy_spec (p : WalkInput) :
     directionGivenHeavy (p, heavyIndices (p.1.1, p.2.2)) = directionDataList p := rfl
 

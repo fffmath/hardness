@@ -14,14 +14,15 @@ namespace Power2ModuleSVP.ColoringRuntime
 
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
-set_option maxHeartbeats 700000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
+/-- The first required sign coordinates, in their original order. -/
 def fixedIndices (y : List ℚ) : List ℕ :=
   ((List.range y.length).filter fun j =>
     decide (y.getD j 0 = -1 ∨ y.getD j 0 = 1)).take (y.length - y.length / 2)
 
+/-- Coordinates outside the fixed sign list, in their original order. -/
 def activeIndices (y : List ℚ) : List ℕ :=
   (List.range y.length).filter fun j => !(fixedIndices y).any (fun k => decide (k = j))
 
@@ -98,14 +99,14 @@ def scatterList (p : List ℚ × List ℚ) : List ℚ :=
 @[simp] theorem scatterList_length (p : List ℚ × List ℚ) :
     (scatterList p).length = p.1.length := by simp [scatterList]
 
- theorem activeIndices_length_le (y : List ℚ) :
+theorem activeIndices_length_le (y : List ℚ) :
     (activeIndices y).length ≤ y.length := by
   exact (List.length_filter_le _ _).trans (by simp)
 
- theorem activeIndices_sorted (y : List ℚ) : (activeIndices y).Pairwise (· < ·) := by
+theorem activeIndices_sorted (y : List ℚ) : (activeIndices y).Pairwise (· < ·) := by
   exact List.pairwise_lt_range.filter _
 
- theorem fixedIndices_sorted (y : List ℚ) : (fixedIndices y).Pairwise (· < ·) := by
+theorem fixedIndices_sorted (y : List ℚ) : (fixedIndices y).Pairwise (· < ·) := by
   exact (List.pairwise_lt_range.filter _).take
 
 end Power2ModuleSVP.ColoringRuntime
@@ -132,7 +133,7 @@ private theorem sign_sort_values (y : List ℚ) :
   · rintro ⟨hn, hsign⟩
     exact ⟨⟨n, hn⟩, by simpa [signSet, List.getD_eq_getElem?_getD, hn] using hsign, rfl⟩
 
- theorem fixedIndices_mem_iff (y : List ℚ) (j : Fin y.length) :
+theorem fixedIndices_mem_iff (y : List ℚ) (j : Fin y.length) :
     j.val ∈ fixedIndices y ↔ j ∈ fixedSet (readColoringVector y.length y) := by
   unfold fixedIndices fixedSet
   rw [← sign_sort_values, ← List.map_take]
@@ -144,18 +145,19 @@ private theorem sign_sort_values (y : List ℚ) :
   · intro hj
     exact ⟨j, hj, rfl⟩
 
- theorem activeIndices_mem_iff (y : List ℚ) (j : Fin y.length) :
+theorem activeIndices_mem_iff (y : List ℚ) (j : Fin y.length) :
     j.val ∈ activeIndices y ↔ j ∈ activeSet (readColoringVector y.length y) := by
   have ha : ((fixedIndices y).any (fun k => decide (k = j.val))) = true ↔
       j.val ∈ fixedIndices y := by simp [List.any_eq_true]
   simp only [activeIndices, List.mem_filter, List.mem_range]
   rw [show ((!(fixedIndices y).any fun k => decide (k = j.val)) = true) ↔
-      j.val ∉ fixedIndices y by cases hb : ((fixedIndices y).any fun k => decide (k = j.val)) <;> simp_all]
+      j.val ∉ fixedIndices y by
+        cases hb : ((fixedIndices y).any fun k => decide (k = j.val)) <;> simp_all]
   simp [j.isLt, fixedIndices_mem_iff, activeSet]
 
 /-- The concrete native active-list order is the order embedding used by
 `fullColorCore`, not merely a permutation of its coordinates. -/
- theorem activeIndices_spec (y : List ℚ) :
+theorem activeIndices_spec (y : List ℚ) :
     activeIndices y = List.ofFn (fun j : Fin (activeSet (readColoringVector y.length y)).card =>
       (embed (activeSet (readColoringVector y.length y)) j).val) := by
   let A := activeSet (readColoringVector y.length y)
@@ -203,7 +205,7 @@ private theorem rank_at_sorted (l : List ℕ) (hl : l.Pairwise (· < ·))
         have hi := ih ht ⟨n, hn'⟩
         simpa [List.filter_cons, hlt] using hi
 
- theorem activeRank_embed (y : List ℚ)
+theorem activeRank_embed (y : List ℚ)
     (j : Fin (activeSet (readColoringVector y.length y)).card) :
     activeRank (activeIndices y,
       (embed (activeSet (readColoringVector y.length y)) j).val) = j.val := by
@@ -217,13 +219,13 @@ private theorem rank_at_sorted (l : List ℕ) (hl : l.Pairwise (· < ·))
   simpa [activeRank, hget] using rank_at_sorted (activeIndices y)
     (activeIndices_sorted y) ⟨j.val, hi⟩
 
- theorem restrictList_spec (y v : List ℚ) :
+theorem restrictList_spec (y v : List ℚ) :
     restrictList (activeIndices y, v) =
       List.ofFn (fun j : Fin (activeSet (readColoringVector y.length y)).card =>
         v.getD (embed (activeSet (readColoringVector y.length y)) j) 0) := by
   simp [restrictList, activeIndices_spec, List.map_ofFn, Function.comp_def]
 
- theorem scatterList_spec (y z : List ℚ) :
+theorem scatterList_spec (y z : List ℚ) :
     scatterList (y, z) = List.ofFn
       (extend (activeSet (readColoringVector y.length y))
         (readColoringVector y.length y)
@@ -247,7 +249,9 @@ private theorem rank_at_sorted (l : List ℕ) (hl : l.Pairwise (· < ·))
       rw [ht, ite_eq_left rfl]
       let k := ((activeSet (readColoringVector y.length y)).orderIsoOfFin rfl).symm ⟨j, hmem⟩
       have hk : embed (activeSet (readColoringVector y.length y)) k = j := by
-        exact congrArg Subtype.val (((activeSet (readColoringVector y.length y)).orderIsoOfFin rfl).apply_symm_apply ⟨j, hmem⟩)
+        exact congrArg Subtype.val
+          (((activeSet (readColoringVector y.length y)).orderIsoOfFin rfl).apply_symm_apply
+            ⟨j, hmem⟩)
       have hrank := activeRank_embed y k
       rw [hk] at hrank
       rw [extend, dite_eq_left hmem]

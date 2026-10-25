@@ -16,37 +16,47 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 attribute [local irreducible] List.getD
 
+/-- List encoding of signed integer coefficient vectors. -/
 abbrev encVectors := encList (encList encIntBin)
+/-- Encoding of a degree and its signed coefficient list. -/
 abbrev encSupportInput := encPair encUnary (encList encIntBin)
 
+/-- Coefficient list supported at one index with the prescribed integer value. -/
 def unitList (d j : ℕ) (z : ℤ) : List ℤ :=
   (List.range d).map fun i => if i = j then z else 0
 
+/-- List the zero vector and signed unit vectors in the given dimension. -/
 def atomsList (d : ℕ) : List (List ℤ) :=
   List.replicate d 0 :: (List.range d).flatMap (fun j => [unitList d j 1, unitList d j (-1)])
 
+/-- Enumerate sums of at most the fixed number of signed unit vectors. -/
 def atomSumsList (n : ℕ) (d : ℕ) : List (List ℤ) :=
   match n with
   | 0 => [List.replicate d 0]
-  | n+1 => (atomSumsList n d).flatMap fun v =>
+  | n + 1 => (atomSumsList n d).flatMap fun v =>
       (atomsList d).map fun a => IdealCVP.listAdd d v a
 
+/-- List the nonzero coefficient indices below the given dimension. -/
 def supportList (d : ℕ) (v : List ℤ) : List ℕ :=
   (List.range d).filter fun j => decide (v.getD j 0 ≠ 0)
 
+/-- Sum the squared coefficients below the given dimension. -/
 def squareSum (d : ℕ) (v : List ℤ) : ℤ :=
-  ((List.range d).map fun i => (v.getD i 0)^2).sum
+  ((List.range d).map fun i => (v.getD i 0) ^ 2).sum
 
+/-- Filter the enumerated atom sums by the repair candidate conditions. -/
 def candidateList (n d : ℕ) : List (List ℤ) :=
   (atomSumsList n d).filter fun v =>
     decide (2 ≤ (supportList d v).length ∧ squareSum d v ≤ (n : ℤ))
 
+/-- The `unitList` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem unitList_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × (ℕ × ℤ) => unitList a.1 a.2.1 a.2.2)
     (encPair encUnary (encPair encUnary encIntBin)) (encList encIntBin) := by
   unfold unitList
   fun_prop
 
+/-- The `atomsList` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem atomsList_polytime :
     ComputableTidilyInPolyTime atomsList encUnary encVectors := by
   unfold atomsList
@@ -76,6 +86,7 @@ unary input degree is hidden in this certificate. -/
     · unfold IdealCVP.listAdd
       fun_prop
 
+/-- The `supportList` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem supportList_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × List ℤ => supportList a.1 a.2) encSupportInput (encList encUnary) := by
   unfold supportList encSupportInput
@@ -86,11 +97,13 @@ unary input degree is hidden in this certificate. -/
     apply intBin_isZero.comp
     fun_prop
 
+/-- The `squareSum` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem squareSum_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × List ℤ => squareSum a.1 a.2) encSupportInput encIntBin := by
   unfold squareSum encSupportInput
   fun_prop
 
+/-- The `candidateList` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem candidateList_polytime (n : ℕ) :
     ComputableTidilyInPolyTime (candidateList n) encUnary encVectors := by
   unfold candidateList
@@ -114,7 +127,7 @@ theorem zeroList_eq (d : ℕ) :
 
 theorem listAdd_toList {d : ℕ} (a b : Coeff d) :
     IdealCVP.listAdd d (IdealCVP.toList a) (IdealCVP.toList b) =
-      IdealCVP.toList (a+b) := by
+      IdealCVP.toList (a + b) := by
   apply List.ext_getElem
   · simp [IdealCVP.listAdd]
   · intro i hi hj
@@ -168,6 +181,7 @@ theorem squareSum_toList {d : ℕ} (v : Coeff d) :
   intro i hi
   simp [List.getD_eq_getElem?_getD, i.isLt]
 
+/-- The executable candidate list preserves the order and multiplicities of the semantic list. -/
 theorem candidateList_eq (n d : ℕ) :
     candidateList n d = (AnchorRepair.candidates d n).map IdealCVP.toList := by
   unfold candidateList AnchorRepair.candidates
@@ -181,12 +195,13 @@ theorem candidateList_eq (n d : ℕ) :
 
 /-- A total list bound, including dimensions below three. -/
 theorem candidateList_length_le (n d : ℕ) :
-    (candidateList n d).length ≤ (1+2*d)^n := by
+    (candidateList n d).length ≤ (1 + 2 * d) ^ n := by
   rw [candidateList_eq, List.length_map]
   exact AnchorRepair.candidates_length_le d n
 
+/-- In dimensions at least three, the candidate count has a fixed power bound. -/
 theorem candidateList_length_le_pow (n : ℕ) {d : ℕ} (hd : 3 ≤ d) :
-    (candidateList n d).length ≤ d^(2*n) := by
+    (candidateList n d).length ≤ d ^ (2 * n) := by
   rw [candidateList_eq, List.length_map]
   exact AnchorRepair.candidates_length_le_pow hd
 

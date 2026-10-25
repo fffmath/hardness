@@ -21,10 +21,12 @@ attribute [local irreducible] List.getD
 /-- Affine data use exactly the already certified source encoding. -/
 abbrev encAffine : AffineInput ↪ List Bool := encSource
 
+/-- The `dyadicCeil` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem dyadicCeil_polytime :
     ComputableTidilyInPolyTime dyadicCeil encUnary encUnary := by
   exact unary_pow_clog_const id' 2 2
 
+/-- The `packingDegree` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem packingDegree_polytime :
     ComputableTidilyInPolyTime packingDegree encUnary encUnary := by
   unfold packingDegree
@@ -43,7 +45,7 @@ abbrev encAffine : AffineInput ↪ List Bool := encSource
   let E := encPair encUnary encAffine
   have hg : ComputableTidilyInPolyTime (fun p : ℕ × AffineInput =>
       (List.range p.1).map (fun i =>
-        2*((if i = p.2.1 then 1 else 0) + p.2.2.2.1.getD i 0)))
+        2 * ((if i = p.2.1 then 1 else 0) + p.2.2.2.1.getD i 0)))
       E (encList encIntBin) := by
     apply mapWithInput (encA := encUnary)
     · unfold E
@@ -52,7 +54,7 @@ abbrev encAffine : AffineInput ↪ List Bool := encSource
       fun_prop
   have hh : ComputableTidilyInPolyTime (fun p : ℕ × AffineInput =>
       (List.range p.1).map (fun i =>
-        (if i < 2*p.2.1 then 1 else 0) - 2*p.2.2.2.2.getD i 0))
+        (if i < 2 * p.2.1 then 1 else 0) - 2 * p.2.2.2.2.getD i 0))
       E (encList encIntBin) := by
     apply mapWithInput (encA := encUnary)
     · unfold E

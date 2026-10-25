@@ -15,26 +15,35 @@ namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open PartialColoringAlg
-set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
+/-- Weighted rational rows stored as coefficient lists. -/
 abbrev QuadraticRows := List (ℚ × List ℚ)
+/-- Binary encoding for `QuadraticRows` runtime data. -/
 def encQuadraticRows : QuadraticRows ↪ List Bool :=
   encList (encPair encColoringRational (encList encColoringRational))
+/-- Ambient dimension, weighted rows, and a candidate vector for score evaluation. -/
 abbrev ScoreInput := ℕ × (QuadraticRows × List ℚ)
+/-- Binary encoding for `ScoreInput` runtime data. -/
 def encScoreInput : ScoreInput ↪ List Bool :=
   encPair encUnary (encPair encQuadraticRows (encList encColoringRational))
 
+/-- Evaluate the weighted quadratic energy on the first ambient coordinates. -/
 def energyPrefix (p : ScoreInput) : ℚ :=
   (p.2.1.map fun row => row.1 * dotPrefix (p.1, (row.2, p.2.2)) ^ 2).sum
 
+/-- Divide the candidate energy by its squared norm to obtain its Rayleigh score. -/
 def scorePrefix (p : ScoreInput) : ℚ :=
   energyPrefix p / dotPrefix (p.1, (p.2.2, p.2.2))
 
+/-- Ambient dimension and weighted rows used to score candidate columns. -/
 abbrev ColumnParameter := ℕ × QuadraticRows
+/-- Binary encoding for `ColumnParameter` runtime data. -/
 def encColumnParameter : ColumnParameter ↪ List Bool := encPair encUnary encQuadraticRows
+/-- Scoring parameters paired with the candidate column lists. -/
 abbrev ColumnInput := ColumnParameter × List (List ℚ)
+/-- Binary encoding for `ColumnInput` runtime data. -/
 def encColumnInput : ColumnInput ↪ List Bool :=
   encPair encColumnParameter (encList (encList encColoringRational))
 
@@ -44,9 +53,11 @@ def chooseColumn (p : ColumnParameter) (b q : List ℚ) : List ℚ :=
   else if dotPrefix (p.1, (b, b)) = 0 ∨
     scorePrefix (p.1, (p.2, q)) ≤ scorePrefix (p.1, (p.2, b)) then q else b
 
+/-- Select the best candidate column with the canonical tie and zero-vector rules. -/
 def bestColumnList (p : ColumnInput) : List ℚ :=
   p.2.reverse.foldl (chooseColumn p.1) []
 
+/-- Native polynomial-time certificate for `energyPrefix`. -/
 @[fun_prop] theorem energyPrefix_polytime :
     ComputableTidilyInPolyTime energyPrefix encScoreInput encColoringRational := by
   unfold energyPrefix
@@ -55,6 +66,7 @@ def bestColumnList (p : ColumnInput) : List ℚ :=
   simp only [encScoreInput, encQuadraticRows]
   fun_prop
 
+/-- Native polynomial-time certificate for `scorePrefix`. -/
 @[fun_prop] theorem scorePrefix_polytime :
     ComputableTidilyInPolyTime scorePrefix encScoreInput encColoringRational := by
   unfold scorePrefix
@@ -65,6 +77,7 @@ def bestColumnList (p : ColumnInput) : List ℚ :=
     fun_prop
   fun_prop
 
+/-- Native polynomial-time certificate for `chooseColumn`. -/
 @[fun_prop] theorem chooseColumn_polytime :
     ComputableTidilyInPolyTime
       (fun p : (ColumnParameter × List ℚ) × List ℚ => chooseColumn p.1.1 p.1.2 p.2)
@@ -125,17 +138,21 @@ private theorem range_map_ofFn {α : Type} (r : ℕ) (f : ℕ → α) :
     (List.range r).map f = List.ofFn (fun j : Fin r => f j) := by
   apply List.ext_getElem <;> simp
 
+/-- The padded list dot product agrees with the vector dot product. -/
 theorem dotPrefix_read (r : ℕ) (x y : List ℚ) :
     dotPrefix (r, (x, y)) = dot (fun j : Fin r => x.getD j 0) (fun j => y.getD j 0) := by
   simp [dotPrefix, range_map_ofFn, List.sum_ofFn, dot]
 
+/-- Read weighted coefficient lists as vectors, filling missing entries with zero. -/
 def readQuadraticRows (r : ℕ) (a : QuadraticRows) : List (ℚ × Vec r) :=
   a.map fun row => (row.1, fun j => row.2.getD j 0)
 
+/-- The list energy agrees with the weighted vector energy. -/
 theorem energyPrefix_spec (p : ScoreInput) :
     energyPrefix p = energy (readQuadraticRows p.1 p.2.1) (fun j => p.2.2.getD j 0) := by
   simp [energyPrefix, energy, readQuadraticRows, List.map_map, dotPrefix_read, Function.comp_def]
 
+/-- The list Rayleigh score agrees with the vector score. -/
 theorem scorePrefix_spec (p : ScoreInput) :
     scorePrefix p = score (readQuadraticRows p.1 p.2.1) (fun j => p.2.2.getD j 0) := by
   simp [scorePrefix, score, energyPrefix_spec, dotPrefix_read]

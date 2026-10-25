@@ -12,7 +12,6 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open ColoringNative
-set_option maxHeartbeats 600000
 
 /-- A local arithmetic interface for one selected partial call. Its cost
 reads matrix, thresholds and dimension, never the current point encoding. -/
@@ -22,7 +21,8 @@ structure PartialDenominatorGrowthHypothesis (F : PartialColoringInput → List 
     ∃ E : ℕ, 0 < E ∧ (∀ q ∈ recursivePoint F p, q.den ∣ E) ∧
       E.size ≤ D.size + c * ((encPreparation (p.2.1.length, (p.1, p.2.2))).length + 1) ^ d
 
- theorem recursive_preparation_encoding_polyBounded (F : PartialColoringInput → List ℚ) :
+/-- Preparation data along the recursive orbit has uniformly polynomial encoding size. -/
+theorem recursive_preparation_encoding_polyBounded (F : PartialColoringInput → List ℚ) :
     ∃ c d : ℕ, ∀ (p : PartialColoringInput) (i : ℕ), i ≤ p.2.1.length →
       (encPreparation ((recursionInput F p i).2.1.length,
         ((recursionInput F p i).1, (recursionInput F p i).2.2))).length ≤
@@ -75,7 +75,7 @@ private theorem listDen_input_size (p : PartialColoringInput) :
 
 /-- A fixed polynomial contribution per call is added at most the original
 dimension many times; it is never iterated as a polynomial in point size. -/
- theorem recursiveCoordinateDenominator_of_growth (F : PartialColoringInput → List ℚ)
+theorem recursiveCoordinateDenominator_of_growth (F : PartialColoringInput → List ℚ)
     (hg : PartialDenominatorGrowthHypothesis F) : RecursiveCoordinateDenominatorHypothesis F := by
   obtain ⟨cg, dg, hg⟩ := hg.growth
   obtain ⟨cp, dp, hp⟩ := recursive_preparation_encoding_polyBounded F
@@ -128,7 +128,8 @@ dimension many times; it is never iterated as a polynomial in point size. -/
     nlinarith [hiA]
   · exact hb N
 
- theorem fullColor_partialColor_native_of_denominator_growth
+/-- One-call denominator growth yields a native full-coloring implementation. -/
+theorem fullColor_partialColor_native_of_denominator_growth
     (hF : PartialColoringAlg.PartialColoringNativeHypothesis)
     (hg : PartialDenominatorGrowthHypothesis PartialColoringAlg.partialColor) :
     FullColoringNativeHypothesis PartialColoringAlg.partialColor :=

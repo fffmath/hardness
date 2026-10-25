@@ -15,13 +15,14 @@ namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg ColoringNative
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
-set_option maxHeartbeats 200000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 attribute [local irreducible] List.getD
 
+/-- Pair the ambient dimension with its prepared coloring rows. -/
 def preparedParameter (p : PreparationInput) : WalkParameter := (p.1, prepareList p)
 
+/-- Native polynomial-time certificate for `preparedParameter`. -/
 theorem preparedParameter_polytime :
     ComputableTidilyInPolyTime preparedParameter encPreparation encWalkParameter := by
   have hp := (fst encUnary
@@ -29,6 +30,7 @@ theorem preparedParameter_polytime :
       prepareList_polytime
   exact hp.of_enc_eq fun p => congrArg encWalkParameter (by rfl)
 
+/-- Reading the prepared list parameters recovers the mathematical prepared rows. -/
 theorem preparedParameter_read (r : ℕ) (V : List (List ℚ)) (c : List ℚ) :
     preparedParameter (r, (V, c)) = walkParameter
       (prepareRows (fun i : Fin V.length => fun j : Fin r => (V.getD i []).getD j 0)

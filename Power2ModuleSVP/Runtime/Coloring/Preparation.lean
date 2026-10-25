@@ -14,12 +14,13 @@ namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open PartialColoringAlg
-set_option maxHeartbeats 100000
 set_option backward.isDefEq.respectTransparency true
 set_option backward.isDefEq.respectTransparency.types true
 attribute [local irreducible] List.getD dotPrefix normalizeList initialWeight
 
+/-- Ambient dimension, coefficient rows, and thresholds before walk preparation. -/
 abbrev PreparationInput := ℕ × (List (List ℚ) × List ℚ)
+/-- Binary encoding for row-preparation inputs. -/
 def encPreparation : PreparationInput ↪ List Bool :=
   encPair encUnary (encPair (encList (encList encColoringRational))
     (encList encColoringRational))
@@ -33,9 +34,11 @@ def prepareRowList (p : PreparationInput) (i : ℕ) : QuadraticRows :=
     let v' := normalizeList (p.1, v)
     [(c, v'), (c, v'.map fun q => -q)]
 
+/-- Collect the normalized rows retained by the preparation procedure. -/
 def prepareList (p : PreparationInput) : QuadraticRows :=
   (List.range p.2.1.length).flatMap (prepareRowList p)
 
+/-- Native polynomial-time certificate for `prepareRowList`. -/
 theorem prepareRowList_polytime :
     ComputableTidilyInPolyTime (fun p : PreparationInput × ℕ => prepareRowList p.1 p.2)
       (encPair encPreparation encUnary) encQuadraticRows := by
@@ -62,6 +65,7 @@ theorem prepareRowList_polytime :
     (const []) hfalse
   exact hcert.of_enc_eq fun p => congrArg encQuadraticRows (by rfl)
 
+/-- Native polynomial-time certificate for `prepareList`. -/
 @[fun_prop] theorem prepareList_polytime :
     ComputableTidilyInPolyTime prepareList encPreparation encQuadraticRows := by
   unfold prepareList
@@ -107,6 +111,7 @@ theorem prepareList_read (r : ℕ) (V : List (List ℚ)) (c : List ℚ) :
 def initializeList (p : ℕ × QuadraticRows) : List ℚ :=
   p.2.map fun row => initialWeight p.1 p.2.length row.1
 
+/-- Native polynomial-time certificate for `initializeList`. -/
 theorem initializeList_polytime :
     ComputableTidilyInPolyTime initializeList (encPair encUnary encQuadraticRows)
       (encList encColoringRational) := by
@@ -126,6 +131,7 @@ theorem initializeList_polytime :
     initialWeight p.1 p.2.length row.1) (snd encUnary encQuadraticRows) hbody
   exact hmap.of_enc_eq fun p => congrArg (encList encColoringRational) (by rfl)
 
+/-- List weight initialization agrees with the mathematical initial weights. -/
 theorem initializeList_spec {r m : ℕ} (a : Fin m → Row r) :
     initializeList (r, List.ofFn fun i => ((a i).threshold, List.ofFn (a i).a)) =
       List.ofFn (fun i => initialWeight r m (a i).threshold) := by

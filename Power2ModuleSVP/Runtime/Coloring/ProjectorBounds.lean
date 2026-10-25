@@ -15,7 +15,6 @@ namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open PartialColoringAlg ColoringNative
-set_option maxHeartbeats 600000
 
 theorem projector_entry_abs_le_one {r : ℕ} (C : List (Vec r)) (j k : Fin r) :
     |tableEntry (projectorTable C) j k| ≤ 1 := by
@@ -80,6 +79,7 @@ structure CanonicalProjectorDenominatorHypothesis : Prop where
         (tableEntry (projectorTable (readConstraints p.1 rows)) j k).den.size ≤
           coefficient * ((encProjectorBatch p).length + 1) ^ degree
 
+/-- A canonical denominator bound gives a polynomial projector encoding bound. -/
 theorem canonicalProjectorSize_of_denominator
     (h : CanonicalProjectorDenominatorHypothesis) : CanonicalProjectorSizeHypothesis := by
   obtain ⟨c, d, hb⟩ := h.denominator_bound

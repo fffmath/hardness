@@ -13,7 +13,7 @@ open Turing.MultiTapeTM Turing.MultiTapeTM.ComputableTidilyInPolyTime
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 set_option maxRecDepth 4096
-set_option maxHeartbeats 800000
+/-- Unary encoding of the endpoints of a scanned run. -/
 abbrev encRun := encPair encUnary encUnary
 private abbrev ScanState := List (ℕ × ℕ) × (ℕ × (Bool × ℕ))
 private abbrev encScan := encPair (encList encRun) (encPair encUnary (encPair encBool encUnary))
@@ -51,7 +51,7 @@ private theorem scanStep_growth (B : ℕ) (s : ScanState) (b : Bool) :
   have hi : min (min p B + 1) B ≤ B := Nat.min_le_right _ _
   have ha : min a B ≤ B := Nat.min_le_right _ _
   cases active <;> cases b <;>
-    simp [scanStep, encScan, encRun, length_encPair, encUnary_apply] <;> omega
+    simp [scanStep, encScan, encRun, encUnary_apply] <;> omega
 
 private theorem scanFinish_spec (B : ℕ) (s : ScanState) (bs : List Bool)
     (hp : s.2.1 + bs.length ≤ B) (ha : s.2.2.2 ≤ B) :
@@ -69,6 +69,7 @@ private theorem scanFinish_spec (B : ℕ) (s : ScanState) (bs : List Bool)
         Bool.not_false, Bool.not_true, Bool.false_eq_true, ↓reduceIte] <;>
       rw [ih] <;> simp_all [scanCells, List.reverse_cons, List.append_assoc] <;> omega
 
+/-- The `scanCells` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem scanCells_polytime : ComputableTidilyInPolyTime
     (scanCells 0 none) (encList encBool) (encList encRun) := by
   have hloop : ComputableTidilyInPolyTime

@@ -12,8 +12,8 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg ColoringNative
 open Turing.MultiTapeTM
-set_option maxHeartbeats 600000
 
+/-- Reify the initial coloring point with the walk parameters and empty weights. -/
 def startWire {r m : ℕ} (a : Fin m → Row r) (x : Vec r) : WalkInput :=
   (walkParameter a, (List.ofFn x, []))
 
@@ -21,14 +21,16 @@ theorem startWire_dimensions {r m : ℕ} (a : Fin m → Row r) (x : Vec r) :
     r ≤ (encWalkInput (startWire a x)).length ∧
       m ≤ (encWalkInput (startWire a x)).length ∧
       (encWalkParameter (walkParameter a)).length ≤ (encWalkInput (startWire a x)).length ∧
-      (encList encColoringRational (List.ofFn x)).length ≤ (encWalkInput (startWire a x)).length := by
+      (encList encColoringRational (List.ofFn x)).length ≤
+        (encWalkInput (startWire a x)).length := by
   have hm := length_le_length_encList
     (encPair encColoringRational (encList encColoringRational))
     (List.ofFn fun i => ((a i).threshold, List.ofFn (a i).a))
   simp only [List.length_ofFn] at hm
   simp only [startWire, encWalkInput, encWalkParameter, walkParameter, encListState,
     encQuadraticRows, length_encPair, encUnary_apply, List.length_replicate, encList_nil]
-  change m ≤ (encQuadraticRows (List.ofFn fun i => ((a i).threshold, List.ofFn (a i).a))).length at hm
+  change m ≤
+    (encQuadraticRows (List.ofFn fun i => ((a i).threshold, List.ofFn (a i).a))).length at hm
   unfold encQuadraticRows at hm
   omega
 
@@ -39,12 +41,15 @@ theorem stepSize_den_size_le (r : ℕ) : (stepSize r).den.size ≤ 16 * r + 1 :=
   · simp
   · exact (Nat.size_le.mpr Nat.lt_two_pow_self).trans (by omega)
 
+/-- Polynomial bound for coordinate sizes along a walk prefix. -/
 def coordinatePrefixBound (c d N : ℕ) : ℕ :=
   1 + N * N + 2048 * N ^ 3 * (16 * N + 1 + c * (N + 1) ^ d)
 
+/-- Polynomial bound for rational weight sizes along a walk prefix. -/
 def weightPrefixBound (N : ℕ) : ℕ :=
   2 * (2048 * N ^ 3 + 1) + 1 + 2 * (1024 * N * (2048 * N ^ 3 + 1) + 2)
 
+/-- Polynomial bound for the encoded size of a complete walk state. -/
 def statePrefixBound (c d N : ℕ) : ℕ :=
   2 * ((8 * coordinatePrefixBound c d N + 7) * N) +
     (4 * weightPrefixBound N + 7) * N + 1

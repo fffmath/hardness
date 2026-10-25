@@ -23,11 +23,12 @@ open PartialColoringAlg
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-set_option maxHeartbeats 400000
 
+/-- Greedily add a binary digit when its square remains below the input. -/
 def sqrtDigit (n a k : ℕ) : ℕ :=
   if (a + 2 ^ k) ^ 2 ≤ n then a + 2 ^ k else a
 
+/-- Compute the integer square root by scanning binary digits from high to low. -/
 def sqrtBinary (n : ℕ) : ℕ :=
   ((List.range n.size).reverse).foldl (sqrtDigit n) 0
 
@@ -55,6 +56,7 @@ theorem sqrtBinary_eq (n : ℕ) : sqrtBinary n = Nat.sqrt n := by
   apply sqrtScan_eq n n.size 0 (Nat.zero_le _)
   simpa using (Nat.sqrt_le_self n).trans_lt (Nat.lt_size_self n)
 
+/-- Native polynomial-time certificate for `sqrtDigit`. -/
 @[fun_prop] theorem sqrtDigit_polytime :
     ComputableTidilyInPolyTime (fun p : (ℕ × ℕ) × ℕ => sqrtDigit p.1.1 p.1.2 p.2)
       (encPair (encPair encNat encNat) encUnary) encNat := by
@@ -94,11 +96,13 @@ arbitrary accumulator values. This is the native bounded-fold obligation. -/
     ComputableTidilyInPolyTime Nat.sqrt encNat encNat :=
   sqrtBinary_polytime.of_enc_eq fun n => congrArg encNat (sqrtBinary_eq n).symm
 
+/-- Native polynomial-time certificate for `ceilSqrt`. -/
 @[fun_prop] theorem ceilSqrt_polytime :
     ComputableTidilyInPolyTime ceilSqrt encNat encNat := by
   unfold ceilSqrt
   fun_prop
 
+/-- Native polynomial-time certificate for `normScale`. -/
 @[fun_prop] theorem normScale_polytime :
     ComputableTidilyInPolyTime normScale encColoringRational encColoringRational := by
   have hn : ComputableTidilyInPolyTime (fun s : ℚ =>

@@ -11,16 +11,16 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Coloring
-set_option maxHeartbeats 600000
 
+/-- The current partial-coloring input after `i` descent steps. -/
 abbrev recursionInput (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
     (i : ℕ) : PartialColoringInput := ((descentStep F)^[i] (p, [])).1
 
- theorem descentStep_eq (F : PartialColoringInput → List ℚ) (s : RecursionStack) :
+theorem descentStep_eq (F : PartialColoringInput → List ℚ) (s : RecursionStack) :
     descentStep F s = if recursionProgress F s.1 then
       (recursionNext F s.1, s.1 :: s.2) else s := rfl
 
- theorem descent_dimension_le (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
+theorem descent_dimension_le (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
     (i : ℕ) : (recursionInput F p i).2.1.length ≤ p.2.1.length := by
   have hs (s : RecursionStack) : (descentStep F s).1.2.1.length ≤ s.1.2.1.length := by
     rw [descentStep_eq]
@@ -33,7 +33,7 @@ abbrev recursionInput (F : PartialColoringInput → List ℚ) (p : PartialColori
     rw [recursionInput, Function.iterate_succ_apply']
     exact (hs _).trans ih
 
- theorem descent_matrix_length (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
+theorem descent_matrix_length (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
     (i : ℕ) : (recursionInput F p i).1.length = p.1.length := by
   have hs (s : RecursionStack) : (descentStep F s).1.1.length = s.1.1.length := by
     rw [descentStep_eq]
@@ -51,7 +51,7 @@ theorem getD_mem_or_zero (l : List ℚ) (j : ℕ) : l.getD j 0 ∈ l ∨ l.getD 
   · right
     simp [List.getD_eq_getElem?_getD, Nat.not_lt.mp hj]
 
- theorem descent_matrix_entries (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
+theorem descent_matrix_entries (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
     (i : ℕ) : ∀ row ∈ (recursionInput F p i).1, ∀ q ∈ row,
       q = 0 ∨ ∃ original ∈ p.1, q ∈ original := by
   have hs (s : RecursionStack)
@@ -73,7 +73,7 @@ theorem getD_mem_or_zero (l : List ℚ) (j : ℕ) : l.getD j 0 ∈ l ∨ l.getD 
     rw [recursionInput, Function.iterate_succ_apply']
     exact hs _ ih
 
- theorem descent_matrix_row_length (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
+theorem descent_matrix_row_length (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
     (N : ℕ) (hr : p.2.1.length ≤ N) (hrow : ∀ row ∈ p.1, row.length ≤ N)
     (i : ℕ) : ∀ row ∈ (recursionInput F p i).1, row.length ≤ N := by
   induction i with
@@ -89,7 +89,7 @@ theorem getD_mem_or_zero (l : List ℚ) (j : ℕ) : l.getD j 0 ∈ l ∨ l.getD 
         ((descent_dimension_le F p i).trans hr)
     · exact ih
 
- theorem descent_threshold_coordinate (F : PartialColoringInput → List ℚ)
+theorem descent_threshold_coordinate (F : PartialColoringInput → List ℚ)
     (p : PartialColoringInput) (i j : ℕ) (hj : j < p.1.length) :
     (recursionInput F p i).2.2.getD j 0 =
       p.2.2.getD j 0 + 4 * (((descentStep F)^[i] (p, [])).2.length : ℚ) := by
@@ -111,7 +111,7 @@ theorem getD_mem_or_zero (l : List ℚ) (j : ℕ) : l.getD j 0 ∈ l ∨ l.getD 
     · exact ih
 
 /-- Every threshold keeps its original canonical denominator. -/
- theorem descent_threshold_den (F : PartialColoringInput → List ℚ)
+theorem descent_threshold_den (F : PartialColoringInput → List ℚ)
     (p : PartialColoringInput) (i j : ℕ) (hj : j < p.1.length) :
     ((recursionInput F p i).2.2.getD j 0).den = (p.2.2.getD j 0).den := by
   rw [descent_threshold_coordinate F p i j hj]
@@ -123,9 +123,8 @@ end Power2ModuleSVP.ColoringRuntime
 
 namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
-set_option maxHeartbeats 600000
 
- theorem descent_threshold_entries (F : PartialColoringInput → List ℚ)
+theorem descent_threshold_entries (F : PartialColoringInput → List ℚ)
     (p : PartialColoringInput) (i : ℕ) :
     ∀ q ∈ (recursionInput F p i).2.2, ∃ original : ℚ,
       (original ∈ p.2.2 ∨ original = 0) ∧ ∃ k ≤ i, q = original + 4 * (k : ℚ) := by
@@ -150,7 +149,7 @@ set_option maxHeartbeats 600000
       obtain ⟨original, ho, k, hk, he⟩ := ih q hq
       exact ⟨original, ho, k, by omega, he⟩
 
- theorem descent_threshold_length (F : PartialColoringInput → List ℚ)
+theorem descent_threshold_length (F : PartialColoringInput → List ℚ)
     (p : PartialColoringInput) (i : ℕ) :
     (recursionInput F p i).2.2.length ≤ max p.2.2.length p.1.length := by
   induction i with

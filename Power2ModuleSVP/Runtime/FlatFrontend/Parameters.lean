@@ -15,7 +15,6 @@ open ColoringRuntime
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 set_option maxRecDepth 20000
-set_option maxHeartbeats 800000
 
 private theorem findGreatest_eq_findD (predicate : ℕ → Prop) [DecidablePred predicate]
     (bound : ℕ) : Nat.findGreatest predicate bound =
@@ -38,6 +37,7 @@ private theorem boundedSearch {α : Type} {input : α ↪ List Bool} {bound : α
   have hlist := listReverseWithInput (range.comp (unary_add.comp (hbound.prod (const 1))))
   exact (findWithInput hlist hpredicate).optionGetDWithInput (const 0)
 
+/-- The `stageWidth` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem stageWidth_polytime : ComputableTidilyInPolyTime stageWidth
     encUnary encNat := by
   unfold stageWidth
@@ -56,19 +56,25 @@ private theorem stagePredicate_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × ℕ => decide (stageWidth (2 * a.2 + 1) * 2 ^ 66 ≤ a.1))
     (encPair encUnary encUnary) encBool := stagePredicateScale_polytime (2 ^ 66)
 
+/-- The `stageIndex` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem stageIndex_polytime : ComputableTidilyInPolyTime stageIndex
     encUnary encUnary := by
   exact boundedSearch AnchorRepairRuntime.log2_polytime stagePredicate_polytime
 
+/-- The `stage` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem stage_polytime : ComputableTidilyInPolyTime stage encUnary encUnary := by
   unfold stage
   fun_prop
 
+set_option maxHeartbeats 800000 in
+-- Certifying the binary power expands several nested parameter computations.
+/-- The `blockShift` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem blockShift_polytime : ComputableTidilyInPolyTime blockShift
     encUnary encNat := by
   unfold blockShift
   fun_prop
 
+/-- The block shift is bounded quadratically on every raw input degree. -/
 theorem blockShift_le_raw (N : ℕ) : blockShift N ≤ 2048 * (N + 1) ^ 2 := by
   have hr : stageIndex N ≤ Nat.log2 N := Nat.findGreatest_le _
   have hp : 2 ^ Nat.log2 N ≤ N + 1 := by
@@ -83,12 +89,14 @@ theorem blockShift_le_raw (N : ℕ) : blockShift N ≤ 2048 * (N + 1) ^ 2 := by
   norm_num
   nlinarith [Nat.pow_le_pow_left hq 2]
 
+/-- The block shift can be computed in unary within polynomial time. -/
 @[fun_prop] theorem blockShift_unary_polytime : ComputableTidilyInPolyTime blockShift
     encUnary encUnary :=
   binary_to_unary_bounded blockShift_polytime
     (show ComputableTidilyInPolyTime (fun N : ℕ => 2048 * (N + 1) ^ 2)
       encUnary encUnary by fun_prop) blockShift_le_raw
 
+/-- The power of two at the chosen stage can be computed in unary within polynomial time. -/
 @[fun_prop] theorem stagePower_unary_polytime : ComputableTidilyInPolyTime
     (fun N => 2 ^ stage N) encUnary encUnary := by
   apply binary_to_unary_bounded
@@ -98,11 +106,13 @@ theorem blockShift_le_raw (N : ℕ) : blockShift N ≤ 2048 * (N + 1) ^ 2 := by
   unfold blockShift
   exact Nat.pow_le_pow_right (by omega) (by omega)
 
+/-- The `height` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem height_polytime : ComputableTidilyInPolyTime height
     encUnary encColoringRational := by
   unfold height
   fun_prop
 
+/-- The grid ratio can be computed in binary within polynomial time. -/
 @[fun_prop] theorem gridRatio_binary_polytime : ComputableTidilyInPolyTime gridRatio
     encUnary encNat := by
   have hc : ComputableTidilyInPolyTime (fun N : ℕ =>
@@ -111,7 +121,7 @@ theorem blockShift_le_raw (N : ℕ) : blockShift N ≤ 2048 * (N + 1) ^ 2 := by
     congrArg encNat (by simp [gridRatio, Int.ceil_toNat])
 
 /-- A deliberately coarse raw-input bound; the constant is fixed, not input data. -/
-theorem blockShift_lower {N : ℕ} (hN : 0 < N) :
+theorem blockShift_lower {N : ℕ} (_hN : 0 < N) :
     (N : ℚ) ≤ (blockShift N : ℚ) * 2 ^ 70 := by
   have hp : 2 ^ stage N ≤ blockShift N := by
     unfold blockShift
@@ -128,6 +138,7 @@ theorem blockShift_lower {N : ℕ} (hN : 0 < N) :
   exact_mod_cast hc
 
 set_option exponentiation.threshold 1024 in
+/-- Every positive input degree has a fixed positive lower bound on its height. -/
 theorem height_lower_raw {N : ℕ} (hN : 0 < N) :
     (1 : ℚ) / 2 ^ 212 ≤ height N := by
   have hn : (0 : ℚ) < N := by exact_mod_cast hN
@@ -146,6 +157,7 @@ theorem height_lower_raw {N : ℕ} (hN : 0 < N) :
     _ ≥ 1 / 2 ^ 212 := by norm_num
 
 set_option exponentiation.threshold 1024 in
+/-- The sampling grid ratio has a linear bound on every raw input degree. -/
 theorem gridRatio_le_raw (N : ℕ) : gridRatio N ≤ 2 * (64 * N * 2 ^ 212 + 1) := by
   by_cases hn : N = 0
   · subst N
@@ -167,12 +179,14 @@ theorem gridRatio_le_raw (N : ℕ) : gridRatio N ≤ 2 * (64 * N * 2 ^ 212 + 1) 
 private theorem gridBound_polytime (C : ℕ) : ComputableTidilyInPolyTime
     (fun N : ℕ => 2 * (64 * N * C + 1)) encUnary encUnary := by fun_prop
 
+/-- The `gridRatio` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem gridRatio_polytime : ComputableTidilyInPolyTime gridRatio
     encUnary encUnary := by
   apply binary_to_unary_bounded gridRatio_binary_polytime
     (bound := fun N => 2 * (64 * N * 2 ^ 212 + 1))
     (gridBound_polytime (2 ^ 212)) gridRatio_le_raw
 
+/-- The `firstThreshold` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem firstThreshold_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × ℕ => firstThreshold a.1 a.2)
     (encPair encUnary encUnary) encColoringRational := by

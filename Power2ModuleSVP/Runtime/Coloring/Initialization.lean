@@ -20,42 +20,48 @@ open PartialColoringAlg AnchorRepairRuntime
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-set_option maxHeartbeats 200000
 set_option maxRecDepth 4096
 
+/-- Native polynomial-time certificate for `intCast`. -/
 @[fun_prop] theorem intCast_polytime :
     ComputableTidilyInPolyTime (fun z : ℤ => (z : ℚ)) encIntBin encColoringRational := by
   simpa using rational_of_ints_polytime (id' (encIn := encIntBin)) (const 1)
 
+/-- Native polynomial-time certificate for `natCast`. -/
 @[fun_prop] theorem natCast_polytime :
     ComputableTidilyInPolyTime (fun n : ℕ => (n : ℚ)) encNat encColoringRational :=
   intCast_polytime.comp intBin_natCast
 
 variable {α : Type} {enc : α ↪ List Bool} {a b : α → ℚ}
 
+/-- Native polynomial-time certificate for `add`. -/
 @[fun_prop] theorem add_polytime'
     (ha : ComputableTidilyInPolyTime a enc encColoringRational)
     (hb : ComputableTidilyInPolyTime b enc encColoringRational) :
     ComputableTidilyInPolyTime (fun x => a x + b x) enc encColoringRational :=
   (add_polytime.comp (ha.prod hb)).of_enc_eq fun _ => rfl
 
+/-- Native polynomial-time certificate for `mul`. -/
 @[fun_prop] theorem mul_polytime'
     (ha : ComputableTidilyInPolyTime a enc encColoringRational)
     (hb : ComputableTidilyInPolyTime b enc encColoringRational) :
     ComputableTidilyInPolyTime (fun x => a x * b x) enc encColoringRational :=
   (mul_polytime.comp (ha.prod hb)).of_enc_eq fun _ => rfl
 
+/-- Native polynomial-time certificate for `div`. -/
 @[fun_prop] theorem div_polytime'
     (ha : ComputableTidilyInPolyTime a enc encColoringRational)
     (hb : ComputableTidilyInPolyTime b enc encColoringRational) :
     ComputableTidilyInPolyTime (fun x => a x / b x) enc encColoringRational :=
   (div_polytime.comp (ha.prod hb)).of_enc_eq fun _ => rfl
 
+/-- Native polynomial-time certificate for `intCast`. -/
 @[fun_prop] theorem intCast_polytime' {z : α → ℤ}
     (hz : ComputableTidilyInPolyTime z enc encIntBin) :
     ComputableTidilyInPolyTime (fun x => (z x : ℚ)) enc encColoringRational :=
   intCast_polytime.comp hz
 
+/-- Native polynomial-time certificate for `natCast`. -/
 @[fun_prop] theorem natCast_polytime' {z : α → ℕ}
     (hz : ComputableTidilyInPolyTime z enc encNat) :
     ComputableTidilyInPolyTime (fun x => (z x : ℚ)) enc encColoringRational :=
@@ -74,6 +80,7 @@ variable {α : Type} {enc : α ↪ List Bool} {a b : α → ℚ}
     push_cast
     rw [← div_pow, p.1.num_div_den]
 
+/-- Native polynomial-time certificate for `pow`. -/
 @[fun_prop] theorem pow_polytime' {α : Type} {enc : α ↪ List Bool}
     {q : α → ℚ} {k : α → ℕ}
     (hq : ComputableTidilyInPolyTime q enc encColoringRational)
@@ -112,6 +119,7 @@ private theorem canonicalFraction_spec (q : ℚ) :
     simp only [Function.comp_def, (canonicalFraction_spec _).2]
     exact congrArg List.sum (List.map_id xs).symm
 
+/-- Native polynomial-time certificate for `prod`. -/
 @[fun_prop] theorem prod_polytime :
     ComputableTidilyInPolyTime (fun xs : List ℚ => xs.prod)
       (encList encColoringRational) encColoringRational := by
@@ -144,6 +152,7 @@ private theorem floor_eq (q : ℚ) :
     change Int.negSucc (n / (d + 1)) = -((n / (d + 1) : ℕ) : ℤ) - 1
     omega
 
+/-- Native polynomial-time certificate for `floor`. -/
 @[fun_prop] theorem floor_polytime :
     ComputableTidilyInPolyTime (fun q : ℚ => ⌊q⌋) encColoringRational encIntBin := by
   have h : ComputableTidilyInPolyTime (fun q : ℚ =>
@@ -151,27 +160,32 @@ private theorem floor_eq (q : ℚ) :
       else ((q.num.natAbs / q.den : ℕ) : ℤ)) encColoringRational encIntBin := by fun_prop
   exact h.of_enc_eq fun q => congrArg encIntBin (floor_eq q)
 
+/-- Native polynomial-time certificate for `ceil`. -/
 @[fun_prop] theorem ceil_polytime :
     ComputableTidilyInPolyTime (fun q : ℚ => ⌈q⌉) encColoringRational encIntBin := by
   have h : ComputableTidilyInPolyTime (fun q : ℚ => -⌊-q⌋)
       encColoringRational encIntBin := by fun_prop
   exact h.of_enc_eq fun q => congrArg encIntBin (by simp only [Int.floor_neg, neg_neg])
 
+/-- Native polynomial-time certificate for `roundUp`. -/
 @[fun_prop] theorem roundUp_polytime :
     ComputableTidilyInPolyTime (fun p : ℚ × ℚ => roundUp p.1 p.2)
       (encPair encColoringRational encColoringRational) encColoringRational := by
   unfold roundUp
   fun_prop
 
+/-- Native polynomial-time certificate for `size`. -/
 @[fun_prop] theorem size_polytime :
     ComputableTidilyInPolyTime Nat.size encNat encUnary :=
   (encoding_length encNat).of_enc_eq fun n => by simp [encNat_apply, Nat.size_eq_bits_len]
 
+/-- Native polynomial-time certificate for `stepBudget`. -/
 @[fun_prop] theorem stepBudget_polytime :
     ComputableTidilyInPolyTime stepBudget encUnary encUnary := by
   unfold stepBudget
   fun_prop
 
+/-- Native polynomial-time certificate for `precision`. -/
 @[fun_prop] theorem precision_polytime :
     ComputableTidilyInPolyTime (fun p : ℕ × ℕ => precision p.1 p.2)
       (encPair encUnary encUnary) encUnary := by
@@ -180,6 +194,7 @@ private theorem floor_eq (q : ℚ) :
   apply unary_to_binary.comp
   fun_prop
 
+/-- Native polynomial-time certificate for `mesh`. -/
 @[fun_prop] theorem mesh_polytime :
     ComputableTidilyInPolyTime (fun p : ℕ × ℕ => mesh p.1 p.2)
       (encPair encUnary encUnary) encColoringRational := by
@@ -216,6 +231,7 @@ needed for the Taylor denominators. -/
     (((fst encColoringRational encUnary).comp (fst _ _)).prod (snd _ _))).prod hfac)).of_enc_eq
       fun _ => rfl
 
+/-- Native polynomial-time certificate for `initialWeight`. -/
 @[fun_prop] theorem initialWeight_polytime :
     ComputableTidilyInPolyTime (fun p : (ℕ × ℕ) × ℚ => initialWeight p.1.1 p.1.2 p.2)
       (encPair (encPair encUnary encUnary) encColoringRational) encColoringRational := by

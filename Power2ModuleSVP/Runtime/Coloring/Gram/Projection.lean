@@ -12,8 +12,8 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg
 open scoped BigOperators Matrix
-set_option maxHeartbeats 500000
 
+/-- Orthogonal-complement projector given by the rational Gram inverse formula. -/
 noncomputable def rationalGramComplement {n r : ℕ}
     (A : Matrix (Fin n) (Fin r) ℚ) : Matrix (Fin r) (Fin r) ℚ :=
   1 - Aᵀ * (A * Aᵀ)⁻¹ * A

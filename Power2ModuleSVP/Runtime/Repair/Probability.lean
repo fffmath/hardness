@@ -18,14 +18,18 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 attribute [local irreducible] List.getD
 
+/-- Finite assignments of Boolean values to numbered variables. -/
 abbrev Assignments := List (ℕ × Bool)
+/-- List encoding of numbered Boolean assignments. -/
 abbrev encAssignments := encList (encPair encUnary encBool)
 
+/-- Read an assigned Boolean value, defaulting to false when absent. -/
 def assignmentGet (a : Assignments) (j : ℕ) : Bool :=
-  ((a.find? fun x => decide (x.1 = j)).getD (0,false)).2
+  ((a.find? fun x => decide (x.1 = j)).getD (0, false)).2
 
 attribute [local irreducible] assignmentGet
 
+/-- The `assignmentGet` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem assignmentGet_polytime : ComputableTidilyInPolyTime
     (fun a : Assignments × ℕ => assignmentGet a.1 a.2)
     (encPair encAssignments encUnary) encBool := by
@@ -33,25 +37,29 @@ attribute [local irreducible] assignmentGet
   fun_prop
 
 theorem assignmentGet_cons (a : Assignments) (j : ℕ) (b : Bool) :
-    assignmentGet ((j,b)::a) = Function.update (assignmentGet a) j b := by
+    assignmentGet ((j, b) :: a) = Function.update (assignmentGet a) j b := by
   funext k
   by_cases hj : j = k
   · subst k
     simp [assignmentGet]
   · simp [assignmentGet, hj, Function.update_of_ne (Ne.symm hj)]
 
+/-- Ring data, a row index, an exposed prefix, and a probability fraction. -/
 abbrev ProbInput := IdealCVP.RingArgs × (ℕ × (List Bool × Fraction))
+/-- Encoding of the inputs to a repair row probability. -/
 abbrev encProbInput := encPair IdealCVP.encRingArgs
   (encPair encUnary (encPair (encList encBool) encFraction))
 
+/-- Evaluate a repair row under the prefix and a finite Boolean assignment. -/
 def rowValueList (a : ProbInput) (flags : Assignments) : ℤ :=
   ((supportList a.1.1 a.1.2.2).map fun j =>
-    (if j ≤ a.2.1 then (1 : ℤ) else -1) *
-      a.1.2.1.getD ((a.2.1+a.1.1-j)%a.1.1) 0 * a.1.2.2.getD j 0 *
-      (if assignmentGet flags ((a.2.1+a.1.1-j)%a.1.1) then -1 else 1)).sum
+    (if j ≤ a.2.1 then (1 : ℤ) else - 1) *
+      a.1.2.1.getD ((a.2.1 + a.1.1 - j) % a.1.1) 0 * a.1.2.2.getD j 0 *
+      (if assignmentGet flags ((a.2.1 + a.1.1 - j) % a.1.1) then -1 else 1)).sum
 
 attribute [local irreducible] rowValueList
 
+/-- The `rowValueList` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem rowValueList_polytime : ComputableTidilyInPolyTime
     (fun a : ProbInput × Assignments => rowValueList a.1 a.2)
     (encPair encProbInput encAssignments) encIntBin := by
@@ -59,7 +67,7 @@ attribute [local irreducible] rowValueList
   apply intBin_sum.comp
   apply mapWithInput (encA := encUnary)
   · apply supportList_polytime.comp (g := fun a : ProbInput × Assignments =>
-      (a.1.1.1,a.1.1.2.2))
+      (a.1.1.1, a.1.1.2.2))
     unfold encSupportInput encProbInput IdealCVP.encRingArgs
     fun_prop
   · have hc : ComputableTidilyInPolyTime
@@ -91,17 +99,20 @@ theorem rowValueList_eq (a : ProbInput) (flags : Assignments) :
   exact (List.sum_toFinset _ (show (supportList a.1.1 a.1.2.2).Nodup from
     List.nodup_range.filter _)).symm
 
+/-- Fraction indicator of whether the evaluated repair row is bad. -/
 def rowFraction (a : ProbInput) (flags : Assignments) : Fraction :=
   (if rowValueList a flags = -1 ∨ rowValueList a flags = 1 then 1 else 0, 1)
 
 attribute [local irreducible] rowFraction
 
+/-- The `rowFraction` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem rowFraction_polytime : ComputableTidilyInPolyTime
     (fun a : ProbInput × Assignments => rowFraction a.1 a.2)
     (encPair encProbInput encAssignments) encFraction := by
   unfold rowFraction encFraction
   fun_prop
 
+/-- The row indicator has positive denominator and the expected rational value. -/
 theorem rowFraction_spec (a : ProbInput) (flags : Assignments) :
     0 < (rowFraction a flags).2 ∧ fractionValue (rowFraction a flags) =
       AnchorTests.rowIndicator a.1.1 a.1.2.1 a.1.2.2 a.2.1 (assignmentGet flags) := by
@@ -109,40 +120,47 @@ theorem rowFraction_spec (a : ProbInput) (flags : Assignments) :
     Int.cast_one, div_one]
   split_ifs <;> norm_num
 
-def fractionOneSub (p : Fraction) : Fraction := (p.2-p.1,p.2)
+/-- Represent one minus the given fraction with the same denominator. -/
+def fractionOneSub (p : Fraction) : Fraction := (p.2 - p.1, p.2)
 
+/-- The `fractionOneSub` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem fractionOneSub_polytime :
     ComputableTidilyInPolyTime fractionOneSub encFraction encFraction := by
   unfold fractionOneSub encFraction
   fun_prop
 
+/-- Complementing a fraction preserves its positive denominator and subtracts its value from one. -/
 theorem fractionOneSub_spec (p : Fraction) (hp : 0 < p.2) :
-    0 < (fractionOneSub p).2 ∧ fractionValue (fractionOneSub p) = 1-fractionValue p := by
+    0 < (fractionOneSub p).2 ∧ fractionValue (fractionOneSub p) = 1 - fractionValue p := by
   refine ⟨hp, ?_⟩
   have hpq : (p.2 : ℚ) ≠ 0 := by exact_mod_cast hp.ne'
   simp only [fractionOneSub, fractionValue, Int.cast_sub]
   field_simp
 
+/-- Row probability inputs, remaining variable indices, and assigned values. -/
 abbrev LocalInput := ProbInput × (List ℕ × Assignments)
+/-- Encoding of a local probability enumeration state. -/
 abbrev encLocalInput := encPair encProbInput (encPair (encList encUnary) encAssignments)
 
+/-- Enumerate local Boolean choices and combine their weighted fractions. -/
 def localFraction : ℕ → LocalInput → Fraction
   | 0, a => rowFraction a.1 a.2.2
-  | n+1, a =>
+  | n + 1, a =>
     match a.2.1 with
     | [] => rowFraction a.1 a.2.2
-    | j::js =>
+    | j :: js =>
       if j < a.1.2.2.1.length then
-        localFraction n (a.1, (js, (j,a.1.2.2.1.getD j false)::a.2.2))
+        localFraction n (a.1, (js, (j, a.1.2.2.1.getD j false) :: a.2.2))
       else
         fractionAdd
           (fractionMul (fractionOneSub a.1.2.2.2,
-            localFraction n (a.1, (js, (j,false)::a.2.2))),
+            localFraction n (a.1, (js, (j, false) :: a.2.2))),
            fractionMul (a.1.2.2.2,
-            localFraction n (a.1, (js, (j,true)::a.2.2))))
+            localFraction n (a.1, (js, (j, true) :: a.2.2))))
 
 attribute [local irreducible] localFraction
 
+/-- The `localFraction` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem localFraction_polytime (n : ℕ) :
     ComputableTidilyInPolyTime (localFraction n) encLocalInput encFraction := by
   have hc := fst encProbInput (encPair (encList encUnary) encAssignments)
@@ -155,7 +173,7 @@ attribute [local irreducible] localFraction
   have hmk {b : LocalInput → Bool}
       (hbit : ComputableTidilyInPolyTime b encLocalInput encBool) :
       ComputableTidilyInPolyTime
-        (fun a : LocalInput => (a.1,(a.2.1.tail,(a.2.1.headD 0,b a)::a.2.2)))
+        (fun a : LocalInput => (a.1, (a.2.1.tail, (a.2.1.headD 0, b a) :: a.2.2)))
         encLocalInput encLocalInput :=
     hc.prod (ht.prod (cons' (hh.prod hbit) hf))
   induction n with
@@ -168,23 +186,23 @@ attribute [local irreducible] localFraction
   | succ n ih =>
     have hrec (b : Bool) : ComputableTidilyInPolyTime
         (fun a : LocalInput => localFraction n (a.1,
-          (a.2.1.tail, (a.2.1.headD 0,b)::a.2.2))) encLocalInput encFraction := by
+          (a.2.1.tail, (a.2.1.headD 0, b) :: a.2.2))) encLocalInput encFraction := by
       exact ih.comp (hmk (const b))
     have hfixed : ComputableTidilyInPolyTime
         (fun a : LocalInput => localFraction n (a.1,
-          (a.2.1.tail, (a.2.1.headD 0,a.1.2.2.1.getD (a.2.1.headD 0) false)::a.2.2)))
+          (a.2.1.tail, (a.2.1.headD 0, a.1.2.2.1.getD (a.2.1.headD 0) false) :: a.2.2)))
         encLocalInput encFraction := by
       exact ih.comp (hmk hb)
-    have he : localFraction (n+1) = fun a : LocalInput =>
+    have he : localFraction (n + 1) = fun a : LocalInput =>
         if a.2.1.isEmpty then rowFraction a.1 a.2.2
         else if a.2.1.headD 0 < a.1.2.2.1.length then
           localFraction n (a.1, (a.2.1.tail,
-            (a.2.1.headD 0,a.1.2.2.1.getD (a.2.1.headD 0) false)::a.2.2))
+            (a.2.1.headD 0, a.1.2.2.1.getD (a.2.1.headD 0) false) :: a.2.2))
         else fractionAdd
           (fractionMul (fractionOneSub a.1.2.2.2,
-            localFraction n (a.1, (a.2.1.tail,(a.2.1.headD 0,false)::a.2.2))),
+            localFraction n (a.1, (a.2.1.tail, (a.2.1.headD 0, false) :: a.2.2))),
            fractionMul (a.1.2.2.2,
-            localFraction n (a.1, (a.2.1.tail,(a.2.1.headD 0,true)::a.2.2)))) := by
+            localFraction n (a.1, (a.2.1.tail, (a.2.1.headD 0, true) :: a.2.2)))) := by
       funext a
       rw [localFraction]
       cases a.2.1 <;> rfl
@@ -204,6 +222,7 @@ attribute [local irreducible] localFraction
         ((fractionMul_polytime.comp ((fractionOneSub_polytime.comp hp).prod (hrec false))).prod
           (fractionMul_polytime.comp (hp.prod (hrec true))))))
 
+/-- Bounded local enumeration computes the semantic local probability exactly. -/
 theorem localFraction_spec (n : ℕ) (a : LocalInput)
     (hp : 0 < a.1.2.2.2.2) (hlen : a.2.1.length ≤ n) :
     0 < (localFraction n a).2 ∧ fractionValue (localFraction n a) =
@@ -221,9 +240,9 @@ theorem localFraction_spec (n : ℕ) (a : LocalInput)
       simpa only [localFraction, AnchorTests.localExpectation] using rowFraction_spec ctx flags
     | cons j js =>
       have ht : js.length ≤ n := by simpa using hlen
-      have hf := ih (ctx, (js,(j,ctx.2.2.1.getD j false)::flags)) hp ht
-      have h0 := ih (ctx, (js,(j,false)::flags)) hp ht
-      have h1 := ih (ctx, (js,(j,true)::flags)) hp ht
+      have hf := ih (ctx, (js, (j, ctx.2.2.1.getD j false) :: flags)) hp ht
+      have h0 := ih (ctx, (js, (j, false) :: flags)) hp ht
+      have h1 := ih (ctx, (js, (j, true) :: flags)) hp ht
       dsimp only at *
       simp only [localFraction]
       by_cases hj : j < ctx.2.2.1.length
@@ -234,22 +253,24 @@ theorem localFraction_spec (n : ℕ) (a : LocalInput)
         simp [List.getD_eq_getElem?_getD, hj]
       · rw [ite_eq_right hj]
         obtain ⟨hq, hqv⟩ := fractionOneSub_spec ctx.2.2.2 hp
-        obtain ⟨h0p,h0v⟩ := fractionMul_spec _ _ hq h0.1
-        obtain ⟨h1p,h1v⟩ := fractionMul_spec _ _ hp h1.1
-        obtain ⟨hs,hsv⟩ := fractionAdd_spec _ _ h0p h1p
+        obtain ⟨h0p, h0v⟩ := fractionMul_spec _ _ hq h0.1
+        obtain ⟨h1p, h1v⟩ := fractionMul_spec _ _ hp h1.1
+        obtain ⟨hs, hsv⟩ := fractionAdd_spec _ _ h0p h1p
         refine ⟨hs, ?_⟩
-        rw [hsv,h0v,h1v,hqv,h0.2,h1.2, AnchorTests.localExpectation,
+        rw [hsv, h0v, h1v, hqv, h0.2, h1.2, AnchorTests.localExpectation,
           List.getElem?_eq_none_iff.mpr (by omega), assignmentGet_cons, assignmentGet_cons]
 
+/-- Compute a row probability by enumerating its local variables. -/
 def rowProbabilityFraction (n : ℕ) (a : ProbInput) : Fraction :=
-  localFraction n (a, (rowVars ((a.1.1,a.1.2.2),a.2.1), []))
+  localFraction n (a, (rowVars ((a.1.1, a.1.2.2), a.2.1), []))
 
+/-- The `rowProbabilityFraction` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem rowProbabilityFraction_polytime (n : ℕ) :
     ComputableTidilyInPolyTime (rowProbabilityFraction n) encProbInput encFraction := by
   unfold rowProbabilityFraction
   apply (localFraction_polytime n).comp
   have hr : ComputableTidilyInPolyTime
-      (fun a : ProbInput => rowVars ((a.1.1,a.1.2.2),a.2.1))
+      (fun a : ProbInput => rowVars ((a.1.1, a.1.2.2), a.2.1))
       encProbInput (encList encUnary) := by
     apply rowVars_polytime.comp
     unfold encRowInput encSupportInput encProbInput IdealCVP.encRingArgs
@@ -257,6 +278,7 @@ def rowProbabilityFraction (n : ℕ) (a : ProbInput) : Fraction :=
   unfold encLocalInput
   fun_prop
 
+/-- The executable row fraction computes the semantic row probability exactly. -/
 theorem rowProbabilityFraction_spec (n : ℕ) (a : ProbInput)
     (hp : 0 < a.2.2.2.2)
     (hlen : (AnchorTests.rowVariables a.1.1
@@ -267,16 +289,20 @@ theorem rowProbabilityFraction_spec (n : ℕ) (a : ProbInput)
           (fractionValue a.2.2.2) := by
   have he : assignmentGet [] = fun _ => false := by funext j; simp [assignmentGet]
   simpa only [rowProbabilityFraction, rowVars_eq, he, AnchorTests.rowProbability] using
-    localFraction_spec n (a, (rowVars ((a.1.1,a.1.2.2),a.2.1), [])) hp
+    localFraction_spec n (a, (rowVars ((a.1.1, a.1.2.2), a.2.1), [])) hp
       (by simpa only [rowVars_eq] using hlen)
 
+/-- Ring data, an exposed Boolean prefix, and a probability fraction. -/
 abbrev EventInput := IdealCVP.RingArgs × (List Bool × Fraction)
+/-- Encoding of the inputs to the bad-event probability sum. -/
 abbrev encEventInput := encPair IdealCVP.encRingArgs (encPair (encList encBool) encFraction)
 
+/-- Sum the bad-row probability fractions over the disjoint row family. -/
 def eventFraction (n : ℕ) (a : EventInput) : Fraction :=
-  fractionProd ((rowsList (a.1.1,a.1.2.2)).map fun i =>
-    rowProbabilityFraction n (a.1,(i,a.2)))
+  fractionProd ((rowsList (a.1.1, a.1.2.2)).map fun i =>
+    rowProbabilityFraction n (a.1, (i, a.2)))
 
+/-- The `eventFraction` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem eventFraction_polytime (n : ℕ) :
     ComputableTidilyInPolyTime (eventFraction n) encEventInput encFraction := by
   unfold eventFraction
@@ -289,15 +315,16 @@ def eventFraction (n : ℕ) (a : EventInput) : Fraction :=
     unfold encProbInput encEventInput
     fun_prop
 
+/-- The executable event fraction computes the semantic bad-event probability sum. -/
 theorem eventFraction_spec (n : ℕ) (a : EventInput)
     (hp : 0 < a.2.2.2)
     (hs : (AnchorTests.multiplierSupport a.1.1 a.1.2.2).card ≤ n) :
     0 < (eventFraction n a).2 ∧
       fractionValue (eventFraction n a) =
         AnchorTests.eventProbability a.1.1 a.1.2.1 a.1.2.2 a.2.1 (fractionValue a.2.2) := by
-  have hr (i : ℕ) (hi : i ∈ rowsList (a.1.1,a.1.2.2)) :
-      0 < (rowProbabilityFraction n (a.1,(i,a.2))).2 ∧
-        fractionValue (rowProbabilityFraction n (a.1,(i,a.2))) =
+  have hr (i : ℕ) (hi : i ∈ rowsList (a.1.1, a.1.2.2)) :
+      0 < (rowProbabilityFraction n (a.1, (i, a.2))).2 ∧
+        fractionValue (rowProbabilityFraction n (a.1, (i, a.2))) =
           AnchorTests.rowProbability a.1.1 a.1.2.1 a.1.2.2 i a.2.1 (fractionValue a.2.2) := by
     apply rowProbabilityFraction_spec n _ hp
     dsimp only
@@ -307,25 +334,27 @@ theorem eventFraction_spec (n : ℕ) (a : EventInput)
     have hi' : i < a.1.1 :=
       AnchorTests.selectedRows_lt _ _ (by simpa only [rowsList_eq] using hi)
     exact (AnchorTests.rowVariables_length _ hb hi').le.trans hs
-  have hpos : ∀ f ∈ (rowsList (a.1.1,a.1.2.2)).map
-      (fun i => rowProbabilityFraction n (a.1,(i,a.2))), 0 < f.2 := by
+  have hpos : ∀ f ∈ (rowsList (a.1.1, a.1.2.2)).map
+      (fun i => rowProbabilityFraction n (a.1, (i, a.2))), 0 < f.2 := by
     intro f hf
-    obtain ⟨i,hi,rfl⟩ := List.mem_map.mp hf
+    obtain ⟨i, hi, rfl⟩ := List.mem_map.mp hf
     exact (hr i hi).1
-  obtain ⟨hfp,hfv⟩ := fractionProd_spec _ hpos
+  obtain ⟨hfp, hfv⟩ := fractionProd_spec _ hpos
   refine ⟨hfp, hfv.trans ?_⟩
   unfold AnchorTests.eventProbability
-  rw [List.map_map, ← rowsList_eq (a.1.1,a.1.2.2)]
+  rw [List.map_map, ← rowsList_eq (a.1.1, a.1.2.2)]
   congr 1
   apply List.map_congr_left
   intro i hi
   exact (hr i hi).2
 
+/-- Local enumeration has polynomially bounded numerator and denominator bit lengths. -/
 theorem localFraction_bits_polyBounded (n : ℕ) :
     PolyBounded (fun a => (encLocalInput a).length)
       (fun a => fractionBits (localFraction n a)) :=
   fractionBits_polyBounded_of (localFraction_polytime n)
 
+/-- The event sum has polynomially bounded numerator and denominator bit lengths. -/
 theorem eventFraction_bits_polyBounded (n : ℕ) :
     PolyBounded (fun a => (encEventInput a).length)
       (fun a => fractionBits (eventFraction n a)) :=

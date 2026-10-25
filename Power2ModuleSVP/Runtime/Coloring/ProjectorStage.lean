@@ -21,17 +21,20 @@ open scoped BigOperators
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-set_option maxHeartbeats 300000
 set_option maxRecDepth 4096
 attribute [local irreducible] List.getD
 
+/-- Ambient dimension paired with two rational coefficient lists. -/
 abbrev DotInput := ℕ × (List ℚ × List ℚ)
+/-- Binary encoding for `DotInput` runtime data. -/
 def encDotInput : DotInput ↪ List Bool :=
   encPair encUnary (encPair (encList encColoringRational) (encList encColoringRational))
 
+/-- Compute a dot product over the first ambient coordinates with zero padding. -/
 def dotPrefix (p : DotInput) : ℚ :=
   ((List.range p.1).map fun j => p.2.1.getD j 0 * p.2.2.getD j 0).sum
 
+/-- Native polynomial-time certificate for `dotPrefix`. -/
 @[fun_prop] theorem dotPrefix_polytime :
     ComputableTidilyInPolyTime dotPrefix encDotInput encColoringRational := by
   unfold dotPrefix
@@ -51,7 +54,9 @@ theorem dotPrefix_ofFn {r : ℕ} (x y : Vec r) :
     dotPrefix (r, (List.ofFn x, List.ofFn y)) = dot x y := by
   simp [dotPrefix, map_range_eq_ofFn, List.sum_ofFn, dot, List.getD_eq_getElem?_getD]
 
+/-- Ambient dimension, cached projector table, and row for a projector update. -/
 abbrev ProjectorInput := ℕ × (List (List ℚ) × List ℚ)
+/-- Binary encoding for `ProjectorInput` runtime data. -/
 def encProjectorInput : ProjectorInput ↪ List Bool :=
   encPair encUnary
     (encPair (encList (encList encColoringRational)) (encList encColoringRational))
@@ -60,6 +65,7 @@ def encProjectorInput : ProjectorInput ↪ List Bool :=
 def applyTable (p : ProjectorInput) : List ℚ :=
   (List.range p.1).map fun j => dotPrefix (p.1, (p.2.1.getD j [], p.2.2))
 
+/-- Native polynomial-time certificate for `applyTable`. -/
 @[fun_prop] theorem applyTable_polytime :
     ComputableTidilyInPolyTime applyTable encProjectorInput (encList encColoringRational) := by
   unfold applyTable
@@ -76,6 +82,7 @@ def projectorStep (p : ProjectorInput) : List (List ℚ) :=
   (List.range p.1).map fun j => (List.range p.1).map fun k =>
     (p.2.1.getD j []).getD k 0 - q.getD j 0 * q.getD k 0 / den
 
+/-- Native polynomial-time certificate for `projectorStep`. -/
 @[fun_prop] theorem projectorStep_polytime :
     ComputableTidilyInPolyTime projectorStep encProjectorInput
       (encList (encList encColoringRational)) := by
@@ -106,6 +113,7 @@ def projectorStep (p : ProjectorInput) : List (List ℚ) :=
   exact (sub_polytime.comp (hs.prod (div_polytime.comp
     ((mul_polytime.comp (hjq.prod hkq)).prod (hd.comp hp))))).of_enc_eq fun _ => rfl
 
+/-- Applying the list table agrees with applying its cached vector projector. -/
 theorem applyTable_spec {r : ℕ} (T : List (List ℚ)) (a : Vec r) :
     applyTable (r, (T, List.ofFn a)) = List.ofFn (tableApply T a) := by
   simp only [applyTable, dotPrefix, map_range_eq_ofFn, List.sum_ofFn]

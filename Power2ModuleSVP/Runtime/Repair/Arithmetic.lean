@@ -21,20 +21,25 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 attribute [local irreducible] List.getD
 
+/-- Absolute value of the product of all fraction denominators. -/
 def fractionDen (xs : List Fraction) : ℕ := ((xs.map Prod.snd).prod : ℤ).natAbs
 
+/-- Sum fractions using the product of their denominators. -/
 def fractionSum (xs : List Fraction) : Fraction :=
   ((xs.map fun a => a.1 * ((fractionDen xs / a.2.natAbs : ℕ) : ℤ)).sum,
     (fractionDen xs : ℤ))
 
+/-- Multiply all numerators and all denominators separately. -/
 def fractionProd (xs : List Fraction) : Fraction :=
   ((xs.map Prod.fst).prod, (xs.map Prod.snd).prod)
 
+/-- The `fractionDen` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem fractionDen_polytime :
     ComputableTidilyInPolyTime fractionDen (encList encFraction) encNat := by
   unfold fractionDen encFraction
   fun_prop
 
+/-- The `fractionSum` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem fractionSum_polytime :
     ComputableTidilyInPolyTime fractionSum (encList encFraction) encFraction := by
   unfold fractionSum
@@ -46,11 +51,13 @@ def fractionProd (xs : List Fraction) : Fraction :=
       fun_prop
   · fun_prop
 
+/-- The `fractionProd` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem fractionProd_polytime :
     ComputableTidilyInPolyTime fractionProd (encList encFraction) encFraction := by
   unfold fractionProd encFraction
   fun_prop
 
+/-- A product of positive fraction denominators remains positive. -/
 theorem fractionDen_pos (xs : List Fraction) (h : ∀ a ∈ xs, 0 < a.2) :
     0 < fractionDen xs := by
   unfold fractionDen
@@ -61,6 +68,7 @@ theorem fractionDen_pos (xs : List Fraction) (h : ∀ a ∈ xs, 0 < a.2) :
   obtain ⟨a, ha, rfl⟩ := List.mem_map.mp hn
   exact h a ha
 
+/-- The list sum preserves positive denominators and has the expected rational value. -/
 theorem fractionSum_spec (xs : List Fraction) (h : ∀ a ∈ xs, 0 < a.2) :
     0 < (fractionSum xs).2 ∧
       fractionValue (fractionSum xs) = (xs.map fractionValue).sum := by
@@ -86,6 +94,7 @@ theorem fractionSum_spec (xs : List Fraction) (h : ∀ a ∈ xs, 0 < a.2) :
   rw [Nat.cast_div_charZero hdvd, hden]
   field_simp
 
+/-- The list product preserves positive denominators and has the expected rational value. -/
 theorem fractionProd_spec (xs : List Fraction) (h : ∀ a ∈ xs, 0 < a.2) :
     0 < (fractionProd xs).2 ∧
       fractionValue (fractionProd xs) = (xs.map fractionValue).prod := by
@@ -105,6 +114,7 @@ theorem fractionProd_spec (xs : List Fraction) (h : ∀ a ∈ xs, 0 < a.2) :
 /-- Both component bit lengths are charged by the framed fraction encoding. -/
 def fractionBits (a : Fraction) : ℕ := max a.1.natAbs.size a.2.natAbs.size
 
+/-- The fraction encoding length bounds both component bit lengths. -/
 theorem fractionBits_le_length (a : Fraction) :
     fractionBits a ≤ (encFraction a).length := by
   simp only [fractionBits, encFraction, length_encPair, length_encIntBin]
@@ -117,11 +127,13 @@ theorem fractionBits_polyBounded_of {α : Type} {enc : α ↪ List Bool}
     PolyBounded (fun a => (enc a).length) (fun a => fractionBits (f a)) :=
   hf.polyBounded_length.mono (fun a => fractionBits_le_length (f a))
 
+/-- Both components of the list sum have polynomially bounded bit lengths. -/
 theorem fractionSum_bits_polyBounded :
     PolyBounded (fun xs => (encList encFraction xs).length)
       (fun xs => fractionBits (fractionSum xs)) :=
   fractionBits_polyBounded_of fractionSum_polytime
 
+/-- Both components of the list product have polynomially bounded bit lengths. -/
 theorem fractionProd_bits_polyBounded :
     PolyBounded (fun xs => (encList encFraction xs).length)
       (fun xs => fractionBits (fractionProd xs)) :=

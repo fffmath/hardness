@@ -15,14 +15,15 @@ namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open PartialColoringAlg ColoringNative
-set_option maxHeartbeats 700000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
+/-- Normalize a list vector using the canonical rational norm scale. -/
 def normalizeList (p : ℕ × List ℚ) : List ℚ :=
   let scale := (normScale (dotPrefix (p.1, (p.2, p.2))))⁻¹
   (List.range p.1).map fun j => scale * p.2.getD j 0
 
+/-- Native polynomial-time certificate for `normalizeList`. -/
 @[fun_prop] theorem normalizeList_polytime :
     ComputableTidilyInPolyTime normalizeList (encPair encUnary (encList encColoringRational))
       (encList encColoringRational) := by
@@ -34,18 +35,25 @@ private theorem range_map_ofFn {α : Type} (r : ℕ) (f : ℕ → α) :
     (List.range r).map f = List.ofFn (fun j : Fin r => f j) := by
   apply List.ext_getElem <;> simp
 
+/-- List normalization agrees with the canonical vector normalization. -/
 theorem normalizeList_spec (r : ℕ) (v : List ℚ) :
-    normalizeList (r, v) = List.ofFn (PartialColoringAlg.normalize (fun j : Fin r => v.getD j 0)) := by
-  simp [normalizeList, dotPrefix_read, range_map_ofFn, PartialColoringAlg.normalize, Pi.smul_def, smul_eq_mul]
+    normalizeList (r, v) =
+      List.ofFn (PartialColoringAlg.normalize (fun j : Fin r => v.getD j 0)) := by
+  simp [normalizeList, dotPrefix_read, range_map_ofFn, PartialColoringAlg.normalize,
+    Pi.smul_def, smul_eq_mul]
 
+/-- Ambient dimension, constraint rows, and weighted rows used for direction selection. -/
 abbrev DirectionInput := ℕ × (List (List ℚ) × QuadraticRows)
+/-- Binary encoding for `DirectionInput` runtime data. -/
 def encDirectionInput : DirectionInput ↪ List Bool :=
   encPair encUnary (encPair (encList (encList encColoringRational)) encQuadraticRows)
 
+/-- Select and normalize a projector column before choosing its sign. -/
 def unorientedDirection (p : DirectionInput) : List ℚ :=
   normalizeList (p.1,
     bestColumnList ((p.1, p.2.2), projectorBatch (p.1, p.2.1)))
 
+/-- Native polynomial-time certificate for `unorientedDirection`. -/
 theorem unorientedDirection_polytime (h : CanonicalProjectorDenominatorHypothesis) :
     ComputableTidilyInPolyTime unorientedDirection encDirectionInput
       (encList encColoringRational) := by

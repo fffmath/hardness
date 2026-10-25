@@ -12,8 +12,8 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
-set_option maxHeartbeats 200000
 
+/-- Native polynomial-time certificate for `heavyIndices`. -/
 theorem heavyIndices_polytime :
     ComputableTidilyInPolyTime heavyIndices
       (encPair encUnary (encList encColoringRational)) (encList encUnary) := by
@@ -26,6 +26,7 @@ theorem heavyIndices_polytime :
   apply congrArg (encList encUnary)
   rw [heavyIndices, sortWeights_eq_mergeSort]
 
+/-- The canonical heavy-row ordering has a native polynomial-time certificate. -/
 theorem heavyIndicesNative : HeavyIndicesNativeHypothesis := ⟨heavyIndices_polytime⟩
 
 end Power2ModuleSVP.ColoringRuntime

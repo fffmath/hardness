@@ -15,25 +15,30 @@ namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open PartialColoringAlg
-set_option maxHeartbeats 100000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 attribute [local irreducible] List.getD dampingList constraintHead
 
+/-- Native polynomial-time certificate for `walkRowAt`. -/
 @[fun_prop] theorem walkRowAt_polytime :
     ComputableTidilyInPolyTime (fun p : WalkParameter × ℕ => p.1.2.getD p.2 (0, []))
-      (encPair encWalkParameter encUnary) (encPair encColoringRational (encList encColoringRational)) := by
+      (encPair encWalkParameter encUnary)
+      (encPair encColoringRational (encList encColoringRational)) := by
   unfold encWalkParameter encQuadraticRows
   fun_prop
 
+/-- Native polynomial-time certificate for `signTest`. -/
 @[fun_prop] theorem signTest_polytime :
     ComputableTidilyInPolyTime (fun q : ℚ => decide (q = -1 ∨ q = 1))
       encColoringRational encBool :=
-  decide_or (decide_eq' (id' (encIn := encColoringRational)) (.const (-1))) (decide_eq' (id' (encIn := encColoringRational)) (.const 1))
+  decide_or (decide_eq' (id' (encIn := encColoringRational)) (.const (-1)))
+    (decide_eq' (id' (encIn := encColoringRational)) (.const 1))
 
+/-- Compute a damping factor from an ambient dimension and row threshold. -/
 def scalarDamping (p : ℕ × ℚ) : ℚ :=
   1 - 4 * (1 / (16 * (p.1 : ℚ))) ^ 2 * p.2 ^ 2 / p.1
 
+/-- Native polynomial-time certificate for `scalarDamping`. -/
 theorem scalarDamping_polytime :
     ComputableTidilyInPolyTime scalarDamping (encPair encUnary encColoringRational)
       encColoringRational := by
@@ -47,6 +52,7 @@ theorem scalarDamping_polytime :
       ((mul_polytime.comp ((const 4).prod hs2)).prod hl2)).prod hrq)))
   exact hout.of_enc_eq fun _ => congrArg encColoringRational (by rfl)
 
+/-- Native polynomial-time certificate for `dampingList`. -/
 theorem dampingList_polytime :
     ComputableTidilyInPolyTime (fun p : WalkParameter × ℕ => dampingList p.1 p.2)
       (encPair encWalkParameter encUnary) encColoringRational := by
@@ -58,12 +64,15 @@ theorem dampingList_polytime :
     unfold dampingList scalarDamping stepSize
     rfl)
 
+/-- Native polynomial-time certificate for `constraintHead`. -/
 theorem constraintHead_polytime :
     ComputableTidilyInPolyTime constraintHead encWalkInput (encList encColoringRational) := by
   unfold constraintHead
-  apply mapWithInput (encA := encUnary) (range.comp (by unfold encWalkInput encWalkParameter; fun_prop))
+  apply mapWithInput (encA := encUnary)
+    (range.comp (by unfold encWalkInput encWalkParameter; fun_prop))
   apply sum_polytime.comp
-  apply mapWithInput (encA := encUnary) (range.comp (by unfold encWalkInput encWalkParameter encQuadraticRows; fun_prop))
+  apply mapWithInput (encA := encUnary)
+    (range.comp (by unfold encWalkInput encWalkParameter encQuadraticRows; fun_prop))
   have hrow : ComputableTidilyInPolyTime
       (fun p : (WalkInput × ℕ) × ℕ => p.1.1.1.2.getD p.2 (0, []))
       (encPair (encPair encWalkInput encUnary) encUnary)
@@ -72,7 +81,8 @@ theorem constraintHead_polytime :
       (fun p : (WalkInput × ℕ) × ℕ => (p.1.1.1, p.2))
       (encPair (encPair encWalkInput encUnary) encUnary)
       (encPair encWalkParameter encUnary) from by unfold encWalkInput; fun_prop)
-    exact hraw.of_enc_eq fun _ => congrArg (encPair encColoringRational (encList encColoringRational)) (by rfl)
+    exact hraw.of_enc_eq fun _ => congrArg
+      (encPair encColoringRational (encList encColoringRational)) (by rfl)
   have ht := hrow.fst'
   have hv := hrow.snd'
   have hd : ComputableTidilyInPolyTime
@@ -92,10 +102,11 @@ theorem constraintHead_polytime :
     (hv.prod (show ComputableTidilyInPolyTime
       (fun p : (WalkInput × ℕ) × ℕ => p.1.2)
       (encPair (encPair encWalkInput encUnary) encUnary) encUnary from by fun_prop))
-  have hout := mul_polytime.comp ((mul_polytime.comp ((mul_polytime.comp (hw.prod hd)).prod ht)).prod hvj)
+  have hout := mul_polytime.comp
+    ((mul_polytime.comp ((mul_polytime.comp (hw.prod hd)).prod ht)).prod hvj)
   exact hout.of_enc_eq fun _ => congrArg encColoringRational (by rfl)
 
-
+/-- Native polynomial-time certificate for `coordinateList`. -/
 @[fun_prop] theorem coordinateList_polytime :
     ComputableTidilyInPolyTime coordinateList (encPair encUnary encUnary)
       (encList encColoringRational) := by
@@ -103,6 +114,7 @@ theorem constraintHead_polytime :
   apply mapWithInput (encA := encUnary) (range.comp (fst _ _))
   fun_prop
 
+/-- Native polynomial-time certificate for `constraintsList`. -/
 @[fun_prop] theorem constraintsList_polytime (h : HeavyIndicesNativeHypothesis) :
     ComputableTidilyInPolyTime constraintsList encWalkInput
       (encList (encList encColoringRational)) := by
@@ -125,21 +137,30 @@ theorem constraintHead_polytime :
           (fun p : WalkInput => (p.1.1, p.2.2)) encWalkInput
           (encPair encUnary (encList encColoringRational)) from by
             unfold encWalkInput encWalkParameter encListState; fun_prop)
-      · exact walkRowAt_polytime.snd'.comp (show ComputableTidilyInPolyTime (fun p : WalkInput × ℕ => (p.1.1, p.2)) (encPair encWalkInput encUnary) (encPair encWalkParameter encUnary) from by unfold encWalkInput; fun_prop)
+      · exact walkRowAt_polytime.snd'.comp (show ComputableTidilyInPolyTime
+          (fun p : WalkInput × ℕ => (p.1.1, p.2))
+          (encPair encWalkInput encUnary) (encPair encWalkParameter encUnary) from by
+            unfold encWalkInput; fun_prop)
   · apply mapWithInput
-    · apply filterWithInput (range.comp (by unfold encWalkInput encWalkParameter encQuadraticRows; fun_prop))
+    · apply filterWithInput
+        (range.comp (by unfold encWalkInput encWalkParameter encQuadraticRows; fun_prop))
       have ht := walkRowAt_polytime.fst'.comp (show ComputableTidilyInPolyTime
         (fun p : WalkInput × ℕ => (p.1.1, p.2))
         (encPair encWalkInput encUnary) (encPair encWalkParameter encUnary) from by
           unfold encWalkInput; fun_prop)
       have hout := le_polytime.comp (ht.prod (const 1))
       exact hout.of_enc_eq fun _ => congrArg encBool (by rfl)
-    · exact walkRowAt_polytime.snd'.comp (show ComputableTidilyInPolyTime (fun p : WalkInput × ℕ => (p.1.1, p.2)) (encPair encWalkInput encUnary) (encPair encWalkParameter encUnary) from by unfold encWalkInput; fun_prop)
+    · exact walkRowAt_polytime.snd'.comp (show ComputableTidilyInPolyTime
+          (fun p : WalkInput × ℕ => (p.1.1, p.2))
+          (encPair encWalkInput encUnary) (encPair encWalkParameter encUnary) from by
+            unfold encWalkInput; fun_prop)
 
+/-- Native polynomial-time certificate for `quadraticList`. -/
 @[fun_prop] theorem quadraticList_polytime :
     ComputableTidilyInPolyTime quadraticList encWalkInput encQuadraticRows := by
   unfold quadraticList
-  apply mapWithInput (encA := encUnary) (range.comp (by unfold encWalkInput encWalkParameter encQuadraticRows; fun_prop))
+  apply mapWithInput (encA := encUnary)
+    (range.comp (by unfold encWalkInput encWalkParameter encQuadraticRows; fun_prop))
   have hrow := walkRowAt_polytime.comp
     (show ComputableTidilyInPolyTime (fun p : WalkInput × ℕ => (p.1.1, p.2))
       (encPair encWalkInput encUnary) (encPair encWalkParameter encUnary) from by
@@ -153,9 +174,10 @@ theorem constraintHead_polytime :
   have ht2 : ComputableTidilyInPolyTime (fun p : WalkInput × ℕ => (p.1.1.2.getD p.2 (0, [])).1 ^ 2)
       (encPair encWalkInput encUnary) encColoringRational := by fun_prop
   have hout := (mul_polytime.comp (hw.prod ht2)).prod hv
-  exact hout.of_enc_eq fun _ => congrArg (encPair encColoringRational (encList encColoringRational)) (by rfl)
+  exact hout.of_enc_eq fun _ => congrArg
+      (encPair encColoringRational (encList encColoringRational)) (by rfl)
 
-
+/-- Native polynomial-time certificate for `directionDataList`. -/
 @[fun_prop] theorem directionDataList_polytime (h : HeavyIndicesNativeHypothesis) :
     ComputableTidilyInPolyTime directionDataList encWalkInput encDirectionInput := by
   unfold directionDataList encDirectionInput
@@ -163,6 +185,5 @@ theorem constraintHead_polytime :
   have hq := quadraticList_polytime
   unfold encWalkInput encWalkParameter at *
   fun_prop
-
 
 end Power2ModuleSVP.ColoringRuntime

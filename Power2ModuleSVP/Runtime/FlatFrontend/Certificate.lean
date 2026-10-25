@@ -17,13 +17,13 @@ open ColoringRuntime
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 set_option maxRecDepth 4096
-set_option maxHeartbeats 200000
 attribute [local irreducible] List.getD rsWords stage stageIndex blockShift stageWidth
   stablePrefix cosineSelected cosineCoefficient background gridRatio gridSize height
   precision taylorOrder phase expTaylor cosTaylor piTaylor sqrtApprox chebyshevPair
   clamp gridSample cosinePolynomialValue markedCell scanCells intervals kernelEntry
   fractionalCoefficient derivativeEntry intervalInput coefficientInput
 
+/-- Casting a unary natural number to a rational is computable in polynomial time. -/
 @[fun_prop] theorem unaryNatCast_polytime : ComputableTidilyInPolyTime
     (fun n : ℕ => (n : ℚ)) encUnary encColoringRational :=
   natCast_polytime.comp unary_to_binary
@@ -47,12 +47,14 @@ private theorem cosineTests_polytime :
       (unary_lt.comp (hj.prod (unary_add.comp (hT₂.prod hm)))))).of_enc_eq
       (fun a => congrArg encBool (by simp))
 
+/-- The `cosineSelected` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem cosineSelected_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × ℕ => cosineSelected a.1 a.2)
     (encPair encUnary encUnary) encBool := by
   exact (bool_or.comp (cosineTests_polytime.1.prod cosineTests_polytime.2)).of_enc_eq
     (fun a => congrArg encBool (by simp [cosineSelected]))
 
+/-- The `cosineCoefficient` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem cosineCoefficient_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × ℕ => cosineCoefficient a.1 a.2)
     (encPair encUnary encUnary) encIntBin := by
@@ -67,14 +69,17 @@ private theorem cosineTests_polytime :
     exact rsWordEntry_polytime.snd'.comp
       (g := fun a : ℕ × ℕ => (stage a.1, a.2 - 2 * blockShift a.1)) (by fun_prop)
   exact (cosineTests_polytime.1.ite_decide he₁
-    (cosineTests_polytime.2.ite_decide he₂ (const 0))).of_enc_eq (fun a => congrArg encIntBin (by unfold cosineCoefficient; rfl))
+    (cosineTests_polytime.2.ite_decide he₂ (const 0))).of_enc_eq
+      (fun a => congrArg encIntBin (by unfold cosineCoefficient; rfl))
 
+/-- The `background` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem background_polytime : ComputableTidilyInPolyTime background
     encUnary (encList encIntBin) := by
   unfold background
   apply mapWithInput (range)
   fun_prop
 
+/-- The `clamp` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem clamp_polytime : ComputableTidilyInPolyTime
     (fun a : ℚ × (ℚ × ℚ) => clamp a.1 a.2.1 a.2.2)
     (encPair encColoringRational (encPair encColoringRational encColoringRational))
@@ -82,9 +87,11 @@ private theorem cosineTests_polytime :
   simp only [clamp, max_def, min_def]
   fun_prop
 
+/-- The `gridSize` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem gridSize_polytime : ComputableTidilyInPolyTime gridSize
     encUnary encUnary := by unfold gridSize; fun_prop
 
+/-- The `gridSample` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem gridSample_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × ℕ => gridSample a.1 a.2)
     (encPair encUnary encUnary) encColoringRational := by
@@ -109,6 +116,7 @@ private theorem cosineTests_polytime :
     (hm.ite_decide (const 0) (hc.ite_decide hy (neg_polytime.comp hy))))).of_enc_eq
     (fun a => congrArg encColoringRational (by unfold gridSample; rfl))
 
+/-- The `cosinePolynomialValue` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem cosinePolynomialValue_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × ℚ => cosinePolynomialValue a.1 a.2)
     (encPair encUnary encColoringRational) encColoringRational := by
@@ -117,6 +125,7 @@ private theorem cosineTests_polytime :
   apply mapWithInput (range.comp (fst encUnary encColoringRational))
   fun_prop
 
+/-- Rational absolute value is computable in polynomial time. -/
 @[fun_prop] theorem rationalAbs_polytime : ComputableTidilyInPolyTime
     (fun q : ℚ => |q|) encColoringRational encColoringRational := by
   have h : ComputableTidilyInPolyTime (fun q : ℚ => if q < 0 then -q else q)
@@ -127,6 +136,7 @@ private theorem cosineTests_polytime :
     · simp [hq, abs_of_neg hq]
     · simp [hq, abs_of_nonneg (le_of_not_gt hq)])
 
+/-- The `markedCell` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem markedCell_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × ℕ => markedCell a.1 a.2)
     (encPair encUnary encUnary) encBool := by
@@ -148,6 +158,7 @@ private theorem cosineTests_polytime :
   exact (anyWithInput hl hp).of_enc_eq
     (fun a => congrArg encBool (by unfold markedCell; rfl))
 
+/-- The `intervals` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem intervals_polytime : ComputableTidilyInPolyTime intervals
     encUnary (encList encRun) := by
   unfold intervals
@@ -155,7 +166,9 @@ private theorem cosineTests_polytime :
   apply mapWithInput (by fun_prop)
   exact markedCell_polytime
 
+/-- Encoding of the degree, run endpoints, and kernel index. -/
 abbrev encKernel := encPair encUnary (encPair encRun encUnary)
+/-- The `kernelEntry` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem kernelEntry_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × ((ℕ × ℕ) × ℕ) => kernelEntry a.1 a.2.1 a.2.2)
     encKernel encColoringRational := by
@@ -176,13 +189,16 @@ abbrev encKernel := encPair encUnary (encPair encRun encUnary)
     (sub_polytime.comp (ha.prod hb))) (unaryNatCast_polytime.comp hm)).of_enc_eq
     (fun a => congrArg encColoringRational (by unfold kernelEntry; rfl))
 
+/-- The `intervalInput` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem intervalInput_polytime : ComputableTidilyInPolyTime intervalInput
     encUnary encPartialColoring := by
   unfold intervalInput encPartialColoring
   fun_prop
 
+/-- Encoding of the degree and indices for a fractional coefficient. -/
 abbrev encFractional := encPair encUnary
   (encPair (encList encRun) (encPair (encList encColoringRational) encUnary))
+/-- The `fractionalCoefficient` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem fractionalCoefficient_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × (List (ℕ × ℕ) × (List ℚ × ℕ)) =>
       fractionalCoefficient a.1 a.2.1 a.2.2.1 a.2.2.2)
@@ -193,7 +209,9 @@ abbrev encFractional := encPair encUnary
   unfold encFractional encRun
   fun_prop
 
+/-- Unary encoding of the four derivative-entry parameters. -/
 abbrev encDerivative := encPair encUnary (encPair encUnary (encPair encUnary encUnary))
+/-- The `derivativeEntry` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem derivativeEntry_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × (ℕ × (ℕ × ℕ)) => derivativeEntry a.1 a.2.1 a.2.2.1 a.2.2.2)
     encDerivative encColoringRational := by
@@ -219,6 +237,7 @@ abbrev encDerivative := encPair encUnary (encPair encUnary (encPair encUnary enc
     (mul_polytime' hph.snd' ht.fst'))).of_enc_eq
     (fun a => congrArg encColoringRational (by unfold derivativeEntry; rfl))
 
+/-- The `coefficientInput` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem coefficientInput_polytime : ComputableTidilyInPolyTime coefficientInput
     encSeedSecondInput encPartialColoring := by
   unfold coefficientInput encSeedSecondInput encPartialColoring
@@ -237,17 +256,20 @@ theorem rationalBits_polyBounded_of {α : Type} {enc : α ↪ List Bool} {f : α
     encNat_apply, ← Nat.size_eq_bits_len]
   omega
 
+/-- Kernel entries have polynomially bounded canonical numerator and denominator bit lengths. -/
 theorem kernelEntry_bits_polyBounded :
     PolyBounded (fun a => (encKernel a).length)
       (fun a => ColoringRuntime.rationalBits (kernelEntry a.1 a.2.1 a.2.2)) :=
   rationalBits_polyBounded_of kernelEntry_polytime
 
+/-- Derivative entries have polynomially bounded rational component bit lengths. -/
 theorem derivativeEntry_bits_polyBounded :
     PolyBounded (fun a => (encDerivative a).length)
       (fun a => ColoringRuntime.rationalBits
         (derivativeEntry a.1 a.2.1 a.2.2.1 a.2.2.2)) :=
   rationalBits_polyBounded_of derivativeEntry_polytime
 
+/-- Square-root approximations have polynomially bounded rational component bit lengths. -/
 theorem sqrtApprox_bits_polyBounded :
     PolyBounded (fun a : ℕ × ℕ => (encPair encUnary encUnary a).length)
       (fun a => ColoringRuntime.rationalBits (sqrtApprox a.1 a.2)) :=
@@ -260,6 +282,7 @@ theorem taylor_bits_polyBounded :
   (rationalBits_polyBounded_of expTaylor_polytime.fst').add
     (rationalBits_polyBounded_of expTaylor_polytime.snd')
 
+/-- Chebyshev recurrence outputs have polynomially bounded rational component bit lengths. -/
 theorem chebyshev_bits_polyBounded :
     PolyBounded (fun a : ℕ × ℚ => (encPair encUnary encColoringRational a).length)
       (fun a => ColoringRuntime.rationalBits (chebyshevPair a.1 a.2).1 +

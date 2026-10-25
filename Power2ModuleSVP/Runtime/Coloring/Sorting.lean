@@ -15,7 +15,6 @@ namespace Power2ModuleSVP.ColoringRuntime
 
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
-set_option maxHeartbeats 500000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 attribute [local irreducible] List.getD
@@ -68,14 +67,17 @@ def insertWeight (w : List ℚ) (xs : List ℕ) (a : ℕ) : List ℕ :=
   xs.filter (fun b => !decide (weightOrder w a b)) ++
     a :: xs.filter (fun b => decide (weightOrder w a b))
 
+/-- Native polynomial-time certificate for `weightOrder`. -/
 @[fun_prop] theorem weightOrder_polytime :
     ComputableTidilyInPolyTime
       (fun p : (List ℚ × ℕ) × ℕ => decide (weightOrder p.1.1 p.1.2 p.2))
       (encPair (encPair (encList encColoringRational) encUnary) encUnary) encBool := by
   have hi : ComputableTidilyInPolyTime (fun p : (List ℚ × ℕ) × ℕ => p.1.1.getD p.1.2 0)
-      (encPair (encPair (encList encColoringRational) encUnary) encUnary) encColoringRational := by fun_prop
+      (encPair (encPair (encList encColoringRational) encUnary) encUnary)
+      encColoringRational := by fun_prop
   have hj : ComputableTidilyInPolyTime (fun p : (List ℚ × ℕ) × ℕ => p.1.1.getD p.2 0)
-      (encPair (encPair (encList encColoringRational) encUnary) encUnary) encColoringRational := by fun_prop
+      (encPair (encPair (encList encColoringRational) encUnary) encUnary)
+      encColoringRational := by fun_prop
   have he := decide_eq' hj hi
   have hn : ComputableTidilyInPolyTime (fun p : (List ℚ × ℕ) × ℕ => decide (p.1.2 ≤ p.2))
       (encPair (encPair (encList encColoringRational) encUnary) encUnary) encBool := by fun_prop
@@ -109,10 +111,13 @@ theorem filterInsertWith_polytime {σ : Type} (encS : σ ↪ List Bool)
       (fun p : ((σ × List ℕ) × ℕ) × ℕ => test p.1.1.1 p.1.2 p.2)
       (encPair encP encUnary) encBool :=
     (htest.comp hkey).of_enc_eq (fun _ => rfl)
-  have hneg := filterWithInput (test := fun (p : (σ × List ℕ) × ℕ) (b : ℕ) => !test p.1.1 p.2 b) hx (bool_not.comp hc)
-  have hpos := filterWithInput (test := fun (p : (σ × List ℕ) × ℕ) (b : ℕ) => test p.1.1 p.2 b) hx hc
+  have hneg := filterWithInput
+    (test := fun (p : (σ × List ℕ) × ℕ) (b : ℕ) => !test p.1.1 p.2 b) hx (bool_not.comp hc)
+  have hpos := filterWithInput
+    (test := fun (p : (σ × List ℕ) × ℕ) (b : ℕ) => test p.1.1 p.2 b) hx hc
   exact listAppend' hneg (cons' ha hpos)
 
+/-- Native polynomial-time certificate for `insertWeight`. -/
 theorem insertWeight_polytime :
     ComputableTidilyInPolyTime
       (fun p : (List ℚ × List ℕ) × ℕ => insertWeight p.1.1 p.1.2 p.2)
@@ -143,7 +148,8 @@ private theorem insertWeight_eq_orderedInsert (w : List ℚ) (a : ℕ)
         simp [hall c hc]
       rw [insertWeight, hyes, hno]
       simpa using (List.orderedInsert_cons_of_le (r := weightOrder w) xs hab).symm
-    · simp only [insertWeight, List.filter_cons, hab, decide_false, Bool.not_false, Bool.false_eq_true,
+    · simp only [insertWeight, List.filter_cons, hab, decide_false, Bool.not_false,
+        Bool.false_eq_true,
         ↓reduceIte, List.cons_append]
       rw [List.orderedInsert_of_not_le (r := weightOrder w) xs hab]
       apply congrArg (List.cons b)
@@ -167,6 +173,7 @@ theorem insertWeight_encoding (w : List ℚ) (xs : List ℕ) (a : ℕ) :
     encList_cons, length_frame, encUnary_apply, List.length_replicate]
   omega
 
+/-- Sort row indices by descending weight with the canonical index tie rule. -/
 def sortWeights (w : List ℚ) : List ℕ :=
   (List.range w.length).reverse.foldl (insertWeight w) []
 
@@ -182,6 +189,7 @@ private theorem sortWeights_eq_insertionSort (w : List ℚ) :
   rw [sortWeights, ← List.foldr_eq_foldl_reverse]
   exact h _
 
+/-- Native polynomial-time certificate for `sortWeights`. -/
 @[fun_prop] theorem sortWeights_polytime :
     ComputableTidilyInPolyTime sortWeights (encList encColoringRational)
       (encList encUnary) := by

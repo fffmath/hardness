@@ -12,27 +12,33 @@ namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open Coloring
-set_option maxHeartbeats 700000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
+/-- Pad or truncate rows and thresholds to match the input dimensions. -/
 def canonicalColoringInput (p : PartialColoringInput) : PartialColoringInput :=
   (p.1.map fun row => (List.range p.2.1.length).map fun j => row.getD j 0,
     (p.2.1, (List.range p.1.length).map fun i => p.2.2.getD i 0))
 
+/-- Run the selected partial-coloring procedure on the canonical input. -/
 def recursivePoint (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) : List ℚ :=
   F (canonicalColoringInput p)
 
+/-- Test whether the partial call permits a strict recursive dimension decrease. -/
 def recursionProgress (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) : Bool :=
   decide (64 < p.2.1.length) &&
-    decide ((ExplicitRecursion.activeIndices p.2.1.length (recursivePoint F p)).length < p.2.1.length)
+    decide
+      ((ExplicitRecursion.activeIndices p.2.1.length (recursivePoint F p)).length < p.2.1.length)
 
-def recursionNext (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) : PartialColoringInput :=
+/-- Restrict the matrix and partial point to active coordinates and shift thresholds. -/
+def recursionNext (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) :
+    PartialColoringInput :=
   let y := recursivePoint F p
   let active := ExplicitRecursion.activeIndices p.2.1.length y
   (p.1.map fun row => restrictList (active, row),
     (restrictList (active, y), (List.range p.1.length).map fun i => p.2.2.getD i 0 + 4))
 
+/-- Scatter a recursive output into the active coordinates of the partial point. -/
 def recursionAssemble (F : PartialColoringInput → List ℚ)
     (p : PartialColoringInput) (z : List ℚ) : List ℚ :=
   ExplicitRecursion.scatterList p.2.1.length (recursivePoint F p, z)
@@ -50,24 +56,25 @@ def recursionAssemble (F : PartialColoringInput → List ℚ)
     · apply mapWithInput (range.comp ((length_list (encList encColoringRational)).comp (fst _ _)))
       fun_prop
 
- theorem recursivePoint_polytime (F : PartialColoringInput → List ℚ)
+theorem recursivePoint_polytime (F : PartialColoringInput → List ℚ)
     (hF : ComputableTidilyInPolyTime F encPartialColoring (encList encColoringRational)) :
     ComputableTidilyInPolyTime (recursivePoint F) encPartialColoring
       (encList encColoringRational) := hF.comp canonicalColoringInput_polytime
 
- theorem recursionProgress_polytime (F : PartialColoringInput → List ℚ)
+theorem recursionProgress_polytime (F : PartialColoringInput → List ℚ)
     (hF : ComputableTidilyInPolyTime F encPartialColoring (encList encColoringRational)) :
     ComputableTidilyInPolyTime (recursionProgress F) encPartialColoring encBool := by
   have hy := recursivePoint_polytime F hF
   unfold recursionProgress encPartialColoring at *
   fun_prop
 
- theorem recursionNext_polytime (F : PartialColoringInput → List ℚ)
+theorem recursionNext_polytime (F : PartialColoringInput → List ℚ)
     (hF : ComputableTidilyInPolyTime F encPartialColoring (encList encColoringRational)) :
     ComputableTidilyInPolyTime (recursionNext F) encPartialColoring encPartialColoring := by
   have hy := recursivePoint_polytime F hF
   have ha : ComputableTidilyInPolyTime
-      (fun p : PartialColoringInput => ExplicitRecursion.activeIndices p.2.1.length (recursivePoint F p))
+      (fun p : PartialColoringInput =>
+        ExplicitRecursion.activeIndices p.2.1.length (recursivePoint F p))
       encPartialColoring (encList encUnary) := by
     have hr : ComputableTidilyInPolyTime (fun p : PartialColoringInput => p.2.1.length)
         encPartialColoring encUnary := by unfold encPartialColoring; fun_prop
@@ -83,18 +90,19 @@ def recursionAssemble (F : PartialColoringInput → List ℚ)
     · apply mapWithInput (range.comp ((length_list (encList encColoringRational)).comp (fst _ _)))
       fun_prop
 
- theorem recursionAssemble_polytime (F : PartialColoringInput → List ℚ)
+theorem recursionAssemble_polytime (F : PartialColoringInput → List ℚ)
     (hF : ComputableTidilyInPolyTime F encPartialColoring (encList encColoringRational)) :
-    ComputableTidilyInPolyTime (fun p : PartialColoringInput × List ℚ => recursionAssemble F p.1 p.2)
+    ComputableTidilyInPolyTime
+      (fun p : PartialColoringInput × List ℚ => recursionAssemble F p.1 p.2)
       (encPair encPartialColoring (encList encColoringRational)) (encList encColoringRational) := by
-  have hy := (recursivePoint_polytime F hF).comp (fst encPartialColoring (encList encColoringRational))
+  have hy :=
+    (recursivePoint_polytime F hF).comp (fst encPartialColoring (encList encColoringRational))
   have hr : ComputableTidilyInPolyTime (fun p : PartialColoringInput × List ℚ => p.1.2.1.length)
       (encPair encPartialColoring (encList encColoringRational)) encUnary := by
     unfold encPartialColoring; fun_prop
   exact ExplicitRecursion.scatterList_polytime.comp (hr.prod (hy.prod (snd _ _)))
 
-
- theorem recursionNext_dimension_lt (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
+theorem recursionNext_dimension_lt (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
     (h : recursionProgress F p = true) : (recursionNext F p).2.1.length < p.2.1.length := by
   have h' := (Bool.and_eq_true_iff.mp h).2
   simpa [recursionNext] using of_decide_eq_true h'
@@ -105,23 +113,27 @@ namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open Coloring
-set_option maxHeartbeats 700000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
+/-- Round the recursive output to signs before scattering into the partial point. -/
 def recursionSafeAssemble (F : PartialColoringInput → List ℚ)
     (p : PartialColoringInput) (z : List ℚ) : List ℚ :=
   let y := recursivePoint F p
-  ExplicitRecursion.scatterList p.2.1.length (y, (List.range (ExplicitRecursion.activeIndices p.2.1.length y).length).map fun j =>
-    nearestRationalSign (z.getD j 0))
+  ExplicitRecursion.scatterList p.2.1.length
+    (y, (List.range (ExplicitRecursion.activeIndices p.2.1.length y).length).map fun j =>
+      nearestRationalSign (z.getD j 0))
 
- theorem recursionSafeAssemble_polytime (F : PartialColoringInput → List ℚ)
+theorem recursionSafeAssemble_polytime (F : PartialColoringInput → List ℚ)
     (hF : ComputableTidilyInPolyTime F encPartialColoring (encList encColoringRational)) :
-    ComputableTidilyInPolyTime (fun p : PartialColoringInput × List ℚ => recursionSafeAssemble F p.1 p.2)
+    ComputableTidilyInPolyTime
+      (fun p : PartialColoringInput × List ℚ => recursionSafeAssemble F p.1 p.2)
       (encPair encPartialColoring (encList encColoringRational)) (encList encColoringRational) := by
-  have hy := (recursivePoint_polytime F hF).comp (fst encPartialColoring (encList encColoringRational))
+  have hy :=
+    (recursivePoint_polytime F hF).comp (fst encPartialColoring (encList encColoringRational))
   have ha : ComputableTidilyInPolyTime
-      (fun p : PartialColoringInput × List ℚ => ExplicitRecursion.activeIndices p.1.2.1.length (recursivePoint F p.1))
+      (fun p : PartialColoringInput × List ℚ =>
+        ExplicitRecursion.activeIndices p.1.2.1.length (recursivePoint F p.1))
       (encPair encPartialColoring (encList encColoringRational)) (encList encUnary) := by
     have hr : ComputableTidilyInPolyTime (fun p : PartialColoringInput × List ℚ => p.1.2.1.length)
         (encPair encPartialColoring (encList encColoringRational)) encUnary := by
@@ -132,14 +144,15 @@ def recursionSafeAssemble (F : PartialColoringInput → List ℚ)
     unfold encPartialColoring; fun_prop
   have hz : ComputableTidilyInPolyTime
       (fun p : PartialColoringInput × List ℚ =>
-        (List.range (ExplicitRecursion.activeIndices p.1.2.1.length (recursivePoint F p.1)).length).map
+        (List.range
+          (ExplicitRecursion.activeIndices p.1.2.1.length (recursivePoint F p.1)).length).map
           fun j => nearestRationalSign (p.2.getD j 0))
       (encPair encPartialColoring (encList encColoringRational)) (encList encColoringRational) := by
     apply mapWithInput (range.comp ((length_list encUnary).comp ha))
     fun_prop
   exact ExplicitRecursion.scatterList_polytime.comp (hr.prod (hy.prod hz))
 
- theorem recursionSafeAssemble_signs (F : PartialColoringInput → List ℚ)
+theorem recursionSafeAssemble_signs (F : PartialColoringInput → List ℚ)
     (p : PartialColoringInput) (z : List ℚ) :
     ∀ q ∈ recursionSafeAssemble F p z, q = -1 ∨ q = 1 := by
   intro q hq
@@ -152,28 +165,37 @@ def recursionSafeAssemble (F : PartialColoringInput → List ℚ)
   have hlen : (ExplicitRecursion.activeIndices p.2.1.length (recursivePoint F p)).length =
       (activeSet (readColoringVector p.2.1.length (recursivePoint F p))).card := by
     rw [he, List.length_ofFn]
-  have hk : k.val < (ExplicitRecursion.activeIndices p.2.1.length (recursivePoint F p)).length := by rw [hlen]; exact k.isLt
+  have hk : k.val <
+      (ExplicitRecursion.activeIndices p.2.1.length (recursivePoint F p)).length := by
+    rw [hlen]
+    exact k.isLt
   simp only [readColoringVector, List.getD_eq_getElem?_getD, List.getElem?_map,
     List.getElem?_range hk, Option.map_some, Option.getD_some]
   exact nearestRationalSign_isSign _
 
+/-- The current recursive input paired with the saved parent inputs. -/
 abbrev RecursionStack := PartialColoringInput × List PartialColoringInput
 
+/-- Encode the current input and saved frames as a list of bits. -/
 def encRecursionStack : RecursionStack ↪ List Bool :=
   encPair encPartialColoring (encList encPartialColoring)
 
+/-- Save the current frame and descend when the active dimension strictly decreases. -/
 def descentStep (F : PartialColoringInput → List ℚ) (s : RecursionStack) : RecursionStack :=
   if recursionProgress F s.1 then (recursionNext F s.1, s.1 :: s.2) else s
 
+/-- Perform at most the original dimension many recursive descent steps. -/
 def descent (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) : RecursionStack :=
   (descentStep F)^[p.2.1.length] (p, [])
 
-def fullColorListEvaluator (F : PartialColoringInput → List ℚ) (p : PartialColoringInput) : List ℚ :=
+/-- Evaluate full coloring by descending and then assembling the saved frames. -/
+def fullColorListEvaluator (F : PartialColoringInput → List ℚ)
+    (p : PartialColoringInput) : List ℚ :=
   let s := descent F p
   s.2.foldl (fun z frame => recursionSafeAssemble F frame z)
     (s.1.2.1.map nearestRationalSign)
 
- theorem descentStep_polytime (F : PartialColoringInput → List ℚ)
+theorem descentStep_polytime (F : PartialColoringInput → List ℚ)
     (hF : ComputableTidilyInPolyTime F encPartialColoring (encList encColoringRational)) :
     ComputableTidilyInPolyTime (descentStep F) encRecursionStack encRecursionStack := by
   unfold descentStep encRecursionStack
@@ -194,11 +216,10 @@ end Power2ModuleSVP.ColoringRuntime
 namespace Power2ModuleSVP.ColoringRuntime
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
-set_option maxHeartbeats 700000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
- theorem descent_frames_length (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
+theorem descent_frames_length (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
     (i : ℕ) : (((descentStep F)^[i] (p, [])).2).length ≤ i := by
   have hs (s : RecursionStack) : (descentStep F s).2.length ≤ s.2.length + 1 := by
     unfold descentStep
@@ -209,7 +230,7 @@ set_option backward.isDefEq.respectTransparency.types false
     rw [Function.iterate_succ_apply']
     exact (hs _).trans (Nat.add_le_add_right ih 1)
 
- theorem descent_frame_mem (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
+theorem descent_frame_mem (F : PartialColoringInput → List ℚ) (p : PartialColoringInput)
     (i : ℕ) (frame : PartialColoringInput)
     (hf : frame ∈ ((descentStep F)^[i] (p, [])).2) :
     ∃ j < i, frame = ((descentStep F)^[j] (p, [])).1 := by
@@ -226,7 +247,7 @@ set_option backward.isDefEq.respectTransparency.types false
     · obtain ⟨j, hj, he⟩ := ih hf
       exact ⟨j, by omega, he⟩
 
- theorem descent_polytime_of_input_bound (F : PartialColoringInput → List ℚ)
+theorem descent_polytime_of_input_bound (F : PartialColoringInput → List ℚ)
     (hF : ComputableTidilyInPolyTime F encPartialColoring (encList encColoringRational))
     (hsize : RecursiveInputEncodingHypothesis F) :
     ComputableTidilyInPolyTime (descent F) encPartialColoring encRecursionStack := by
@@ -238,7 +259,8 @@ set_option backward.isDefEq.respectTransparency.types false
       encPartialColoring encUnary := by unfold encPartialColoring; fun_prop
   unfold descent
   apply iterate hr (by unfold encRecursionStack; fun_prop) (descentStep_polytime F hF)
-    (((hB.mul (.const 2)).add (((hB.mul (.const 2)).add (.const 1)).mul hr.polyBounded)).add (.const 1))
+    (((hB.mul (.const 2)).add
+      (((hB.mul (.const 2)).add (.const 1)).mul hr.polyBounded)).add (.const 1))
   intro p i hi
   have hcur := hb p i hi
   have hframes : (encList encPartialColoring (((descentStep F)^[i] (p, [])).2)).length ≤
@@ -274,7 +296,7 @@ private theorem sign_word_encoding_le (y : List ℚ)
         Nat.size_eq_bits_len])
   simpa [Nat.mul_comm] using h
 
- theorem recursionSafeAssemble_encoding_le (F : PartialColoringInput → List ℚ)
+theorem recursionSafeAssemble_encoding_le (F : PartialColoringInput → List ℚ)
     (p : PartialColoringInput) (z : List ℚ) :
     (encList encColoringRational (recursionSafeAssemble F p z)).length ≤
       13 * (encPartialColoring p).length := by
@@ -299,7 +321,7 @@ private theorem assemble_fold_encoding_le (F : PartialColoringInput → List ℚ
 
 /-- A native full-recursion evaluator, conditional only on a uniform bound
 for its actual recursive input encodings and the selected partial runtime. -/
- theorem fullColorListEvaluator_polytime_of_input_bound (F : PartialColoringInput → List ℚ)
+theorem fullColorListEvaluator_polytime_of_input_bound (F : PartialColoringInput → List ℚ)
     (hF : ComputableTidilyInPolyTime F encPartialColoring (encList encColoringRational))
     (hsize : RecursiveInputEncodingHypothesis F) :
     ComputableTidilyInPolyTime (fullColorListEvaluator F) encPartialColoring

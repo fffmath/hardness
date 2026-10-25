@@ -13,16 +13,17 @@ namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg ColoringNative
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
-set_option maxHeartbeats 600000
 
 /-- The parameter encoding stores normalized rows and thresholds, without
 any current point or current weights. -/
 def walkParameter {r m : ℕ} (a : Fin m → Row r) : WalkParameter :=
   (r, List.ofFn fun i => ((a i).threshold, List.ofFn (a i).a))
 
+/-- Encode a walk state after replacing unfixed coordinates by zero. -/
 def frozenWalkInput {r m : ℕ} (a : Fin m → Row r) (s : State r m) : WalkInput :=
   (walkParameter a, (List.ofFn (frozenPoint s.x), List.ofFn s.w))
 
+/-- Uniform encoding bound for states with frozen coordinates and bounded weights. -/
 def boxStateBound (p : WalkParameter) : ℕ :=
   26 * p.1 +
     (2 * (2 * (2 * (stepBudget p.1 + 1) + 1 + 2 * (precision p.1 p.2.length + 2)) + 3) + 1) *

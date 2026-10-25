@@ -24,17 +24,20 @@ open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-set_option maxHeartbeats 1000000
 
+/-- Native polynomial-time certificate for extracting the canonical rational numerator
+and denominator. -/
 @[fun_prop] theorem components_polytime :
     ComputableTidilyInPolyTime (fun q : ℚ => (q.num, q.den)) encColoringRational
       (encPair encIntBin encNat) :=
   ComputableTidilyInPolyTime.of_eq fun _ => rfl
 
+/-- Native polynomial-time certificate for extracting the canonical rational numerator. -/
 @[fun_prop] theorem numerator_polytime :
     ComputableTidilyInPolyTime Rat.num encColoringRational encIntBin :=
   components_polytime.fst'
 
+/-- Native polynomial-time certificate for extracting the canonical rational denominator. -/
 @[fun_prop] theorem denominator_polytime :
     ComputableTidilyInPolyTime Rat.den encColoringRational encNat :=
   components_polytime.snd'
@@ -87,6 +90,7 @@ used by `DeterministicPartialColoringHypothesis`. -/
 
 variable {α : Type} {enc : α ↪ List Bool}
 
+/-- Native polynomial-time certificate for forming a rational from two computed integers. -/
 @[fun_prop] theorem rational_of_ints_polytime {a b : α → ℤ}
     (ha : ComputableTidilyInPolyTime a enc encIntBin)
     (hb : ComputableTidilyInPolyTime b enc encIntBin) :
@@ -94,12 +98,14 @@ variable {α : Type} {enc : α ↪ List Bool}
   (divInt_polytime.comp (ha.prod hb)).of_enc_eq fun x =>
     congrArg encColoringRational (Rat.divInt_eq_div (a x) (b x)).symm
 
+/-- Native polynomial-time certificate for rational negation. -/
 @[fun_prop] theorem neg_polytime :
     ComputableTidilyInPolyTime (fun q : ℚ => -q) encColoringRational encColoringRational := by
   have h : ComputableTidilyInPolyTime (fun q : ℚ => (-(q.num : ℤ) : ℚ) / (q.den : ℚ))
       encColoringRational encColoringRational := by fun_prop
   exact h.of_enc_eq fun q => congrArg encColoringRational (by simp [neg_div, q.num_div_den])
 
+/-- Native polynomial-time certificate for rational addition. -/
 @[fun_prop] theorem add_polytime :
     ComputableTidilyInPolyTime (fun p : ℚ × ℚ => p.1 + p.2)
       (encPair encColoringRational encColoringRational) encColoringRational := by
@@ -118,6 +124,7 @@ variable {α : Type} {enc : α ↪ List Bool}
         field_simp
       _ = _ := by rw [p.1.num_div_den, p.2.num_div_den])
 
+/-- Native polynomial-time certificate for rational multiplication. -/
 @[fun_prop] theorem mul_polytime :
     ComputableTidilyInPolyTime (fun p : ℚ × ℚ => p.1 * p.2)
       (encPair encColoringRational encColoringRational) encColoringRational := by
@@ -131,12 +138,14 @@ variable {α : Type} {enc : α ↪ List Bool}
     push_cast
     rw [← div_mul_div_comm, p.1.num_div_den, p.2.num_div_den])
 
+/-- Native polynomial-time certificate for rational inversion. -/
 @[fun_prop] theorem inv_polytime :
     ComputableTidilyInPolyTime (fun q : ℚ => q⁻¹) encColoringRational encColoringRational := by
   have h : ComputableTidilyInPolyTime (fun q : ℚ => (q.den : ℚ) / (q.num : ℚ))
       encColoringRational encColoringRational := by fun_prop
   exact h.of_enc_eq fun q => congrArg encColoringRational (by rw [← inv_div, q.num_div_den])
 
+/-- Native polynomial-time certificate for rational subtraction. -/
 @[fun_prop] theorem sub_polytime :
     ComputableTidilyInPolyTime (fun p : ℚ × ℚ => p.1 - p.2)
       (encPair encColoringRational encColoringRational) encColoringRational := by
@@ -144,6 +153,7 @@ variable {α : Type} {enc : α ↪ List Bool}
     ((fst encColoringRational encColoringRational).prod
       (neg_polytime.comp (snd encColoringRational encColoringRational)))
 
+/-- Native polynomial-time certificate for rational division. -/
 @[fun_prop] theorem div_polytime :
     ComputableTidilyInPolyTime (fun p : ℚ × ℚ => p.1 / p.2)
       (encPair encColoringRational encColoringRational) encColoringRational := by
@@ -151,6 +161,7 @@ variable {α : Type} {enc : α ↪ List Bool}
     ((fst encColoringRational encColoringRational).prod
       (inv_polytime.comp (snd encColoringRational encColoringRational)))
 
+/-- Native polynomial-time certificate for deciding rational weak inequalities. -/
 @[fun_prop] theorem le_polytime :
     ComputableTidilyInPolyTime (fun p : ℚ × ℚ => decide (p.1 ≤ p.2))
       (encPair encColoringRational encColoringRational) encBool := by
@@ -167,23 +178,30 @@ variable {α : Type} {enc : α ↪ List Bool}
       norm_cast
     simpa only [Rat.num_div_den] using hi
 
+set_option maxHeartbeats 1000000 in
+-- Composing the rational comparison certificates exceeds the default elaboration budget.
+/-- Native polynomial-time certificate for deciding rational weak inequalities. -/
 @[fun_prop] theorem le_polytime' {a b : α → ℚ}
     (ha : ComputableTidilyInPolyTime a enc encColoringRational)
     (hb : ComputableTidilyInPolyTime b enc encColoringRational) :
     ComputableTidilyInPolyTime (fun x => decide (a x ≤ b x)) enc encBool :=
   le_polytime.comp (ha.prod hb)
 
+/-- Native polynomial-time certificate for deciding rational strict inequalities. -/
 @[fun_prop] theorem lt_polytime :
     ComputableTidilyInPolyTime (fun p : ℚ × ℚ => decide (p.1 < p.2))
       (encPair encColoringRational encColoringRational) encBool := by
   have h := bool_not.comp (le_polytime.comp
-    ((snd encColoringRational encColoringRational).prod (fst encColoringRational encColoringRational)))
+    ((snd encColoringRational encColoringRational).prod
+      (fst encColoringRational encColoringRational)))
   exact h.of_enc_eq fun p => by
     apply congrArg encBool
     simp only [Function.comp_apply]
     apply Bool.eq_iff_iff.mpr
     simp [not_le]
 
+/-- Native polynomial-time certificate for testing membership in the coordinate interval
+`[-1, 1]`. -/
 @[fun_prop] theorem cubeCoordinate_polytime :
     ComputableTidilyInPolyTime (fun q : ℚ => decide (|q| ≤ 1)) encColoringRational encBool := by
   have hl : ComputableTidilyInPolyTime (fun q : ℚ => decide (-1 ≤ q))
@@ -195,6 +213,7 @@ variable {α : Type} {enc : α ↪ List Bool}
     apply Bool.eq_iff_iff.mpr
     simp only [decide_eq_true_eq, abs_le]
 
+/-- Native polynomial-time certificate for rounding a rational to its nearest sign. -/
 @[fun_prop] theorem nearestSign_polytime :
     ComputableTidilyInPolyTime nearestRationalSign encColoringRational encColoringRational := by
   unfold nearestRationalSign
@@ -202,6 +221,7 @@ variable {α : Type} {enc : α ↪ List Bool}
       encColoringRational encBool := by fun_prop
   exact h.ite_decide (.const 1) (.const (-1))
 
+/-- Native polynomial-time certificate for checking the partial-coloring input conditions. -/
 @[fun_prop] theorem validInput_polytime :
     ComputableTidilyInPolyTime PartialColoringAlg.validInput encPartialColoring encBool := by
   have hV : ComputableTidilyInPolyTime (fun p : PartialColoringInput => p.1)
@@ -231,15 +251,19 @@ variable {α : Type} {enc : α ↪ List Bool}
       encColoringRational encBool := by fun_prop
   have hnon := allWithInput (test := fun (_ : PartialColoringInput) (q : ℚ) => decide (0 ≤ q)) hc
     (hnonneg.comp (snd encPartialColoring encColoringRational))
-  have h := bool_and.comp ((bool_and.comp ((bool_and.comp (hshape.prod hlength)).prod hcube)).prod hnon)
+  have h := bool_and.comp
+    ((bool_and.comp ((bool_and.comp (hshape.prod hlength)).prod hcube)).prod hnon)
   exact h.of_enc_eq fun _ => rfl
 
+/-- Native polynomial-time certificate for rounding every input coordinate to its nearest sign. -/
 @[fun_prop] theorem malformedFallback_polytime :
-    ComputableTidilyInPolyTime (fun input : PartialColoringInput => input.2.1.map nearestRationalSign)
+    ComputableTidilyInPolyTime
+      (fun input : PartialColoringInput => input.2.1.map nearestRationalSign)
       encPartialColoring (encList encColoringRational) := by
   unfold encPartialColoring
   fun_prop
 
+/-- Sum of the binary sizes of the canonical numerator magnitude and denominator. -/
 def rationalBits (q : ℚ) : ℕ := q.num.natAbs.size + q.den.size
 
 /-- Normalization itself does not increase either magnitude's binary size;

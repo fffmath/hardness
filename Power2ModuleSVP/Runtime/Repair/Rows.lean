@@ -16,13 +16,17 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 attribute [local irreducible] List.getD
 
+/-- Repair data together with the selected row index. -/
 abbrev RowInput := (ℕ × List ℤ) × ℕ
+/-- Encoding of repair data and its unary row index. -/
 abbrev encRowInput := encPair encSupportInput encUnary
 
+/-- List the variable indices used by the selected repair row. -/
 def rowVars (a : RowInput) : List ℕ :=
   (List.range a.1.1).filter fun k =>
-    (supportList a.1.1 a.1.2).any fun j => decide ((a.2+a.1.1-j)%a.1.1 = k)
+    (supportList a.1.1 a.1.2).any fun j => decide ((a.2 + a.1.1 - j) % a.1.1 = k)
 
+/-- The `rowVars` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem rowVars_polytime :
     ComputableTidilyInPolyTime rowVars encRowInput (encList encUnary) := by
   unfold rowVars
@@ -40,6 +44,7 @@ def rowVars (a : RowInput) : List ℕ :=
       · unfold encRowInput encSupportInput
         fun_prop
 
+/-- The executable variable list agrees with the ordered semantic row variables. -/
 theorem rowVars_eq (a : RowInput) : rowVars a =
     AnchorTests.rowVariables a.1.1 (AnchorTests.multiplierSupport a.1.1 a.1.2) a.2 := by
   apply (List.pairwise_lt_range.filter _).eq_of_mem_iff
@@ -64,12 +69,15 @@ theorem rowVars_eq (a : RowInput) : rowVars a =
       exact Nat.mod_lt _ hd
     · simpa only [← supportList_eq, List.mem_toFinset] using hj
 
+/-- Decide whether the two selected repair rows have disjoint variable lists. -/
 def rowsDisjoint (a : (ℕ × List ℤ) × (ℕ × ℕ)) : Bool :=
   (rowVars (a.1, a.2.1)).all fun j =>
     !((rowVars (a.1, a.2.2)).any fun k => decide (j = k))
 
+/-- Encoding of repair data and two unary row indices. -/
 abbrev encDisjointInput := encPair encSupportInput (encPair encUnary encUnary)
 
+/-- The `rowsDisjoint` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem rowsDisjoint_polytime :
     ComputableTidilyInPolyTime rowsDisjoint encDisjointInput encBool := by
   unfold rowsDisjoint
@@ -83,6 +91,7 @@ abbrev encDisjointInput := encPair encSupportInput (encPair encUnary encUnary)
     · unfold encDisjointInput
       fun_prop
 
+/-- The Boolean row test is equivalent to disjointness of the semantic row variables. -/
 theorem rowsDisjoint_spec (a : (ℕ × List ℤ) × (ℕ × ℕ)) :
     rowsDisjoint a = true ↔
       Disjoint (AnchorTests.rowFlags a.1.1 (AnchorTests.multiplierSupport a.1.1 a.1.2) a.2.1)
@@ -97,21 +106,25 @@ theorem rowsDisjoint_spec (a : (ℕ × List ℤ) × (ℕ × ℕ)) :
     subst k
     exact h hj hk
 
+/-- Keep a row precisely when it is disjoint from all previously selected rows. -/
 def selectStep (a : ℕ × List ℤ) (rest : List ℕ) (i : ℕ) : List ℕ :=
-  if rest.all (fun j => rowsDisjoint (a, (i,j))) then i :: rest else rest
+  if rest.all (fun j => rowsDisjoint (a, (i, j))) then i :: rest else rest
 
+/-- Greedily select pairwise disjoint repair rows. -/
 def rowsList (a : ℕ × List ℤ) : List ℕ :=
   (List.range a.1).reverse.foldl (selectStep a) []
 
+/-- Encoding of one step of the disjoint-row selection loop. -/
 abbrev encSelectStep := encPair (encPair encSupportInput (encList encUnary)) encUnary
 
+/-- The `selectStep` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem selectStep_polytime : ComputableTidilyInPolyTime
     (fun a : ((ℕ × List ℤ) × List ℕ) × ℕ => selectStep a.1.1 a.1.2 a.2)
     encSelectStep (encList encUnary) := by
   unfold selectStep
   have ht : ComputableTidilyInPolyTime
       (fun a : ((ℕ × List ℤ) × List ℕ) × ℕ =>
-        a.1.2.all (fun j => rowsDisjoint (a.1.1, (a.2,j)))) encSelectStep encBool := by
+        a.1.2.all (fun j => rowsDisjoint (a.1.1, (a.2, j)))) encSelectStep encBool := by
     apply allWithInput (encA := encUnary)
     · unfold encSelectStep
       fun_prop
@@ -124,6 +137,7 @@ abbrev encSelectStep := encPair (encPair encSupportInput (encList encUnary)) enc
   · unfold encSelectStep
     fun_prop
 
+/-- The `rowsList` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem rowsList_polytime :
     ComputableTidilyInPolyTime rowsList encSupportInput (encList encUnary) := by
   unfold rowsList
@@ -142,6 +156,7 @@ abbrev encSelectStep := encPair (encPair encSupportInput (encList encUnary)) enc
     omega
   · omega
 
+/-- The executable row selection agrees with the reverse greedy semantic row family. -/
 theorem rowsList_eq (a : ℕ × List ℤ) :
     rowsList a = AnchorTests.selectedRows a.1 a.2 := by
   have hs (rest : List ℕ) (i : ℕ) : selectStep a rest i =
@@ -150,7 +165,7 @@ theorem rowsList_eq (a : ℕ × List ℤ) :
         (AnchorTests.rowFlags a.1 (AnchorTests.multiplierSupport a.1 a.2) j)))
       then i :: rest else rest := by
     unfold selectStep
-    have ht : (rest.all fun j => rowsDisjoint (a,(i,j))) =
+    have ht : (rest.all fun j => rowsDisjoint (a, (i, j))) =
         (rest.all fun j => decide (Disjoint
           (AnchorTests.rowFlags a.1 (AnchorTests.multiplierSupport a.1 a.2) i)
           (AnchorTests.rowFlags a.1 (AnchorTests.multiplierSupport a.1 a.2) j))) := by

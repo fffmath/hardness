@@ -13,7 +13,6 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg
 open scoped BigOperators Matrix
-set_option maxHeartbeats 500000
 
 theorem rationalGramComplement_annihilate_transpose {n r : ℕ}
     (A : Matrix (Fin n) (Fin r) ℚ) (hG : (A * Aᵀ).det ≠ 0) :
@@ -22,6 +21,7 @@ theorem rationalGramComplement_annihilate_transpose {n r : ℕ}
   simpa only [Matrix.transpose_mul, rationalGramComplement_symmetric,
     Matrix.transpose_zero] using h
 
+/-- Prepend a vector to the rows of a rational matrix. -/
 def consRows {n r : ℕ} (A : Matrix (Fin n) (Fin r) ℚ) (a : Vec r) :
     Matrix (Fin (n + 1)) (Fin r) ℚ := Matrix.of (fun i j => Fin.cases (a j) (fun k => A k j) i)
 
@@ -29,7 +29,8 @@ theorem cons_transpose_mulVec {n r : ℕ} (A : Matrix (Fin n) (Fin r) ℚ)
     (a : Vec r) (u : Vec (n + 1)) :
     (consRows A a)ᵀ *ᵥ u = u 0 • a + Aᵀ *ᵥ Fin.tail u := by
   funext j
-  simp [consRows, Matrix.mulVec, dotProduct, Fin.sum_univ_succ, Fin.tail, Matrix.transpose_apply, mul_comm]
+  simp [consRows, Matrix.mulVec, dotProduct, Fin.sum_univ_succ, Fin.tail,
+    Matrix.transpose_apply, mul_comm]
 
 /-- Nonsingularity of the enlarged Gram matrix is an elementary kernel
 argument, independent of any list implementation or bit-size estimate. -/

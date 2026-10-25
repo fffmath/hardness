@@ -13,7 +13,6 @@ namespace Power2ModuleSVP.ColoringNative
 
 open PartialColoringAlg
 open scoped BigOperators
-set_option maxHeartbeats 800000
 
 /-- Direction normalization needs no progress or entropy assumption. -/
 theorem direction_norm_le {r m : ℕ} (a : Fin m → Row r) (s : State r m) :

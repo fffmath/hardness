@@ -15,7 +15,6 @@ namespace Power2ModuleSVP.ColoringRuntime
 
 open PartialColoringAlg ColoringNative
 open scoped BigOperators Matrix
-set_option maxHeartbeats 700000
 
 /-- Uniqueness of an orthogonal decomposition, using only the already
 proved list-projector interface. This avoids introducing a second projector. -/
@@ -136,6 +135,7 @@ theorem gramProjectorDivisibility_of_formula (h : GramProjectorFormulaHypothesis
   · rw [hformula j k, integerGramDet_eq_gramDet]
     exact gramComplement_den_dvd _ _ hd j k
 
+/-- The Gram projector formula supplies a polynomial canonical denominator bound. -/
 theorem canonicalProjectorDenominator_of_gramFormula
     (h : GramProjectorFormulaHypothesis) : CanonicalProjectorDenominatorHypothesis :=
   canonicalProjectorDenominator_of_gram (gramProjectorDivisibility_of_formula h)

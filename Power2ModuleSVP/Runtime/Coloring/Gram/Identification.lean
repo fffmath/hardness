@@ -13,8 +13,8 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg
 open scoped BigOperators Matrix
-set_option maxHeartbeats 500000
 
+/-- Cast the denominator-cleared integral constraint matrix to rational coefficients. -/
 def rationalConstraintMatrix (p : ProjectorBatchInput) :
     Matrix (Fin p.2.length) (Fin p.1) ℚ :=
   (integerConstraintMatrix p).map (Int.castRingHom ℚ)

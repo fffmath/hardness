@@ -11,7 +11,6 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg ColoringNative
 open Turing.MultiTapeTM
-set_option maxHeartbeats 600000
 
 theorem walk_direction_commonDen_uniform
     (h : CanonicalProjectorDenominatorHypothesis) :

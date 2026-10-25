@@ -13,8 +13,8 @@ coloring).
 namespace Power2ModuleSVP.ColoringRuntime
 open PartialColoringAlg
 open scoped BigOperators
-set_option maxHeartbeats 500000
 
+/-- Residual of a new row after projection against the existing constraint rows. -/
 noncomputable def gramResidual (r : ℕ) (rows : List (List ℚ)) (a : List ℚ) : Vec r :=
   fun j => ∑ k : Fin r,
     gramComplement (integerGramMatrix (r, rows)) (integerConstraintMatrix (r, rows)) j k *
@@ -78,6 +78,7 @@ theorem gramProjectorFormula_of_schur (h : GramSchurUpdateHypothesis) :
       rw [projectorTable_cons_entry, happ, hformula j k]
       exact (hupdate j k).symm
 
+/-- The Schur update identity supplies a polynomial canonical denominator bound. -/
 theorem canonicalProjectorDenominator_of_schur
     (h : GramSchurUpdateHypothesis) : CanonicalProjectorDenominatorHypothesis :=
   canonicalProjectorDenominator_of_gramFormula (gramProjectorFormula_of_schur h)

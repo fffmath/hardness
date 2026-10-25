@@ -13,15 +13,13 @@ open Turing.MultiTapeTM Turing.MultiTapeTM.ComputableTidilyInPolyTime
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 set_option maxRecDepth 4096
-set_option maxHeartbeats 800000
 
 private theorem take_capped_append {α : Type} (m : ℕ) (xs ys : List α) :
     ((xs.take m) ++ (ys.take m)).take m = (xs ++ ys).take m := by
   by_cases h : m ≤ xs.length
   · simp [List.take_append, List.length_take, Nat.min_eq_left h, Nat.sub_eq_zero_of_le h]
   · have hm : xs.length ≤ m := by omega
-    simp [List.take_append, List.length_take, Nat.min_eq_right hm,
-      List.take_of_length_le hm, List.take_take, Nat.min_eq_left (show m - xs.length ≤ m by omega)]
+    simp [List.take_append, List.take_of_length_le hm, List.take_take]
 
 private def wordStep (m : ℕ) (s : List ℤ × List ℤ) : List ℤ × List ℤ :=
   ((s.1 ++ s.2).take m, (s.1 ++ s.2.map Neg.neg).take m)
@@ -82,9 +80,10 @@ private theorem cappedWord_length (n m : ℕ) :
   change (encPair (encList encIntBin) (encList encIntBin) (cappedWords i a.2)).length ≤ _
   rw [cappedWords_eq, length_encPair]
   have h := cappedWord_length i a.2
-  simp only [Prod.fst, Prod.snd]
+  simp only
   omega
 
+/-- The `stablePrefix` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem stablePrefix_polytime : ComputableTidilyInPolyTime stablePrefix
     encUnary (encList encIntBin) := by
   have h := cappedWords_polytime.fst'.comp

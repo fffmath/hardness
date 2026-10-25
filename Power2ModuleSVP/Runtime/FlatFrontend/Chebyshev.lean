@@ -14,7 +14,6 @@ open ColoringRuntime
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 set_option maxRecDepth 4096
-set_option maxHeartbeats 800000
 
 private def chebStep (q : ℚ) (s : ℤ × ℤ) : ℤ × ℤ :=
   (s.2, 2 * q.num * s.2 - (q.den : ℤ) ^ 2 * s.1)
@@ -37,7 +36,7 @@ private theorem chebStep_size (q : ℚ) (s : ℤ × ℤ) :
   have ht : (2 : ℤ).natAbs.size = 2 := by decide
   rw [ht] at h₂
   unfold chebStep chebGrowth
-  simp only [Prod.fst, Prod.snd, Int.natAbs_natCast] at *
+  simp only at *
   simp only [sub_eq_add_neg]
   omega
 
@@ -97,7 +96,7 @@ private theorem chebIntegers_spec (n : ℕ) (q : ℚ) :
     have hs : chebIntegers (n + 1) q = chebStep q (chebIntegers n q) := by
       simp only [chebIntegers, Function.iterate_succ_apply']
     rw [chebyshevPair, ih, hs]
-    simp only [chebStep, Prod.fst, Prod.snd, Int.cast_sub, Int.cast_mul,
+    simp only [chebStep, Int.cast_sub, Int.cast_mul,
       Int.cast_ofNat, Int.cast_pow, Int.cast_natCast]
     congr 1
     generalize (chebIntegers n q).1 = a
@@ -109,6 +108,7 @@ private theorem chebIntegers_spec (n : ℕ) (q : ℚ) :
     field_simp
     ring
 
+/-- The `chebyshevPair` program admits a native polynomial-time implementation. -/
 @[fun_prop] theorem chebyshevPair_polytime : ComputableTidilyInPolyTime
     (fun a : ℕ × ℚ => chebyshevPair a.1 a.2)
     (encPair encUnary encColoringRational)

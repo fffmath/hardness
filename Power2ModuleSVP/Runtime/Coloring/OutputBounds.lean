@@ -22,8 +22,6 @@ namespace Power2ModuleSVP.ColoringNative
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 
-set_option maxHeartbeats 400000
-
 /-- Even malformed partial-program outputs are converted to a sign word. -/
 theorem fullColorCore_signs (F : PartialColoringInput → List ℚ) (r m : ℕ)
     (V : Fin m → Fin r → ℚ) (x : Fin r → ℚ) (c : Fin m → ℚ) :

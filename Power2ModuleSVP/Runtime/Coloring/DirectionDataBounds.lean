@@ -15,7 +15,6 @@ open PartialColoringAlg ColoringNative
 open Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open scoped BigOperators
-set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
