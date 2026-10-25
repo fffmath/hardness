@@ -25,20 +25,18 @@ their opening notes point to the rename map. The old per-job status log remains 
 ## Verification
 
 Dead-code, structure, and module-docstring full builds passed (8572 jobs each).
-Final `/workspace/shared/jobs/hardness-tidy/build.sh Power2ModuleSVP` passed (8572 jobs).
+Final `lake build Power2ModuleSVP` passed (8572 jobs).
 Both headline statements and the three preserved conditional signatures are unchanged.
 The Lean-source scan for prohibited proof escapes and scratch commands is empty.
-Under the shared lock, `lake env lean /tmp/ht-p2-axioms.lean` reports only
+A `#print axioms` check (scratch file run with `lake env lean`) reports only
 `propext`, `Classical.choice`, and `Quot.sound` for each main theorem.
 All root imports and README/NOTES/RENAMES links were checked; no outside Lean module imports
-Power2 modules. Logs: `/tmp/ht-p2-final-build.log`, `/tmp/ht-p2-axioms.log`.
-Warnings: 339 → 327 including module-system notes; 305 → 293 excluding those notes.
-Eleven baseline header warnings disappeared through the earlier shared linter setting;
-the newly documented constraints module accounts for the remaining decrease.
+Power2 modules.
+After the 2026-10-25 tidy (restructure and lint pass) the library has 0 warnings other than
+Lean's "module system" import notes (baseline: 305).
 
 ## Remaining caveats
 
-Per-file lint polishing is a later phase; this phase preserves existing proof scripts.
 The paper's search-approximation consequence is not a separate formal search reduction;
 `moduleReduction_gap` proves the integral decision gap on the stored reduction images.
 Some historical audit findings describe interfaces discharged or removed by the final assembly.

@@ -69,7 +69,7 @@ Shared lattice, encoding, SAT, and prime-search infrastructure comes from `Ideal
 
 ## Verification
 
-From the repository root, run `/workspace/shared/jobs/hardness-tidy/build.sh Power2ModuleSVP`.
-Under `flock /tmp/hardness-build.lock lake env lean /tmp/ht-p2-axioms.lean`, importing
-`Power2ModuleSVP.Main` and printing the axioms of both completeness theorems must report only
+From the repository root, run `lake build Power2ModuleSVP`. A scratch file importing
+`Power2ModuleSVP.Main` and running `#print axioms` on both completeness theorems
+(via `lake env lean`) reports only
 `propext`, `Classical.choice`, and `Quot.sound`. See the final verification record in STATUS.

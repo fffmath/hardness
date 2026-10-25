@@ -75,5 +75,3 @@ The library is sorry-free and adds no axioms. Main theorem axiom audits report o
 Build from the repository root with `lake build Rank2ModuleSVP` (Lean / Mathlib `v4.36.0-rc1`).
 If the artifact cache is read-only, use
 `LAKE_CACHE_DIR=/tmp/hardness-lake-cache lake build Rank2ModuleSVP`.
-The shared tidy jobs use `/workspace/shared/jobs/hardness-tidy/build.sh Rank2ModuleSVP`
-to serialize builds.
