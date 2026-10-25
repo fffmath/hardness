@@ -1,8 +1,8 @@
 # IdealCVP final status
 
 The formalisation is complete for the exact problems described in
-[README.md](../README.md). The paper ↔ Lean map and historical development
-record are in [NOTES.md](../NOTES.md).
+[README.md](../README.md). The paper ↔ Lean map and mathematical notes
+are in [NOTES.md](../NOTES.md); development history is retained in git.
 
 - Principal power-of-two cyclotomic CVP is NP-complete:
   `IdealCVP.principalCVP_npComplete`.

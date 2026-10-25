@@ -1,2 +1,45 @@
-/.lake
+# Lake / Lean build products
+/.lake/
+/build/
+*.olean
+*.olean.*
+*.ilean
+*.ilean.*
+*.ir
+*.bc
+*.trace
+*.c
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# TeX build products (paper sources and reference text are retained)
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.toc
+
+# OS and editor files
 .DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+/.vscode/
+/.idea/
+
+# Local scratch and logs
+/tmp/
+/tmp-*
+/tmp_*
+/scratch/
+*.tmp
+*.bak
+*.log
