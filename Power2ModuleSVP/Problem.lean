@@ -1,12 +1,20 @@
-import Power2ModuleSVP.Coefficient
+import Power2ModuleSVP.Coset.Coefficient
 
-/-! Unit coefficient-sup-norm coset and rank-two module languages.
-Generators are stored as columns; malformed arrays are rejected. -/
+/-!
+# Problem
+
+Unit coefficient-sup-norm coset and rank-two module languages.
+Generators are stored as columns; malformed arrays are rejected.
+
+Paper: `paper/power2svp.pdf`, Sections 1.1–2 (decision languages and coefficient embeddings).
+-/
 namespace Power2ModuleSVP
 
 abbrev CosetInput := IdealCVP.RingArgs
 abbrev SVPInput := IdealCVP.PairRingArgs
+/-- Binary encoding of the degree and the two coset coefficient arrays. -/
 def encCoset : CosetInput ↪ List Bool := IdealCVP.encRingArgs
+/-- Binary encoding of the degree and the two stored module generators. -/
 def encSVP : SVPInput ↪ List Bool := IdealCVP.encPairRingArgs
 
 def CosetYes {d : ℕ} (g h : Coeff d) : Prop :=
@@ -31,8 +39,10 @@ def SVPInput.WellFormed (x : SVPInput) : Prop :=
     x.2.2.1.length = x.1 ∧ x.2.2.2.length = x.1 ∧
     IdealCVP.listIndependent x.1 x.2.1 x.2.2 = true
 
+/-- The encoded unit-cube principal-coset decision language. -/
 def CosetLang : Set CosetInput := {x | CosetInput.WellFormed x ∧
   CosetYes (IdealCVP.ofList (d := x.1) x.2.1) (IdealCVP.ofList (d := x.1) x.2.2)}
+/-- The encoded unit-threshold rank-two module shortest-vector language. -/
 def ModuleSVPLang : Set SVPInput := {x | SVPInput.WellFormed x ∧
   ModuleYes
     (IdealCVP.ofList (d := x.1) x.2.1.1, IdealCVP.ofList (d := x.1) x.2.1.2)
