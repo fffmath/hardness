@@ -92,8 +92,8 @@ theorem encoded_product_injective : Function.Injective (fun ξ => mul D.g (D.enc
   congr 1
   funext r
   have hr := congrFun ho r
-  simp only [mul_zero, smul_zero, Pi.sub_apply, Pi.add_apply, Pi.smul_apply,
-    smul_eq_mul, Pi.zero_apply, zero_add] at hr
+  simp only [mul_zero, smul_zero, Pi.sub_apply, Pi.smul_apply,
+    smul_eq_mul, zero_add] at hr
   have hm : (2 * (D.P : ℤ)) * D.a ξ r = (2 * (D.P : ℤ)) * D.a η r := by linarith
   exact mul_left_cancel₀ (mul_ne_zero (by norm_num) hp) hm
 
@@ -134,6 +134,7 @@ structure PrincipalCVPInstance where
 
 namespace X3CInstance
 
+/-- The canonical masked incidence data and Sidon positions for an indexed X3C instance. -/
 def reductionData (I : X3CInstance) : ReductionData (3 * I.q) I.n where
   system := I.system
   positions := SidonPositions.erdosTuran I.n
@@ -158,11 +159,14 @@ theorem x3c_correct (I : X3CInstance) :
       (x3cToCVP I).T (x3cToCVP I).Δ :=
   I.hasExactCover_iff_hasSolution.trans I.reductionData.compiler_correct
 
+/-- An exact cover attains the reduction threshold as its minimum squared distance. -/
 theorem x3c_yes_gap (I : X3CInstance) (hy : I.HasExactCover) :
     MinimumSquaredDistance (principalIdealLattice (x3cToCVP I).g)
       (x3cToCVP I).T (x3cToCVP I).Δ :=
   I.reductionData.compiler_yes (I.hasExactCover_iff_hasSolution.mp hy)
 
+/-- Without an exact cover, every lattice vector has squared distance at least the threshold
+plus four. -/
 theorem x3c_no_gap (I : X3CInstance) (hn : ¬ I.HasExactCover) :
     ∀ v ∈ principalIdealLattice (x3cToCVP I).g,
       (x3cToCVP I).Δ + 4 ≤ sqNorm (v - (x3cToCVP I).T) :=

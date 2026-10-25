@@ -4,21 +4,26 @@ import IdealCVP.Sidon
 
 The separation arguments in the proof of Lemma `lem:boolean-identity` and the
 following unnumbered distinct-monomials lemma. All exponents are natural numbers;
-bounds ensure that subtraction never truncates and that reduction modulo x^N+1
+bounds ensure that subtraction never truncates and that reduction modulo x ^ N+1
 does not change the coefficients.
 -/
 namespace IdealCVP
 namespace SidonPositions
 variable {M n : ℕ} (p : SidonPositions n)
 
+/-- The width of each disjoint equation block. -/
 def L : ℕ := 2 * p.c + 1
 
+/-- The distinguished exponent of an equation block. -/
 def ρ (i : Fin M) : ℕ := p.c + i.val * p.L
 
+/-- The generator exponent for a row-column incidence. -/
 def hExp (i : Fin M) (j : Fin n) : ℕ := p.ρ i - p.α j
 
+/-- The product exponent for a row and an ordered pair of columns. -/
 def crossExp (i : Fin M) (j k : Fin n) : ℕ := p.hExp i j + p.α k
 
+/-- The least power of two containing all `M` equation blocks. -/
 def N (M : ℕ) : ℕ := 2 ^ Nat.clog 2 (M * p.L)
 
 theorem L_pos : 0 < p.L := by dsimp [L]; omega
@@ -61,6 +66,7 @@ theorem interval_unique {i i' : Fin M} {e : ℕ}
   · have := Nat.mul_le_mul_right p.L (show i'.val + 1 ≤ i.val by omega)
     omega
 
+/-- Distinct row-column pairs have distinct generator exponents. -/
 theorem hExp_injective : Function.Injective (fun z : Fin M × Fin n => p.hExp z.1 z.2) := by
   rintro ⟨i, j⟩ ⟨i', j'⟩ he
   change p.hExp i j = p.hExp i' j' at he
@@ -72,6 +78,7 @@ theorem hExp_injective : Function.Injective (fun z : Fin M × Fin n => p.hExp z.
   have := p.strictMono.injective hj
   simp_all
 
+/-- Off-diagonal cross terms have distinct exponents. -/
 theorem crossExp_injective {i i' : Fin M} {j k j' k' : Fin n}
     (hjk : j ≠ k) (hjk' : j' ≠ k')
     (he : p.crossExp i j k = p.crossExp i' j' k') :
@@ -86,6 +93,7 @@ theorem crossExp_injective {i i' : Fin M} {j k j' k' : Fin n}
     omega
   exact ⟨rfl, p.differences j k j' k' hjk hjk' hd⟩
 
+/-- Distinguished row exponents never coincide with off-diagonal cross terms. -/
 theorem row_ne_cross (i i' : Fin M) (j k : Fin n) (hjk : j ≠ k) :
     p.ρ i ≠ p.crossExp i' j k := by
   intro he

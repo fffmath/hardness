@@ -16,12 +16,13 @@ namespace IdealCVP
 def basisMagnitude {n : ℕ} (B : Matrix (Fin n) (Fin n) ℤ) : ℤ :=
   ∑ i, ∑ j, |B i j|
 
+/-- The sum of absolute target coefficients used in the certificate bound. -/
 def targetMagnitude {n : ℕ} (t : Coeff n) : ℤ := ∑ i, |t i|
 
 /-- An explicit bound in the basis, target, threshold and dimension. -/
 def certificateBound {n : ℕ} (B : Matrix (Fin n) (Fin n) ℤ)
     (t : Coeff n) (Δ : ℤ) : ℤ :=
-  n.factorial * (1 + basisMagnitude B + targetMagnitude t + |Δ|)^n
+  n.factorial * (1 + basisMagnitude B + targetMagnitude t + |Δ|) ^ n
 
 theorem basisMagnitude_nonneg {n : ℕ} (B : Matrix (Fin n) (Fin n) ℤ) :
     0 ≤ basisMagnitude B :=
@@ -47,7 +48,7 @@ theorem target_entry_le {n : ℕ} (t : Coeff n) (i : Fin n) :
     (fun j _ => abs_nonneg (t j)) (Finset.mem_univ i)
 
 /-- Integrality removes the square root from a residual-coordinate bound. -/
-theorem int_abs_le_sq (z : ℤ) : |z| ≤ z^2 := by
+theorem int_abs_le_sq (z : ℤ) : |z| ≤ z ^ 2 := by
   rcases le_or_gt 0 z with h | h
   · rw [abs_of_nonneg h]
     by_cases hz : z = 0
@@ -55,7 +56,7 @@ theorem int_abs_le_sq (z : ℤ) : |z| ≤ z^2 := by
     · have : 1 ≤ z := by omega
       nlinarith
   · rw [abs_of_neg h]
-    have : z ≤ -1 := by omega
+    have : z ≤ - 1 := by omega
     nlinarith
 
 theorem residual_coordinate_le {n : ℕ} (v : Coeff n) (i : Fin n) :
@@ -71,11 +72,11 @@ theorem certificate_coeff_le {n : ℕ} (B : Matrix (Fin n) (Fin n) ℤ)
   have hb := basisMagnitude_nonneg B
   have ht := targetMagnitude_nonneg t
   have hy (j : Fin n) : |B.mulVec x j| ≤ targetMagnitude t + |Δ| := by
-    have hr := (residual_coordinate_le (B.mulVec x-t) j).trans hx
-    have he : B.mulVec x j = t j + (B.mulVec x-t) j := by simp
+    have hr := (residual_coordinate_le (B.mulVec x - t) j).trans hx
+    have he : B.mulVec x j = t j + (B.mulVec x - t) j := by simp
     calc
-      _ = |t j + (B.mulVec x-t) j| := congrArg abs he
-      _ ≤ |t j| + |(B.mulVec x-t) j| := abs_add_le _ _
+      _ = |t j + (B.mulVec x - t) j| := congrArg abs he
+      _ ≤ |t j| + |(B.mulVec x - t) j| := abs_add_le _ _
       _ ≤ _ := add_le_add (target_entry_le t j) (hr.trans (le_abs_self Δ))
   have hentries (j k : Fin n) :
       |(B.updateCol i (B.mulVec x)) j k| ≤
@@ -125,6 +126,7 @@ theorem mem_certificateBox {n : ℕ} (B : Matrix (Fin n) (Fin n) ℤ)
     x ∈ certificateBox B t Δ ↔ ∀ i, |x i| ≤ certificateBound B t Δ := by
   simp only [certificateBox, Fintype.mem_piFinset, Finset.mem_Icc, abs_le]
 
+/-- CVP has a witness in the explicitly bounded finite coefficient box. -/
 theorem cvp_iff_finite_certificate {n : ℕ} (B : Matrix (Fin n) (Fin n) ℤ)
     (hB : B.det ≠ 0) (t : Coeff n) (Δ : ℤ) :
     CVPYes (matrixLattice B) t Δ ↔
@@ -137,6 +139,7 @@ def decideBoundedCVP {n : ℕ} (B : Matrix (Fin n) (Fin n) ℤ)
     (t : Coeff n) (Δ : ℤ) : Bool :=
   decide (∃ x ∈ certificateBox B t Δ, verify B t Δ x = true)
 
+/-- The bounded exhaustive decision procedure decides nonsingular matrix CVP. -/
 theorem decideBoundedCVP_eq_true {n : ℕ} (B : Matrix (Fin n) (Fin n) ℤ)
     (hB : B.det ≠ 0) (t : Coeff n) (Δ : ℤ) :
     decideBoundedCVP B t Δ = true ↔ CVPYes (matrixLattice B) t Δ := by
@@ -144,7 +147,7 @@ theorem decideBoundedCVP_eq_true {n : ℕ} (B : Matrix (Fin n) (Fin n) ℤ)
   exact decide_eq_true_iff
 
 /-- General domain injectivity makes the principal multiplication matrix nonsingular. -/
-theorem multiplicationMatrix_det_ne_zero {d : ℕ} (hd : ∃ k, d = 2^k)
+theorem multiplicationMatrix_det_ne_zero {d : ℕ} (hd : ∃ k, d = 2 ^ k)
     (g : Cyclotomic.R d) (hg : g ≠ 0) : (multiplicationMatrix g).det ≠ 0 := by
   intro hz
   obtain ⟨x, hx, hzero⟩ := Matrix.exists_mulVec_eq_zero_iff.mpr hz
@@ -153,7 +156,7 @@ theorem multiplicationMatrix_det_ne_zero {d : ℕ} (hd : ∃ k, d = 2^k)
   rw [← multiplicationMatrix_mulVec, hzero, Cyclotomic.mul_zero]
 
 /-- Every nonzero principal power-of-two cyclotomic ideal has bounded certificates. -/
-theorem principal_cvp_iff_bounded_certificate {d : ℕ} (hd : ∃ k, d = 2^k)
+theorem principal_cvp_iff_bounded_certificate {d : ℕ} (hd : ∃ k, d = 2 ^ k)
     (g : Cyclotomic.R d) (hg : g ≠ 0) (t : Coeff d) (Δ : ℤ) :
     CVPYes (Cyclotomic.principalIdealLattice g) t Δ ↔ ∃ x : Coeff d,
       (∀ i, |x i| ≤ certificateBound (multiplicationMatrix g) t Δ) ∧

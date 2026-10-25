@@ -13,8 +13,10 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace IdealCVP.Cyclic
 open IdealCVP.Cyclotomic Polynomial
 
+/-- The polynomial defining the cyclic quotient of coefficient dimension `2 * d`. -/
 def cyclicModulus (d : ℕ) : Polynomial ℤ := X ^ (2 * d) - 1
 
+/-- The genuine integral cyclic quotient by `X ^ (2 * d) - 1`. -/
 abbrev S (d : ℕ) := AdjoinRoot (cyclicModulus d)
 
 theorem cyclicModulus_monic {d : ℕ} (hd : 0 < d) : (cyclicModulus d).Monic := by
@@ -25,18 +27,22 @@ theorem cyclicModulus_natDegree (d : ℕ) : (cyclicModulus d).natDegree = 2 * d 
   simpa [cyclicModulus] using
     (Polynomial.natDegree_X_pow_sub_C (n := 2 * d) (r := (1 : ℤ)))
 
+/-- The residue class of the polynomial variable in the cyclic quotient. -/
 def x (d : ℕ) : S d := AdjoinRoot.root _
 
+/-- The polynomial representative of a coefficient vector. -/
 def poly {d : ℕ} (f : R d) : Polynomial ℤ := ∑ i : Fin d, C (f i) * X ^ i.val
 
+/-- Map a full coefficient vector to the cyclic quotient. -/
 def toRing {d : ℕ} (f : R (2 * d)) : S d := AdjoinRoot.mk _ (poly f)
 
+/-- Place a half-length coefficient block in the cyclic quotient. -/
 def copy {d : ℕ} (f : R d) : S d := AdjoinRoot.mk _ (poly f)
 
 @[simp] theorem poly_add {d : ℕ} (f g : R d) : poly (f + g) = poly f + poly g := by
   simp [poly, add_mul, Finset.sum_add_distrib]
 
-@[simp] theorem poly_neg {d : ℕ} (f : R d) : poly (-f) = -poly f := by
+@[simp] theorem poly_neg {d : ℕ} (f : R d) : poly (-f) = - poly f := by
   simp [poly, Finset.sum_neg_distrib]
 
 @[simp] theorem poly_smul {d : ℕ} (k : ℤ) (f : R d) : poly (k • f) = k • poly f := by
@@ -45,7 +51,7 @@ def copy {d : ℕ} (f : R d) : S d := AdjoinRoot.mk _ (poly f)
 @[simp] theorem copy_add {d : ℕ} (f g : R d) : copy (f + g) = copy f + copy g := by
   simp [copy]
 
-@[simp] theorem copy_neg {d : ℕ} (f : R d) : copy (-f) = -copy f := by simp [copy]
+@[simp] theorem copy_neg {d : ℕ} (f : R d) : copy (-f) = - copy f := by simp [copy]
 
 @[simp] theorem copy_sub {d : ℕ} (f g : R d) : copy (f - g) = copy f - copy g := by
   simp [sub_eq_add_neg]
@@ -60,6 +66,7 @@ def copy {d : ℕ} (f : R d) : S d := AdjoinRoot.mk _ (poly f)
 def blockEquiv (d : ℕ) : Fin d ⊕ Fin d ≃ Fin (2 * d) :=
   finSumFinEquiv.trans (finCongr (by omega : d + d = 2 * d))
 
+/-- Concatenate the lower and upper coefficient blocks. -/
 def concat {d : ℕ} (a b : R d) : R (2 * d) := fun i => (blockEquiv d).symm i |>.elim a b
 
 @[simp] theorem concat_left {d : ℕ} (a b : R d) (i : Fin d) :
@@ -133,6 +140,7 @@ def coefficientBasis {d : ℕ} (hd : 0 < d) : Module.Basis (Fin (2 * d)) ℤ (S 
   rw [coefficientBasis, Module.Basis.reindex_apply, PowerBasis.basis_eq_pow]
   rfl
 
+/-- The coefficient linear equivalence with the cyclic quotient. -/
 def coeffEquiv {d : ℕ} (hd : 0 < d) : R (2 * d) ≃ₗ[ℤ] S d :=
   (coefficientBasis hd).equivFun.symm
 
@@ -150,11 +158,11 @@ theorem toRing_bijective {d : ℕ} (hd : 0 < d) : Function.Bijective (@toRing d)
   change AdjoinRoot.mk (cyclicModulus d) (X ^ (2 * d) - 1) = 0 at h
   simpa [map_sub, map_pow, x, sub_eq_zero] using h
 
-@[simp] theorem square_half (d : ℕ) : (x d ^ d)^2 = 1 := by
+@[simp] theorem square_half (d : ℕ) : (x d ^ d) ^ 2 = 1 := by
   rw [← pow_mul, Nat.mul_comm d 2, x_pow_twice]
 
 /-- Multiplication of copied representatives agrees with negacyclic
-multiplication after projection by 1-X^d. -/
+multiplication after projection by 1-X ^ d. -/
 theorem anti_copy_mul {d : ℕ} (hd : 0 < d) (f g : R d) :
     (1 - x d ^ d) * copy (Cyclotomic.mul f g) =
       (1 - x d ^ d) * copy f * copy g := by
@@ -169,7 +177,7 @@ theorem anti_copy_mul {d : ℕ} (hd : 0 < d) (f g : R d) :
     simpa [map_sub, map_mul, copy, hm] using h
   have hz : (1 - x d ^ d) * (x d ^ d + 1) = 0 := by
     calc
-      _ = 1 - (x d ^ d)^2 := by ring
+      _ = 1 - (x d ^ d) ^ 2 := by ring
       _ = 0 := by rw [square_half]; ring
   apply sub_eq_zero.mp
   calc
@@ -183,13 +191,14 @@ def one {d : ℕ} (hd : 0 < d) : R d := monomial ⟨0, hd⟩ 1
   rw [copy_sum]
   simp [one, Cyclotomic.monomial]
 
-/-- The paper's principal generator (1-X^d)g + B(1+X^d). -/
+/-- The paper's principal generator (1-X ^ d)g + B(1+X ^ d). -/
 def generator {d : ℕ} (hd : 0 < d) (g : R d) (B : ℤ) : R (2 * d) :=
   concat (g + B • one hd) (-g + B • one hd)
 
-/-- The coefficient vector of 2(1-X^d)v. -/
+/-- The coefficient vector of 2(1-X ^ d)v. -/
 def lift {d : ℕ} (v : R d) : R (2 * d) := concat ((2 : ℤ) • v) (-((2 : ℤ) • v))
 
+/-- The separated coefficient generator represents the paper's cyclic polynomial. -/
 theorem generator_image {d : ℕ} (hd : 0 < d) (g : R d) (B : ℤ) :
     toRing (generator hd g B) =
       (1 - x d ^ d) * copy g + B • (1 + x d ^ d) := by
@@ -197,13 +206,14 @@ theorem generator_image {d : ℕ} (hd : 0 < d) (g : R d) (B : ℤ) :
   simp only [zsmul_eq_mul]
   ring
 
+/-- The lifted coefficient vector represents twice the antisymmetric cyclic copy. -/
 theorem lift_image {d : ℕ} (v : R d) :
     toRing (lift v) = 2 * (1 - x d ^ d) * copy v := by
   simp only [lift, toRing_concat, copy_neg, copy_smul]
   simp only [zsmul_eq_mul]
   ring
 
-/-- The coefficient product G(p+X^d q). -/
+/-- The coefficient product G(p+X ^ d q). -/
 def product {d : ℕ} (g : R d) (B : ℤ) (p q : R d) : R (2 * d) :=
   concat (B • (p + q) + Cyclotomic.mul g (p - q))
     (B • (p + q) - Cyclotomic.mul g (p - q))
@@ -270,6 +280,7 @@ theorem product_distance {d : ℕ} (g T : R d) (B : ℤ) (p q : R d) :
   rw [he, sqNorm_parallelogram, sqNorm_smul]
   ring
 
+/-- The cyclic lift multiplies squared distances by eight. -/
 @[simp] theorem sqNorm_lift_sub {d : ℕ} (v T : R d) :
     sqNorm (lift v - lift T) = 8 * sqNorm (v - T) := by
   have he : lift v - lift T = concat ((2 : ℤ) • (v - T)) (-((2 : ℤ) • (v - T))) := by
@@ -296,7 +307,7 @@ theorem lift_injective {d : ℕ} : Function.Injective (@lift d) := by
 theorem lift_mem {d : ℕ} (hd : 0 < d) (g : R d) (B : ℤ) (v : R d)
     (hv : v ∈ principalIdealLattice g) : lift v ∈ lattice hd g B := by
   obtain ⟨p, rfl⟩ := hv
-  exact (mem_lattice_iff hd g B _).mpr ⟨p, -p, product_neg g B p⟩
+  exact (mem_lattice_iff hd g B _).mpr ⟨p, - p, product_neg g B p⟩
 
 /-- Paper Lemma `lem:principal-crt`: exactly the small cyclic points arise
 uniquely from the original principal ideal, with distances multiplied by 8. -/
@@ -314,7 +325,7 @@ theorem small_iff {d : ℕ} (hd : 0 < d) (g T : R d) (B H : ℤ)
       have hsq := sq_nonneg B
       rw [product_distance] at hdist
       nlinarith
-    have hq : q = -p := by
+    have hq : q = - p := by
       funext i
       have hi := congrFun hr i
       simp only [Pi.add_apply, Pi.zero_apply] at hi
@@ -387,6 +398,8 @@ def mulHom {d : ℕ} (hd : 0 < d) (g : R d) (B : ℤ) : R (2 * d) →+ R (2 * d)
   rw [LinearEquiv.apply_symm_apply, coeffEquiv_apply, coeffEquiv_apply]
   exact (product_image hd g B p q).symm
 
+/-- An injective negacyclic generator and a nonzero penalty give injective cyclic
+multiplication. -/
 theorem mulHom_injective {d : ℕ} (hd : 0 < d) (g : R d) (B : ℤ)
     (hg : Function.Injective (Cyclotomic.mul g)) (hB : B ≠ 0) :
     Function.Injective (mulHom hd g B) := by
@@ -444,6 +457,7 @@ theorem lower_bound {d : ℕ} (hd : 0 < d) (g T : R d) (B H : ℤ)
     linarith [hmin v hv]
   · omega
 
+/-- With a sufficiently large penalty, cyclic CVP is equivalent to the original negacyclic CVP. -/
 theorem cvp_iff {d : ℕ} (hd : 0 < d) (g T : R d) (B H : ℤ) (hB : 4 * H < B ^ 2) :
     CVPYes (lattice hd g B) (lift T) (8 * H) ↔ CVPYes (principalIdealLattice g) T H := by
   constructor
@@ -453,6 +467,7 @@ theorem cvp_iff {d : ℕ} (hd : 0 < d) (g T : R d) (B H : ℤ) (hB : 4 * H < B ^
   · rintro ⟨v, hv, hdist⟩
     exact ⟨lift v, lift_mem hd g B v hv, by rw [sqNorm_lift_sub]; omega⟩
 
+/-- The separated cyclic lift multiplies the attained minimum squared distance by eight. -/
 theorem minimum_lift {d : ℕ} (hd : 0 < d) (g T : R d) (B H : ℤ)
     (hB : 4 * H < B ^ 2) (hmin : MinimumSquaredDistance (principalIdealLattice g) T H) :
     MinimumSquaredDistance (lattice hd g B) (lift T) (8 * H) := by
@@ -464,10 +479,10 @@ theorem minimum_lift {d : ℕ} (hd : 0 < d) (g T : R d) (B H : ℤ)
 /-- The paper's integer penalty 2 ceil(sqrt(H)) + 1. -/
 def penalty (H : ℤ) : ℤ := 2 * (ReductionData.ceilSqrt H.toNat : ℤ) + 1
 
-theorem penalty_sq_gt (H : ℤ) (hH : 0 ≤ H) : 4 * H < (penalty H)^2 := by
+theorem penalty_sq_gt (H : ℤ) (hH : 0 ≤ H) : 4 * H < (penalty H) ^ 2 := by
   have hn := (ReductionData.ceilSqrt_le_iff H.toNat (ReductionData.ceilSqrt H.toNat)).mp le_rfl
-  have hs : H ≤ (ReductionData.ceilSqrt H.toNat : ℤ)^2 := by
-    have hn' : (H.toNat : ℤ) ≤ (ReductionData.ceilSqrt H.toNat : ℤ)^2 := by
+  have hs : H ≤ (ReductionData.ceilSqrt H.toNat : ℤ) ^ 2 := by
+    have hn' : (H.toNat : ℤ) ≤ (ReductionData.ceilSqrt H.toNat : ℤ) ^ 2 := by
       exact_mod_cast hn
     simpa only [Int.toNat_of_nonneg hH] using hn'
   dsimp [penalty]
@@ -486,18 +501,22 @@ theorem cvp_dimension_pos (I : X3CInstance) : 0 < (x3cToCVP I).d := by
   rw [hk]
   positivity
 
+/-- The separating penalty for the cyclic lift of an X3C instance. -/
 def cyclicPenalty (I : X3CInstance) : ℤ := Cyclic.penalty ((x3cToCVP I).Δ + 4)
 
 theorem cyclicPenalty_sq_gt (I : X3CInstance) :
     4 * ((x3cToCVP I).Δ + 4) < I.cyclicPenalty ^ 2 :=
   Cyclic.penalty_sq_gt _ (by have := (x3cToCVP I).Δ_nonneg; omega)
 
+/-- The principal cyclic ideal lattice produced from an X3C instance. -/
 def cyclicLattice (I : X3CInstance) : AddSubgroup (R (2 * (x3cToCVP I).d)) :=
   Cyclic.lattice I.cvp_dimension_pos (x3cToCVP I).g I.cyclicPenalty
 
+/-- The coefficient vector of the separated cyclic generator. -/
 def cyclicGenerator (I : X3CInstance) : R (2 * (x3cToCVP I).d) :=
   Cyclic.generator I.cvp_dimension_pos (x3cToCVP I).g I.cyclicPenalty
 
+/-- The lifted cyclic target coefficient vector. -/
 def cyclicTarget (I : X3CInstance) : R (2 * (x3cToCVP I).d) :=
   Cyclic.lift (x3cToCVP I).T
 
@@ -520,6 +539,7 @@ def x3cToCyclicCVP (I : X3CInstance) :
     R (2 * (x3cToCVP I).d) × R (2 * (x3cToCVP I).d) × ℤ :=
   (I.cyclicGenerator, I.cyclicTarget, 8 * (x3cToCVP I).Δ)
 
+/-- The doubled cyclic dimension remains a power of two. -/
 theorem x3c_cyclic_power_two (I : X3CInstance) : ∃ k, 2 * (x3cToCVP I).d = 2 ^ k := by
   obtain ⟨k, hk⟩ := (x3cToCVP I).power_two
   exact ⟨k + 1, by rw [hk, pow_succ]; omega⟩
@@ -531,12 +551,14 @@ theorem x3c_cyclic_correct (I : X3CInstance) :
   exact (Cyclic.cvp_iff I.cvp_dimension_pos (x3cToCVP I).g (x3cToCVP I).T
     I.cyclicPenalty (x3cToCVP I).Δ (by have := I.cyclicPenalty_sq_gt; omega)).symm
 
+/-- An exact cover attains eight times the negacyclic squared-distance threshold. -/
 theorem x3c_cyclic_yes_gap (I : X3CInstance) (hy : I.HasExactCover) :
     MinimumSquaredDistance I.cyclicLattice I.cyclicTarget (8 * (x3cToCVP I).Δ) :=
   Cyclic.minimum_lift I.cvp_dimension_pos (x3cToCVP I).g (x3cToCVP I).T
     I.cyclicPenalty (x3cToCVP I).Δ (by have := I.cyclicPenalty_sq_gt; omega)
     (x3c_yes_gap I hy)
 
+/-- Without an exact cover, the cyclic squared-distance gap is at least thirty-two. -/
 theorem x3c_cyclic_no_gap (I : X3CInstance) (hn : ¬ I.HasExactCover) :
     ∀ w ∈ I.cyclicLattice, 8 * (x3cToCVP I).Δ + 32 ≤ sqNorm (w - I.cyclicTarget) := by
   have h := Cyclic.lower_bound I.cvp_dimension_pos (x3cToCVP I).g (x3cToCVP I).T

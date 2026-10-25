@@ -1,7 +1,11 @@
 import IdealCVP.Quotient
 import Mathlib.RingTheory.Polynomial.Cyclotomic.Roots
 
-/-! # Full rank for every nonzero power-of-two cyclotomic generator -/
+/-! # Full rank for every nonzero power-of-two cyclotomic generator
+
+Irreducibility of the cyclotomic modulus makes multiplication injective and
+supplies the integral multiplication basis used by the reductions.
+-/
 noncomputable section
 namespace IdealCVP.Cyclotomic
 open Polynomial
@@ -13,12 +17,14 @@ theorem pow_two_cyclotomic (k : ℕ) (A : Type*) [CommRing A] :
     cyclotomic_prime_pow_eq_geom_sum Nat.prime_two]
   simp [Finset.sum_range_succ, add_comm]
 
+/-- The power-of-two negacyclic modulus is irreducible over the integers. -/
 theorem modulus_irreducible {d : ℕ} (hd : ∃ k, d = 2 ^ k) :
     Irreducible (modulus d) := by
   obtain ⟨k, rfl⟩ := hd
   rw [modulus, pow_two_cyclotomic]
   exact cyclotomic.irreducible (by positivity)
 
+/-- The same modulus is irreducible over the rationals. -/
 theorem modulus_irreducible_rat {d : ℕ} (hd : ∃ k, d = 2 ^ k) :
     Irreducible ((X : Polynomial ℚ) ^ d + 1) := by
   obtain ⟨k, rfl⟩ := hd
@@ -48,6 +54,7 @@ theorem mul_injective {d : ℕ} (hd : ∃ k, d = 2 ^ k) {g : R d} (hg : g ≠ 0)
   apply mul_left_cancel₀ hgz
   simpa only [← toQuot_mul hp] using congrArg toQuot hab
 
+/-- Multiplication identifies coefficient vectors with the principal ideal lattice. -/
 noncomputable def principalMultiplicationEquiv {d : ℕ} (hd : ∃ k, d = 2 ^ k)
     (g : R d) (hg : g ≠ 0) : R d ≃+ principalIdealLattice g :=
   AddEquiv.ofBijective (mulHom g).rangeRestrict

@@ -9,6 +9,7 @@ namespace IdealCVP
 namespace SidonPositions
 variable {M n : ℕ} (p : SidonPositions n)
 
+/-- The chosen power-of-two half-dimension is at most twice the required row span. -/
 theorem N_le (hM : 0 < M) : p.N M ≤ 2 * (M * p.L) := by
   let r := M * p.L
   have hr : 0 < r := Nat.mul_pos hM p.L_pos
@@ -32,6 +33,7 @@ end SidonPositions
 namespace ReductionData
 variable {M n : ℕ} (D : ReductionData M n)
 
+/-- The output dimension is bounded by the number of rows and the Sidon span. -/
 theorem dimension_le : D.d ≤ 4 * M * (2 * D.positions.c + 1) := by
   have h := D.positions.N_le D.M_pos
   change 2 * D.N ≤ _

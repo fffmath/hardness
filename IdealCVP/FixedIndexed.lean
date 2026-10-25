@@ -99,12 +99,14 @@ theorem fixed_family_correct_indexed (I : X3CInstance) :
       (Fixed.threshold (3 * I.q) I.fixed_universe_ge_three I.toTripleSet) :=
   I.hasExactCover_iff_toTripleSet.trans (Fixed.fixed_family_correct _ _ _)
 
+/-- An indexed exact cover attains the fixed-family squared-distance threshold. -/
 theorem fixed_family_yes_indexed (I : X3CInstance) (hy : I.HasExactCover) :
     MinimumSquaredDistance (Fixed.lattice (3 * I.q) I.fixed_universe_ge_three)
       (Fixed.target (3 * I.q) I.fixed_universe_ge_three I.toTripleSet)
       (Fixed.threshold (3 * I.q) I.fixed_universe_ge_three I.toTripleSet) :=
   Fixed.fixed_family_yes _ _ _ (I.hasExactCover_iff_toTripleSet.mp hy)
 
+/-- Without an indexed exact cover, every fixed-family lattice vector has the strict gap. -/
 theorem fixed_family_no_indexed (I : X3CInstance) (hn : ¬ I.HasExactCover) :
     ∀ v ∈ Fixed.lattice (3 * I.q) I.fixed_universe_ge_three,
       Fixed.threshold (3 * I.q) I.fixed_universe_ge_three I.toTripleSet + 4 ≤

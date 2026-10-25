@@ -3,7 +3,7 @@ import Mathlib.RingTheory.AdjoinRoot
 
 /-! # The genuine negacyclic quotient ring
 
-The coefficient model is additively equivalent to ℤ[X]/(X^d+1), and its
+The coefficient model is additively equivalent to ℤ[X]/(X ^ d+1), and its
 explicit convolution agrees with quotient multiplication.
 -/
 noncomputable section
@@ -34,7 +34,7 @@ theorem modulus_monic {d : ℕ} (hd : 0 < d) : (modulus d).Monic := by
   simpa [modulus] using (Polynomial.monic_X_pow_add_C (1 : ℤ) (by omega : d ≠ 0))
 
 @[simp] theorem modulus_natDegree (d : ℕ) : (modulus d).natDegree = d := by
-  simpa [modulus] using (Polynomial.natDegree_X_pow_add_C (n := d) (r := (1 : ℤ)))
+  simp [modulus]
 
 /-- The standard monomial basis, indexed by `Fin d`. -/
 noncomputable def coefficientBasis {d : ℕ} (hd : 0 < d) :
@@ -55,6 +55,7 @@ noncomputable def quotEquiv {d : ℕ} (hd : 0 < d) : R d ≃ₗ[ℤ] QuotRing d 
     quotEquiv hd f = toQuot f := by
   simp [quotEquiv, Module.Basis.equivFun_symm_apply, toQuot]
 
+/-- Every quotient-ring element has a unique coefficient representative below the dimension. -/
 theorem toQuot_bijective {d : ℕ} (hd : 0 < d) : Function.Bijective (@toQuot d) := by
   have he : (fun f : R d => quotEquiv hd f) = toQuot := funext (quotEquiv_apply hd)
   rw [← he]
@@ -67,7 +68,7 @@ theorem toQuot_bijective {d : ℕ} (hd : 0 < d) : Function.Bijective (@toQuot d)
   simp [toQuot, add_smul, Finset.sum_add_distrib]
 
 @[simp] theorem root_pow_dimension (d : ℕ) :
-    AdjoinRoot.root (modulus d) ^ d = -1 := by
+    AdjoinRoot.root (modulus d) ^ d = - 1 := by
   have h := AdjoinRoot.mk_self (f := modulus d)
   change AdjoinRoot.mk (modulus d) (X ^ d + 1) = 0 at h
   simpa only [map_add, map_pow, AdjoinRoot.mk_X, map_one, add_eq_zero_iff_eq_neg] using h
@@ -75,7 +76,7 @@ theorem toQuot_bijective {d : ℕ} (hd : 0 < d) : Function.Bijective (@toQuot d)
 /-- Folding a product of two basis powers gives exactly the convolution sign. -/
 theorem root_pow_fold {d : ℕ} (_hd : 0 < d) (i j : Fin d) :
     AdjoinRoot.root (modulus d) ^ (i.val + j.val) =
-      (if i.val + j.val < d then (1 : ℤ) else -1) •
+      (if i.val + j.val < d then (1 : ℤ) else - 1) •
         AdjoinRoot.root (modulus d) ^ ((i.val + j.val) % d) := by
   by_cases h : i.val + j.val < d
   · simp [h, Nat.mod_eq_of_lt h]
@@ -92,7 +93,7 @@ theorem toQuot_mul {d : ℕ} (hd : 0 < d) (f g : R d) :
   let x := AdjoinRoot.root (modulus d)
   have step (i j : Fin d) :
       (∑ r : Fin d, (if (i.val + j.val) % d = r.val then
-        (if i.val + j.val < d then (1 : ℤ) else -1) * f i * g j else 0) • x ^ r.val) =
+        (if i.val + j.val < d then (1 : ℤ) else - 1) * f i * g j else 0) • x ^ r.val) =
       (f i * g j) • x ^ (i.val + j.val) := by
     let r₀ : Fin d := ⟨(i.val + j.val) % d, Nat.mod_lt _ hd⟩
     rw [Finset.sum_eq_single r₀]
@@ -110,7 +111,7 @@ theorem toQuot_mul {d : ℕ} (hd : 0 < d) (f g : R d) :
   calc
     toQuot (mul f g) = ∑ i : Fin d, ∑ j : Fin d, ∑ r : Fin d,
         (if (i.val + j.val) % d = r.val then
-          (if i.val + j.val < d then (1 : ℤ) else -1) * f i * g j else 0) • x ^ r.val := by
+          (if i.val + j.val < d then (1 : ℤ) else - 1) * f i * g j else 0) • x ^ r.val := by
       simp only [toQuot, mul, Finset.sum_smul]
       rw [Finset.sum_comm]
       apply Finset.sum_congr rfl
@@ -161,7 +162,7 @@ end IdealCVP.Cyclotomic
 namespace IdealCVP
 open IdealCVP.Cyclotomic
 
-/-- Theorem `thm:cyclotomic-cvp` in the actual ring ℤ[X]/(X^d+1),
+/-- Theorem `thm:cyclotomic-cvp` in the actual ring ℤ[X]/(X ^ d+1),
 with the ordinary coefficient-vector distance. -/
 theorem x3c_correct_quotient (I : X3CInstance) :
     I.HasExactCover ↔ ∃ v : R (x3cToCVP I).d,

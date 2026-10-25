@@ -11,6 +11,7 @@ as an alternative.
 -/
 namespace IdealCVP
 
+/-- Increasing nonnegative positions with bounded size and unique nonzero ordered differences. -/
 structure SidonPositions (n : ℕ) where
   α : Fin n → ℕ
   c : ℕ
@@ -22,6 +23,7 @@ structure SidonPositions (n : ℕ) where
 namespace SidonPositions
 variable {n : ℕ}
 
+/-- An elementary cubic-size Sidon construction with no prime search. -/
 def cubicAlpha (n j : ℕ) : ℕ := (2 * n ^ 2 + 1) * j + j ^ 2
 
 theorem cubicAlpha_strictMono (n : ℕ) : StrictMono (cubicAlpha n) := by
@@ -43,20 +45,20 @@ theorem cubic_differences (j k j' k' : Fin n) (hjk : j ≠ k) (_hj'k' : j' ≠ k
   have n0 : (0 : ℤ) ≤ n := by positivity
   simp only [cubicAlpha, Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat,
     Nat.cast_pow, Nat.cast_one] at h
-  have hj2 : (j : ℤ)^2 ≤ (n : ℤ)^2 := by nlinarith
-  have hk2 : (k : ℤ)^2 ≤ (n : ℤ)^2 := by nlinarith
-  have hj'2 : (j' : ℤ)^2 ≤ (n : ℤ)^2 := by nlinarith
-  have hk'2 : (k' : ℤ)^2 ≤ (n : ℤ)^2 := by nlinarith
+  have hj2 : (j : ℤ) ^ 2 ≤ (n : ℤ) ^ 2 := by nlinarith
+  have hk2 : (k : ℤ) ^ 2 ≤ (n : ℤ) ^ 2 := by nlinarith
+  have hj'2 : (j' : ℤ) ^ 2 ≤ (n : ℤ) ^ 2 := by nlinarith
+  have hk'2 : (k' : ℤ) ^ 2 ≤ (n : ℤ) ^ 2 := by nlinarith
   have hd : (k : ℤ) - j = (k' : ℤ) - j' := by
     by_contra he
     rcases lt_or_gt_of_ne he with hh | hh
     · have hg : (k : ℤ) - j + 1 ≤ (k' : ℤ) - j' := by omega
-      have := mul_nonneg (by positivity : (0 : ℤ) ≤ 2 * (n : ℤ)^2 + 1)
+      have := mul_nonneg (by positivity : (0 : ℤ) ≤ 2 * (n : ℤ) ^ 2 + 1)
         (show 0 ≤ (k' : ℤ) - j' - ((k : ℤ) - j) - 1 by omega)
       nlinarith [sq_nonneg (j : ℤ), sq_nonneg (k : ℤ),
         sq_nonneg (j' : ℤ), sq_nonneg (k' : ℤ)]
     · have hg : (k' : ℤ) - j' + 1 ≤ (k : ℤ) - j := by omega
-      have := mul_nonneg (by positivity : (0 : ℤ) ≤ 2 * (n : ℤ)^2 + 1)
+      have := mul_nonneg (by positivity : (0 : ℤ) ≤ 2 * (n : ℤ) ^ 2 + 1)
         (show 0 ≤ (k : ℤ) - j - ((k' : ℤ) - j') - 1 by omega)
       nlinarith [sq_nonneg (j : ℤ), sq_nonneg (k : ℤ),
         sq_nonneg (j' : ℤ), sq_nonneg (k' : ℤ)]
@@ -84,12 +86,12 @@ def cubic (n : ℕ) : SidonPositions n where
 theorem cubic_size (n : ℕ) : (cubic n).c ≤ 3 * n ^ 3 + n := by
   dsimp [cubic, cubicAlpha]
   have h : n - 1 ≤ n := by omega
-  have h2 : (n - 1)^2 ≤ n^2 := Nat.pow_le_pow_left h 2
+  have h2 : (n - 1) ^ 2 ≤ n ^ 2 := Nat.pow_le_pow_left h 2
   have hm := Nat.mul_le_mul_left (2 * n ^ 2 + 1) h
   by_cases hn : n = 0
   · subst n; simp
   · have hn1 : 1 ≤ n := by omega
-    have hn2 : n ^ 2 ≤ n ^ 3 := by nlinarith [Nat.mul_le_mul_left (n^2) hn1]
+    have hn2 : n ^ 2 ≤ n ^ 3 := by nlinarith [Nat.mul_le_mul_left (n ^ 2) hn1]
     nlinarith
 
 /-- The exact Erdős–Turán formula from the paper (zero-based). -/
@@ -129,7 +131,7 @@ theorem erdosTuran_differences {p : ℕ} (hp : p.Prime) (hodd : 2 < p)
         (show 0 ≤ (k : ℤ) - j - ((k' : ℤ) - j') - 1 by omega)
       nlinarith [rem_bound k, rem_bound j, rem_bound k', rem_bound j',
         rem_nonneg k, rem_nonneg j, rem_nonneg k', rem_nonneg j']
-  letI : Fact p.Prime := ⟨hp⟩
+  let : Fact p.Prime := ⟨hp⟩
   have inj (a b : Fin n) (hab : (a.val : ZMod p) = b.val) : a = b := by
     apply Fin.ext
     have hv := congrArg ZMod.val hab
@@ -138,8 +140,8 @@ theorem erdosTuran_differences {p : ℕ} (hp : p.Prime) (hodd : 2 < p)
   have hd' : (k.val : ZMod p) - j.val = k'.val - j'.val := by
     have hz := congrArg (fun z : ℤ => (z : ZMod p)) hd
     simpa only [Int.cast_sub, Int.cast_natCast] using hz
-  have hs : (k.val : ZMod p)^2 - (j.val : ZMod p)^2 =
-      (k'.val : ZMod p)^2 - (j'.val : ZMod p)^2 := by
+  have hs : (k.val : ZMod p) ^ 2 - (j.val : ZMod p) ^ 2 =
+      (k'.val : ZMod p) ^ 2 - (j'.val : ZMod p) ^ 2 := by
     have hz := congrArg (fun z : ℤ => (z : ZMod p)) h
     simpa [erdosTuranAlpha, ZMod.natCast_mod] using hz
   have hnon : (k.val : ZMod p) - j.val ≠ 0 := by
@@ -148,8 +150,8 @@ theorem erdosTuran_differences {p : ℕ} (hp : p.Prime) (hodd : 2 < p)
   have hprod : ((k.val : ZMod p) - j.val) * (k.val + j.val) =
       ((k.val : ZMod p) - j.val) * (k'.val + j'.val) := by
     calc
-      _ = (k.val : ZMod p)^2 - (j.val : ZMod p)^2 := by ring
-      _ = (k'.val : ZMod p)^2 - (j'.val : ZMod p)^2 := hs
+      _ = (k.val : ZMod p) ^ 2 - (j.val : ZMod p) ^ 2 := by ring
+      _ = (k'.val : ZMod p) ^ 2 - (j'.val : ZMod p) ^ 2 := hs
       _ = ((k'.val : ZMod p) - j'.val) * (k'.val + j'.val) := by ring
       _ = _ := by rw [hd']
   have hsum := mul_left_cancel₀ hnon hprod
@@ -158,7 +160,7 @@ theorem erdosTuran_differences {p : ℕ} (hp : p.Prime) (hodd : 2 < p)
     have hv := congrArg ZMod.val hz
     have ht := ZMod.val_natCast_of_lt hodd
     norm_num at ht
-    simpa [ht] using hv
+    simp [ht] at hv
   have hj' : (j.val : ZMod p) = j'.val := by
     apply mul_left_cancel₀ htwo
     linear_combination hsum - hd'
@@ -195,16 +197,18 @@ def erdosTuran (n : ℕ) : SidonPositions n where
   differences := erdosTuran_differences (erdosTuranPrime_spec n).1
     (erdosTuranPrime_spec n).2.1 (erdosTuranPrime_spec n).2.2.1
 
+/-- The first Erdős–Turán position is zero. -/
 @[simp] theorem erdosTuran_origin (n : ℕ) (hn : 0 < n) :
     (erdosTuran n).α ⟨0, hn⟩ = 0 := erdosTuran_zero _
 
+/-- The Erdős–Turán construction has span at most four times the square of its size. -/
 theorem erdosTuran_size (n : ℕ) : (erdosTuran n).c ≤ 4 * n ^ 2 := by
   have hp := erdosTuranPrime_spec n
   by_cases hn : n ≤ 1
   · have hz : n - 1 = 0 := by omega
     simp [erdosTuran, hz, erdosTuran_zero]
   · have hb : erdosTuranPrime n < 2 * n := by omega
-    have hr := Nat.mod_lt ((n - 1)^2) (show 0 < erdosTuranPrime n by omega)
+    have hr := Nat.mod_lt ((n - 1) ^ 2) (show 0 < erdosTuranPrime n by omega)
     have hm := Nat.mul_le_mul_left (2 * erdosTuranPrime n) (show n - 1 + 1 = n by omega).le
     dsimp [erdosTuran, erdosTuranAlpha]
     nlinarith [Nat.mul_le_mul_right n (show erdosTuranPrime n ≤ 2 * n by omega)]

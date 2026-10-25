@@ -14,16 +14,13 @@ open IdealCVP.Cyclotomic
 /-- All three-element subsets, including their cardinality certificate. -/
 abbrev Triple (m : ℕ) := ↥((Finset.univ : Finset (Fin m)).powersetCard 3)
 
+/-- The number of distinct three-element subsets is the binomial coefficient. -/
 theorem triple_card (m : ℕ) : Fintype.card (Triple m) = m.choose 3 := by
   simp [Triple]
 
 /-- Any fixed enumeration suffices; no property of lexicographic order is used. -/
 def enumeration (m : ℕ) : Fin (m.choose 3) ≃ Triple m :=
   (Fintype.equivFinOfCardEq (triple_card m)).symm
-
-theorem enumeration_card (m : ℕ) (j : Fin (m.choose 3)) :
-    ((enumeration m j).val).card = 3 :=
-  (Finset.mem_powersetCard.mp (enumeration m j).property).2
 
 /-- Ordinary exact covers by a subcollection of the input set of triples. -/
 def HasExactCover {m : ℕ} (C : Finset (Triple m)) : Prop :=
@@ -43,6 +40,7 @@ def selectionEquiv (m : ℕ) : Finset (Triple m) ≃ (Fin (m.choose 3) → Bool)
   left_inv s := by ext t; simp
   right_inv ξ := by funext j; cases h : ξ j <;> simp [h]
 
+/-- Subcollection exact covers correspond to feasible masked incidence systems. -/
 theorem cover_iff_feasible {m : ℕ} (C s : Finset (Triple m)) :
     (s ⊆ C ∧ ∀ i : Fin m, (s.filter fun t => i ∈ t.val).card = 1) ↔
       (system m C).Feasible (selectionEquiv m s) := by
@@ -65,7 +63,7 @@ theorem cover_iff_feasible {m : ℕ} (C s : Finset (Triple m)) :
     simp only [decide_eq_true_eq]
     constructor
     · intro h t ht
-      obtain ⟨j,rfl⟩ := (enumeration m).surjective t
+      obtain ⟨j, rfl⟩ := (enumeration m).surjective t
       exact h j ht
     · intro h j hj; exact h hj
   rw [MaskedSystem.Feasible, hallowed]
@@ -80,8 +78,8 @@ size (also when it is not divisible by three). -/
 theorem hasExactCover_iff_hasSolution {m : ℕ} (C : Finset (Triple m)) :
     HasExactCover C ↔ (system m C).HasSolution := by
   constructor
-  · rintro ⟨s,hs⟩; exact ⟨selectionEquiv m s, (cover_iff_feasible C s).mp hs⟩
-  · rintro ⟨ξ,hξ⟩
+  · rintro ⟨s, hs⟩; exact ⟨selectionEquiv m s, (cover_iff_feasible C s).mp hs⟩
+  · rintro ⟨ξ, hξ⟩
     refine ⟨(selectionEquiv m).symm ξ, ?_⟩
     exact (cover_iff_feasible C _).mpr (by simpa using hξ)
 
@@ -102,6 +100,7 @@ def data (m : ℕ) (hm : 3 ≤ m) (C : Finset (Triple m)) : ReductionData m (m.c
 /-- The generator is shared by all collections on this universe. -/
 def generator (m : ℕ) (hm : 3 ≤ m) : R (baseData m hm).d := (baseData m hm).g
 
+/-- The principal ideal lattice fixed by the universe size. -/
 def lattice (m : ℕ) (hm : 3 ≤ m) : AddSubgroup (R (baseData m hm).d) :=
   principalIdealLattice (generator m hm)
 
@@ -109,15 +108,19 @@ def lattice (m : ℕ) (hm : 3 ≤ m) : AddSubgroup (R (baseData m hm).d) :=
 def basis (m : ℕ) (hm : 3 ≤ m) : Module.Basis (Fin (baseData m hm).d) ℤ (lattice m hm) :=
   principalMultiplicationBasis (baseData m hm).d_power_two _ (baseData m hm).g_ne_zero
 
+/-- The collection-dependent target in the fixed principal ideal. -/
 def target (m : ℕ) (hm : 3 ≤ m) (C : Finset (Triple m)) : R (baseData m hm).d :=
   (data m hm C).T
 
+/-- The collection-dependent squared-distance threshold. -/
 def threshold (m : ℕ) (hm : 3 ≤ m) (C : Finset (Triple m)) : ℤ := (data m hm C).Δ
 
+/-- Changing the input collection preserves the generator for a fixed universe. -/
 theorem generator_independent (m : ℕ) (hm : 3 ≤ m) (C : Finset (Triple m)) :
     (data m hm C).g = generator m hm :=
   (baseData m hm).generator_mask_independent _
 
+/-- Changing the input collection preserves the principal ideal lattice. -/
 theorem lattice_independent (m : ℕ) (hm : 3 ≤ m) (C : Finset (Triple m)) :
     (data m hm C).lattice = lattice m hm := by
   change principalIdealLattice (data m hm C).g = _

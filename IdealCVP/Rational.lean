@@ -8,10 +8,13 @@ Scaling changes the lattice as well as the target and squared threshold.
 noncomputable section
 namespace IdealCVP
 
+/-- Rational coefficient vectors of dimension `d`. -/
 abbrev RatCoeff (d : ℕ) := Fin d → ℚ
 
+/-- The squared Euclidean norm of a rational vector. -/
 def ratSqNorm {ι : Type*} [Fintype ι] (v : ι → ℚ) : ℚ := ∑ i, v i ^ 2
 
+/-- Embed an integral coefficient vector into the rational coefficient space. -/
 def castCoeff {ι : Type*} (v : ι → ℤ) : ι → ℚ := fun i => v i
 
 @[simp] theorem ratSqNorm_cast {ι : Type*} [Fintype ι] (v : ι → ℤ) :
@@ -45,8 +48,8 @@ theorem castCoeff_scale {d : ℕ} (N : ℕ) (v : Coeff d) :
 theorem rationalCVP_scale {d : ℕ} (L : AddSubgroup (Coeff d)) (t : RatCoeff d)
     (Δ : ℚ) (N : ℕ) (hN : 0 < N) :
     RationalCVPYes L t Δ ↔
-      RationalCVPYes (scaleLattice N L) ((N : ℚ) • t) ((N : ℚ)^2 * Δ) := by
-  have hp : (0 : ℚ) < (N : ℚ)^2 := by positivity
+      RationalCVPYes (scaleLattice N L) ((N : ℚ) • t) ((N : ℚ) ^ 2 * Δ) := by
+  have hp : (0 : ℚ) < (N : ℚ) ^ 2 := by positivity
   constructor
   · rintro ⟨v, hv, h⟩
     refine ⟨(N : ℤ) • v, ⟨v, hv, rfl⟩, ?_⟩
@@ -62,6 +65,7 @@ theorem rationalCVP_scale {d : ℕ} (L : AddSubgroup (Coeff d)) (t : RatCoeff d)
 theorem sqNorm_le_floor {ι : Type*} [Fintype ι] (v : ι → ℤ) (x : ℚ) :
     (sqNorm v : ℚ) ≤ x ↔ sqNorm v ≤ ⌊x⌋ := Int.le_floor.symm
 
+/-- For integral targets, a rational squared threshold is equivalent to its integer floor. -/
 theorem rationalCVP_integral_target {d : ℕ} (L : AddSubgroup (Coeff d))
     (t : Coeff d) (Δ : ℚ) :
     RationalCVPYes L (castCoeff t) Δ ↔ CVPYes L t ⌊Δ⌋ := by
@@ -79,13 +83,14 @@ theorem cvp_iff_rationalCVP {d : ℕ} (L : AddSubgroup (Coeff d)) (t : Coeff d) 
 theorem rationalCVP_clear_denominators {d : ℕ} (L : AddSubgroup (Coeff d))
     (t : RatCoeff d) (Δ : ℚ) (N : ℕ) (hN : 0 < N) (u : Coeff d)
     (hu : (N : ℚ) • t = castCoeff u) :
-    RationalCVPYes L t Δ ↔ CVPYes (scaleLattice N L) u ⌊(N : ℚ)^2 * Δ⌋ := by
+    RationalCVPYes L t Δ ↔ CVPYes (scaleLattice N L) u ⌊(N : ℚ) ^ 2 * Δ⌋ := by
   rw [rationalCVP_scale L t Δ N hN, hu, rationalCVP_integral_target]
 
 /-- Every finite family of rational coefficients has a positive common denominator. -/
-theorem exists_common_denominator {ι : Type*} [Fintype ι] (t : ι → ℚ) :
+theorem exists_common_denominator {ι : Type*} [Finite ι] (t : ι → ℚ) :
     ∃ N : ℕ, 0 < N ∧ ∃ u : ι → ℤ, (N : ℚ) • t = castCoeff u := by
   classical
+  let := Fintype.ofFinite ι
   let N := ∏ i, (t i).den
   have hN : 0 < N := Finset.prod_pos fun i _ => (t i).den_pos
   have hd (i : ι) : (t i).den ∣ N := Finset.dvd_prod_of_mem _ (Finset.mem_univ i)
@@ -127,6 +132,7 @@ theorem ratSqNorm_residual {d : ℕ} (v t : Coeff d) :
     exact (Int.cast_sub _ _).symm
   rw [he, ratSqNorm_cast]
 
+/-- The exact X3C yes-instance minimum persists under rational coefficient embedding. -/
 theorem x3c_yes_gap_rational (I : X3CInstance) (hy : I.HasExactCover) :
     (∃ v ∈ Cyclotomic.principalIdealLattice (x3cToCVP I).g,
       ratSqNorm (castCoeff v - castCoeff (x3cToCVP I).T) = ((x3cToCVP I).Δ : ℚ)) ∧
@@ -139,6 +145,7 @@ theorem x3c_yes_gap_rational (I : X3CInstance) (hy : I.HasExactCover) :
     rw [ratSqNorm_residual]
     exact_mod_cast hl w hw
 
+/-- The squared-distance gap of four persists under rational coefficient embedding. -/
 theorem x3c_no_gap_rational (I : X3CInstance) (hn : ¬ I.HasExactCover) :
     ∀ v ∈ Cyclotomic.principalIdealLattice (x3cToCVP I).g,
       ((x3cToCVP I).Δ : ℚ) + 4 ≤ ratSqNorm (castCoeff v - castCoeff (x3cToCVP I).T) := by
@@ -178,7 +185,7 @@ theorem rationalPrincipalCVP_clear_denominators (g : Cyclotomic.R d) (T : K d)
     (Δ : ℚ) (N : ℕ) (hN : 0 < N) (u : Coeff d)
     (hu : rationalBasis.equivFun ((N : ℚ) • T) = castCoeff u) :
     RationalPrincipalCVPYes (Cyclotomic.toQuot g) T Δ ↔
-      CVPYes (Cyclotomic.principalIdealLattice ((N : ℤ) • g)) u ⌊(N : ℚ)^2 * Δ⌋ := by
+      CVPYes (Cyclotomic.principalIdealLattice ((N : ℤ) • g)) u ⌊(N : ℚ) ^ 2 * Δ⌋ := by
   rw [rationalPrincipalCVP_iff]
   rw [map_smul] at hu
   rw [rationalCVP_clear_denominators _ _ _ N hN u hu, scaleLattice_principal]
@@ -190,6 +197,7 @@ def RationalSecondMinimumSq
   ∃ u ∈ M, ∃ v ∈ M, Independent u v ∧
     (vectorNormSq u : ℚ) ≤ Γ ∧ (vectorNormSq v : ℚ) ≤ Γ
 
+/-- A rational squared module threshold is equivalent to its integer floor. -/
 theorem rationalSecondMinimumSq_iff (M : Submodule (Cyclotomic.QuotRing d)
     (Cyclotomic.QuotRing d × Cyclotomic.QuotRing d)) (Γ : ℚ) :
     RationalSecondMinimumSq M Γ ↔ SecondMinimumSq M ⌊Γ⌋ := by
@@ -200,7 +208,7 @@ def fieldNormSq (v : K d × K d) : ℚ :=
   ratSqNorm (rationalBasis.equivFun v.1) + ratSqNorm (rationalBasis.equivFun v.2)
 
 theorem fieldNormSq_scale (a : ℚ) (v : K d × K d) :
-    fieldNormSq (a • v) = a^2 * fieldNormSq v := by
+    fieldNormSq (a • v) = a ^ 2 * fieldNormSq v := by
   simp only [fieldNormSq, Prod.smul_fst, Prod.smul_snd, map_smul, ratSqNorm_smul]
   ring
 
@@ -218,9 +226,9 @@ field-linear independence is preserved. -/
 theorem rationalBasisSIVP_scale (b₁ b₂ : K d × K d) (Γ : ℚ)
     (N : ℕ) (hN : 0 < N) :
     RationalBasisSIVPYes b₁ b₂ Γ ↔
-      RationalBasisSIVPYes ((N : ℚ) • b₁) ((N : ℚ) • b₂) ((N : ℚ)^2 * Γ) := by
+      RationalBasisSIVPYes ((N : ℚ) • b₁) ((N : ℚ) • b₂) ((N : ℚ) ^ 2 * Γ) := by
   have hn : (N : ℚ) ≠ 0 := by positivity
-  have hp : (0 : ℚ) < (N : ℚ)^2 := by positivity
+  have hp : (0 : ℚ) < (N : ℚ) ^ 2 := by positivity
   have hm (u : K d × K d) : InRationalModule b₁ b₂ u →
       InRationalModule ((N : ℚ) • b₁) ((N : ℚ) • b₂) ((N : ℚ) • u) := by
     rintro ⟨a, b, rfl⟩
@@ -323,7 +331,7 @@ theorem rationalBasisSIVP_clear_denominators (b₁ b₂ : K d × K d) (Γ : ℚ)
       (Independent a₁ a₂ ↔ LinearIndependent (K d) ![b₁, b₂]) ∧
       (RationalBasisSIVPYes b₁ b₂ Γ ↔
         SecondMinimumSq (Submodule.span (Cyclotomic.QuotRing d) ({a₁, a₂} : Set _))
-          ⌊(N : ℚ)^2 * Γ⌋) := by
+          ⌊(N : ℚ) ^ 2 * Γ⌋) := by
   obtain ⟨N, hN, a₁, a₂, h₁, h₂⟩ := exists_integral_scaled_basis b₁ b₂
   refine ⟨N, hN, a₁, a₂, h₁, h₂, ?_, ?_⟩
   · change LinearIndependent (K d) ![fieldVector a₁, fieldVector a₂] ↔ _
@@ -338,7 +346,7 @@ theorem x3c_correct_rational_principal (I : X3CInstance) :
     letI : Fact (∃ k, C.d = 2 ^ k) := ⟨C.power_two⟩
     I.HasExactCover ↔ ModuleSIVP.RationalPrincipalCVPYes (Cyclotomic.toQuot C.g)
       (ModuleSIVP.scalarMap (Cyclotomic.toQuot C.T)) (C.Δ : ℚ) := by
-  letI : Fact (∃ k, (x3cToCVP I).d = 2 ^ k) := ⟨(x3cToCVP I).power_two⟩
+  let : Fact (∃ k, (x3cToCVP I).d = 2 ^ k) := ⟨(x3cToCVP I).power_two⟩
   change I.HasExactCover ↔ ModuleSIVP.RationalPrincipalCVPYes _ _ _
   rw [ModuleSIVP.rationalPrincipalCVP_iff, ModuleSIVP.scalarMap_toQuot,
     LinearEquiv.apply_symm_apply]
@@ -349,7 +357,7 @@ theorem x3c_module_sivp_correct_rational (I : X3CInstance) :
     let J := x3cToModuleSIVP I
     letI : Fact (∃ k, J.d = 2 ^ k) := ⟨J.power_two⟩
     I.HasExactCover ↔ ModuleSIVP.RationalSecondMinimumSq J.module (J.Γ : ℚ) := by
-  letI : Fact (∃ k, (x3cToModuleSIVP I).d = 2 ^ k) := ⟨(x3cToModuleSIVP I).power_two⟩
+  let : Fact (∃ k, (x3cToModuleSIVP I).d = 2 ^ k) := ⟨(x3cToModuleSIVP I).power_two⟩
   change I.HasExactCover ↔ ModuleSIVP.RationalSecondMinimumSq (x3cToModuleSIVP I).module _
   rw [ModuleSIVP.rationalSecondMinimumSq_iff, Int.floor_intCast]
   exact x3c_module_sivp_correct I

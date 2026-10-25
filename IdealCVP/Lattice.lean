@@ -15,8 +15,10 @@ statements of the decision and gap theorems.
 -/
 namespace IdealCVP
 
+/-- Integral coefficient vectors of dimension `d`. -/
 abbrev Coeff (d : ℕ) := Fin d → ℤ
 
+/-- The squared Euclidean norm of an integral vector. -/
 def sqNorm {ι : Type*} [Fintype ι] (v : ι → ℤ) : ℤ := ∑ i, v i ^ 2
 
 theorem sqNorm_nonneg {ι : Type*} [Fintype ι] (v : ι → ℤ) : 0 ≤ sqNorm v :=
@@ -37,6 +39,7 @@ theorem sqNorm_eq_zero_iff {ι : Type*} [Fintype ι] (v : ι → ℤ) :
     nlinarith
   · rintro rfl; simp
 
+/-- A nonzero integral vector has squared norm at least one. -/
 theorem sqNorm_pos {ι : Type*} [Fintype ι] {v : ι → ℤ} (h : v ≠ 0) :
     1 ≤ sqNorm v := by
   have := sqNorm_nonneg v

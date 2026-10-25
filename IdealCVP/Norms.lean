@@ -1,6 +1,10 @@
 import IdealCVP.Cyclotomic
 
-/-! # Coefficient norm bounds for negacyclic convolution -/
+/-! # Coefficient norm bounds for negacyclic convolution
+
+Signed monomial isometries and squared Young bounds prove the reverse
+triangle estimate in Case 2 of paper Lemma `lem:admissible`.
+-/
 namespace IdealCVP.Cyclotomic
 open IdealCVP
 
@@ -8,12 +12,12 @@ open IdealCVP
 theorem sqNorm_monomial_mul {d : ℕ} (e : Fin d) (a : R d) :
     sqNorm (mul (monomial e 1) a) = sqNorm a := by
   have hd : 0 < d := by have := e.isLt; omega
-  letI : NeZero d := ⟨by omega⟩
+  let : NeZero d := ⟨by omega⟩
   have hinj : Function.Injective (fun j : Fin d => e + j) := by
     intro i j h
     exact add_left_cancel h
   have heq : mul (monomial e 1) a = sparse (fun j : Fin d => e + j)
-      (fun j => (if e.val + j.val < d then 1 else -1) * a j) := by
+      (fun j => (if e.val + j.val < d then 1 else - 1) * a j) := by
     funext r
     rw [mul_monomial_left, sparse_apply]
     apply Finset.sum_congr rfl; intro j _
@@ -30,19 +34,19 @@ theorem sqNorm_monomial_mul {d : ℕ} (e : Fin d) (a : R d) :
 Injectivity of the positions is not needed for this upper bound. -/
 theorem sparse_mul_bound {ι : Type*} [Fintype ι] {d : ℕ}
     (e : ι → Fin d) (a : R d) :
-    sqNorm (mul (sparse e (fun _ => 1)) a) ≤ (Fintype.card ι : ℤ)^2 * sqNorm a := by
+    sqNorm (mul (sparse e (fun _ => 1)) a) ≤ (Fintype.card ι : ℤ) ^ 2 * sqNorm a := by
   classical
   rw [sparse, mul_sum_left]
   calc
     sqNorm (∑ j, mul (monomial (e j) 1) a) ≤
         ∑ r : Fin d, (Fintype.card ι : ℤ) *
-          ∑ j, (mul (monomial (e j) 1) a r)^2 := by
+          ∑ j, (mul (monomial (e j) 1) a r) ^ 2 := by
       apply Finset.sum_le_sum
       intro r _
       simp only [Finset.sum_apply]
       simpa using (sq_sum_le_card_mul_sum_sq (s := Finset.univ)
         (f := fun j => mul (monomial (e j) 1) a r))
-    _ = (Fintype.card ι : ℤ)^2 * sqNorm a := by
+    _ = (Fintype.card ι : ℤ) ^ 2 * sqNorm a := by
       rw [← Finset.mul_sum, Finset.sum_comm]
       change (Fintype.card ι : ℤ) * (∑ j : ι, sqNorm (mul (monomial (e j) 1) a)) = _
       simp only [sqNorm_monomial_mul, Finset.sum_const,
@@ -94,7 +98,7 @@ theorem sqNorm_shift {N : ℕ} (hN : 0 < N) (a : R N) : sqNorm (shift hN a) = sq
     split_ifs at hv <;> apply Fin.ext <;> dsimp at hv ⊢ <;> omega
   have hb : Function.Bijective prev := ⟨hinj, Finite.surjective_of_injective hinj⟩
   calc
-    sqNorm (shift hN a) = ∑ r, (a (prev r))^2 := by
+    sqNorm (shift hN a) = ∑ r, (a (prev r)) ^ 2 := by
       apply Finset.sum_congr rfl; intro r _
       dsimp [shift, prev]
       split_ifs <;> ring
@@ -111,7 +115,7 @@ theorem norm_pair_mul_bound {ι : Type*} [Fintype ι] {d : ℕ}
   have hb := sparse_mul_bound e b
   have hs : sqNorm (pair (mul (sparse e (fun _ => 1)) a)
       (mul (sparse e (fun _ => 1)) b)) ≤
-      (Fintype.card ι : ℤ)^2 * sqNorm (pair a b) := by
+      (Fintype.card ι : ℤ) ^ 2 * sqNorm (pair a b) := by
     rw [sqNorm_pair, sqNorm_pair]
     nlinarith
   exact_mod_cast hs
@@ -155,7 +159,7 @@ theorem block_norm_lower_bound {ι : Type*} [Fintype ι] {N : ℕ}
   let F := realVec (pair ((2 : ℤ) • mul h a + (2 * (P : ℤ)) • shift hN b - t)
     ((2 : ℤ) • mul h b + (2 * (P : ℤ)) • a - (P : ℤ) • u))
   have hX : (2 : ℝ) • X = C' + U := by
-    ext r; cases r <;> simp [X, C', U, realVec, pair] <;> ring
+    ext r; cases r <;> simp [X, C', U, realVec, pair]
   have hF : (P : ℝ) • C = F - (2 : ℝ) • H + TT := by
     ext r; cases r <;> simp [C, F, H, TT, realVec, pair] <;> ring
   have hC : ‖C'‖ = ‖C‖ := by

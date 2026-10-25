@@ -24,7 +24,7 @@ theorem sparse_coeff_cases {ι : Type*} [Fintype ι] {d : ℕ} {e : ι → Fin d
     simp only [sparse_apply, hh, ite_false, Finset.sum_const_zero]
 
 theorem interleave_coeff_bound {N : ℕ} (a b : R N) (B : ℤ)
-    (ha : ∀ i, |a i| ≤ B) (hb : ∀ i, |b i| ≤ B) (i : Fin (2*N)) :
+    (ha : ∀ i, |a i| ≤ B) (hb : ∀ i, |b i| ≤ B) (i : Fin (2 * N)) :
     |interleave a b i| ≤ B := by
   unfold interleave
   split_ifs
@@ -35,36 +35,40 @@ end Cyclotomic
 
 /-- An explicit polynomial upper bound for the scalar penalty. -/
 def penaltyBound (M n : ℕ) : ℕ :=
-  1 + (n+4) * ((n+4)*(M*n) + (4*M + M*n^2 + 1) + (M*n^2 + 5))
+  1 + (n + 4) * ((n + 4) * (M * n) + (4 * M + M * n ^ 2 + 1) + (M * n ^ 2 + 5))
 
 namespace ReductionData
 variable {M n : ℕ} (D : ReductionData M n)
 
-theorem cross_size_le : D.ν ≤ M * n^2 := by
+/-- The number of cross terms is bounded quadratically in the number of columns. -/
+theorem cross_size_le : D.ν ≤ M * n ^ 2 := by
   calc
-    (n-1)*D.W ≤ n*(M*n) := Nat.mul_le_mul (Nat.sub_le n 1) D.W_le
+    (n - 1) * D.W ≤ n * (M * n) := Nat.mul_le_mul (Nat.sub_le n 1) D.W_le
     _ = _ := by ring
 
-theorem t_sqNorm_le : sqNorm D.t ≤ (4*M + M*n^2 : ℕ) := by
+/-- The target squared norm has a polynomial bound in the system dimensions. -/
+theorem t_sqNorm_le : sqNorm D.t ≤ (4 * M + M * n ^ 2 : ℕ) := by
   have hc : (Finset.univ.filter fun i => D.system.b i = true).card ≤ M := by
     simpa using Finset.card_filter_le (Finset.univ : Finset (Fin M)) (fun i => D.system.b i = true)
-  have hn : (D.ν : ℤ) ≤ (M*n^2 : ℕ) := by exact_mod_cast D.cross_size_le
+  have hn : (D.ν : ℤ) ≤ (M * n ^ 2 : ℕ) := by exact_mod_cast D.cross_size_le
   push_cast at hn
   rw [D.t_norm]
   push_cast
   omega
 
+/-- The construction penalty is bounded by the explicit parameter polynomial. -/
 theorem penalty_le : D.P ≤ penaltyBound M n := by
-  have hs : D.s ≤ n+4 := by
+  have hs : D.s ≤ n + 4 := by
     rw [s, ceilSqrt_le_iff]
     nlinarith
-  have hsqrt (r : ℕ) : ceilSqrt r ≤ r+1 := by
+  have hsqrt (r : ℕ) : ceilSqrt r ≤ r + 1 := by
     rw [ceilSqrt_le_iff]
     nlinarith
-  have ht : ceilSqrt (sqNorm D.t).toNat ≤ 4*M + M*n^2 + 1 := by
-    have hh : (sqNorm D.t).toNat ≤ 4*M + M*n^2 := Int.toNat_le.mpr D.t_sqNorm_le
+  have ht : ceilSqrt (sqNorm D.t).toNat ≤ 4 * M + M * n ^ 2 + 1 := by
+    have hh : (sqNorm D.t).toNat ≤ 4 * M + M * n ^ 2 := Int.toNat_le.mpr D.t_sqNorm_le
     exact (hsqrt _).trans (by omega)
-  have hν : ceilSqrt (D.ν+4) ≤ M*n^2+5 := (hsqrt _).trans (by have := D.cross_size_le; omega)
+  have hν : ceilSqrt (D.ν + 4) ≤ M * n ^ 2 + 5 :=
+    (hsqrt _).trans (by have := D.cross_size_le; omega)
   unfold P penaltyBound
   gcongr
   exact D.W_le
@@ -123,15 +127,17 @@ theorem target_coeff_bound (i : Fin D.d) : |D.T i| ≤ 2 * (penaltyBound M n : �
     change |(D.P : ℤ) * D.a D.system.μ j| ≤ _
     rw [abs_mul, abs_of_nonneg (by omega : (0 : ℤ) ≤ D.P),
       abs_of_nonneg (D.a_coeff_bounds _ j).1]
-    have hh := mul_le_mul_of_nonneg_left (D.a_coeff_bounds D.system.μ j).2 (by omega : (0 : ℤ) ≤ D.P)
+    have hh := mul_le_mul_of_nonneg_left (D.a_coeff_bounds D.system.μ j).2
+      (by omega : (0 : ℤ) ≤ D.P)
     simp only [mul_one] at hh
     omega
 
-theorem threshold_le : D.Δ ≤ ((penaltyBound M n)^2 * n + M*n^2 : ℕ) := by
+/-- The squared-distance threshold is bounded by the penalty and system dimensions. -/
+theorem threshold_le : D.Δ ≤ ((penaltyBound M n) ^ 2 * n + M * n ^ 2 : ℕ) := by
   have hP : (D.P : ℤ) ≤ penaltyBound M n := by exact_mod_cast D.penalty_le
   have hw : (D.weight : ℤ) ≤ n := by exact_mod_cast D.weight_le
-  have hν : (D.ν : ℤ) ≤ (M*n^2 : ℕ) := by exact_mod_cast D.cross_size_le
-  have hsq : (D.P : ℤ)^2 ≤ (penaltyBound M n : ℤ)^2 := by
+  have hν : (D.ν : ℤ) ≤ (M * n ^ 2 : ℕ) := by exact_mod_cast D.cross_size_le
+  have hsq : (D.P : ℤ) ^ 2 ≤ (penaltyBound M n : ℤ) ^ 2 := by
     have h0 : (0 : ℤ) ≤ D.P := by positivity
     nlinarith
   unfold Δ
@@ -147,6 +153,7 @@ structure CompiledCVPData where
   target : Coeff d
   threshold : ℤ
 
+/-- Executable integer output data for the canonical indexed X3C reduction. -/
 def compileX3C (I : X3CInstance) : CompiledCVPData where
   d := (x3cToCVP I).d
   generator := (x3cToCVP I).g
@@ -160,10 +167,10 @@ theorem compileX3C_correct (I : X3CInstance) :
 
 /-- Explicit output dimension and coefficient-magnitude bounds, in `q,n`. -/
 theorem compileX3C_size (I : X3CInstance) :
-    (compileX3C I).d ≤ 4*(3*I.q)*(8*I.n^2+1) ∧
-    (∀ i, |(compileX3C I).generator i| ≤ 2*(penaltyBound (3*I.q) I.n : ℤ)) ∧
-    (∀ i, |(compileX3C I).target i| ≤ 2*(penaltyBound (3*I.q) I.n : ℤ)) ∧
-    (compileX3C I).threshold ≤ ((penaltyBound (3*I.q) I.n)^2 * I.n + (3*I.q)*I.n^2 : ℕ) :=
+    (compileX3C I).d ≤ 4 * (3 * I.q) * (8 * I.n ^ 2 + 1) ∧
+    (∀ i, |(compileX3C I).generator i| ≤ 2 * (penaltyBound (3 * I.q) I.n : ℤ)) ∧
+    (∀ i, |(compileX3C I).target i| ≤ 2 * (penaltyBound (3 * I.q) I.n : ℤ)) ∧
+    (compileX3C I).threshold ≤ ((penaltyBound (3 * I.q) I.n) ^ 2 * I.n + (3 * I.q) * I.n ^ 2 : ℕ) :=
   ⟨x3c_dimension_le I, I.reductionData.generator_coeff_bound,
     I.reductionData.target_coeff_bound, I.reductionData.threshold_le⟩
 

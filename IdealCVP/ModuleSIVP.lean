@@ -13,6 +13,7 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace IdealCVP.ModuleSIVP
 open IdealCVP IdealCVP.Cyclotomic Polynomial
 
+/-- The rational cyclotomic quotient supplying the scalar field for module independence. -/
 abbrev K (d : ℕ) := AdjoinRoot ((X : Polynomial ℚ) ^ d + 1)
 
 variable {d : ℕ} [Fact (∃ k, d = 2 ^ k)]
@@ -45,6 +46,7 @@ theorem scalarMap_toQuot (a : R d) :
     scalarMap (toQuot a) = rationalBasis.equivFun.symm (fun i => (a i : ℚ)) := by
   simp [toQuot, Module.Basis.equivFun_symm_apply, scalarMap, Algebra.smul_def]
 
+/-- The integral quotient embeds injectively into its rational scalar field. -/
 theorem scalarMap_injective : Function.Injective (scalarMap (d := d)) := by
   intro x y h
   obtain ⟨a, rfl⟩ := (toQuot_bijective dimension_pos).surjective x
@@ -75,6 +77,7 @@ theorem normSq_int_mul (Q : ℤ) (x : QuotRing d) :
   rw [← zsmul_eq_mul]
   simp only [normSq, map_smul, sqNorm_smul]
 
+/-- The sum of the coefficient squared norms of both module-vector components. -/
 def vectorNormSq (v : QuotRing d × QuotRing d) : ℤ := normSq v.1 + normSq v.2
 
 /-- The `2d` ordinary integer coefficients of a module vector. -/
@@ -82,14 +85,16 @@ def coefficientVector (v : QuotRing d × QuotRing d) : (Fin d ⊕ Fin d) → ℤ
   Cyclotomic.pair ((quotEquiv dimension_pos).symm v.1)
     ((quotEquiv dimension_pos).symm v.2)
 
+/-- Module-vector squared norm is the ordinary norm of its combined coefficient vector. -/
 theorem vectorNormSq_eq_coefficients (v : QuotRing d × QuotRing d) :
     vectorNormSq v = sqNorm (coefficientVector v) :=
   (sqNorm_pair _ _).symm
 
+/-- Embed both components of an integral module vector in the scalar field. -/
 def fieldVector (v : QuotRing d × QuotRing d) : K d × K d :=
   (scalarMap v.1, scalarMap v.2)
 
-/-- Honest independence over `ℚ[X]/(X^d+1)`. -/
+/-- Honest independence over `ℚ[X]/(X ^ d+1)`. -/
 def Independent (u v : QuotRing d × QuotRing d) : Prop :=
   LinearIndependent (K d) ![fieldVector u, fieldVector v]
 
@@ -144,11 +149,12 @@ def completionMap (Q : ℤ) (g T : QuotRing d) :
 def completion (Q : ℤ) (g T : QuotRing d) : Submodule (QuotRing d) (QuotRing d × QuotRing d) :=
   (completionMap Q g T).range
 
+omit [Fact (∃ k, d = 2 ^ k)] in
 theorem mem_completion (Q : ℤ) (g T : QuotRing d) (v : QuotRing d × QuotRing d) :
     v ∈ completion Q g T ↔ ∃ a b, v = ((Q : QuotRing d) * a, T * a + g * b) := by
   constructor
-  · rintro ⟨⟨a,b⟩, h⟩; exact ⟨a,b,h.symm⟩
-  · rintro ⟨a,b,rfl⟩; exact ⟨(a,b),rfl⟩
+  · rintro ⟨⟨a, b⟩, h⟩; exact ⟨a, b, h.symm⟩
+  · rintro ⟨a, b, rfl⟩; exact ⟨(a, b), rfl⟩
 
 theorem completionMap_injective (Q : ℤ) (hQ : Q ≠ 0) (g T : QuotRing d) (hg : g ≠ 0) :
     Function.Injective (completionMap Q g T) := by
@@ -184,10 +190,11 @@ def ExactSecondMinimumSq (M : Submodule (QuotRing d) (QuotRing d × QuotRing d))
   (∃ u ∈ M, ∃ v ∈ M, Independent u v ∧ max (vectorNormSq u) (vectorNormSq v) = r) ∧
   ∀ u ∈ M, ∀ v ∈ M, Independent u v → r ≤ max (vectorNormSq u) (vectorNormSq v)
 
+omit [Fact (∃ k, d = 2 ^ k)] in
 /-- An integral vector of squared norm one has one coefficient equal to
 `1` or `-1` and all other coefficients zero. -/
 theorem sqNorm_one_monomial (a : R d) (ha : sqNorm a = 1) :
-    ∃ j : Fin d, a = Cyclotomic.monomial j 1 ∨ a = -(Cyclotomic.monomial j 1) := by
+    ∃ j : Fin d, a = Cyclotomic.monomial j 1 ∨ a = - (Cyclotomic.monomial j 1) := by
   classical
   have hne : a ≠ 0 := by intro h; simp [h] at ha
   obtain ⟨j, hj⟩ : ∃ j, a j ≠ 0 := by
@@ -197,8 +204,8 @@ theorem sqNorm_one_monomial (a : R d) (ha : sqNorm a = 1) :
     simpa using (not_exists.mp h i)
   have hjle : a j ^ 2 ≤ sqNorm a :=
     Finset.single_le_sum (fun i _ => sq_nonneg (a i)) (Finset.mem_univ j)
-  have hjval : a j = 1 ∨ a j = -1 := by
-    have : a j ≤ -1 ∨ 1 ≤ a j := by omega
+  have hjval : a j = 1 ∨ a j = - 1 := by
+    have : a j ≤ - 1 ∨ 1 ≤ a j := by omega
     rcases this with h | h <;> (first | left; nlinarith | right; nlinarith)
   have hjsq : a j ^ 2 = 1 := by rcases hjval with h | h <;> rw [h] <;> norm_num
   have hsum : ∑ i ∈ (Finset.univ : Finset (Fin d)).erase j, a i ^ 2 = 0 := by
@@ -216,6 +223,7 @@ theorem sqNorm_one_monomial (a : R d) (ha : sqNorm a = 1) :
   · left; funext i; by_cases hi : i = j <;> simp [Cyclotomic.monomial, hi, hjv, hz]
   · right; funext i; by_cases hi : i = j <;> simp [Cyclotomic.monomial, hi, hjv, hz]
 
+omit [Fact (∃ k, d = 2 ^ k)] in
 @[simp] theorem toQuot_monomial (j : Fin d) :
     toQuot (Cyclotomic.monomial j 1) = AdjoinRoot.root (modulus d) ^ j.val := by
   classical
@@ -227,7 +235,7 @@ theorem root_isUnit : IsUnit (AdjoinRoot.root (modulus d)) := by
   rw [_root_.mul_neg, ← pow_succ', Nat.sub_add_cancel (dimension_pos (d := d)), root_pow_dimension]
   simp
 
-/-- The `±y^j` case supplies both an integral inverse and an isometry. -/
+/-- The `±y ^ j` case supplies both an integral inverse and an isometry. -/
 theorem normSq_one_unit_isometry {a : QuotRing d} (ha : normSq a = 1) :
     IsUnit a ∧ ∀ x : QuotRing d, normSq (a * x) = normSq x := by
   obtain ⟨v, rfl⟩ := (toQuot_bijective dimension_pos).surjective a
@@ -241,7 +249,7 @@ theorem normSq_one_unit_isometry {a : QuotRing d} (ha : normSq a = 1) :
       rw [← toQuot_mul dimension_pos, normSq_toQuot, normSq_toQuot]
       exact sqNorm_monomial_mul j w
   · subst v
-    have hneg : toQuot (-(Cyclotomic.monomial j 1)) = -toQuot (Cyclotomic.monomial j 1) := by
+    have hneg : toQuot (-(Cyclotomic.monomial j 1)) = - toQuot (Cyclotomic.monomial j 1) := by
       simp [toQuot]
     rw [hneg]
     constructor
@@ -281,6 +289,7 @@ theorem exists_minimumDistance (g T : QuotRing d) : ∃ δ, MinimumDistanceSq g 
     exact_mod_cast (show (Nat.find hp : ℤ) ≤ normSq (T - g * b) by
       simpa only [Int.toNat_of_nonneg (normSq_nonneg _)] using (Int.ofNat_le.mpr hh))
 
+/-- The unit vector in the integral quotient has coefficient squared norm one. -/
 @[simp] theorem normSq_one : normSq (1 : QuotRing d) = 1 := by
   have h := normSq_toQuot (Cyclotomic.monomial (⟨0, dimension_pos⟩ : Fin d) 1)
   simpa [sqNorm, Cyclotomic.monomial] using h
@@ -323,8 +332,8 @@ theorem pair_lower_bound (Q : ℤ) (g T : QuotRing d) {δ : ℤ}
     ∀ u ∈ completion Q g T, ∀ v ∈ completion Q g T,
       Independent u v → Q ^ 2 + δ ≤ max (vectorNormSq u) (vectorNormSq v) := by
   intro u hu v hv huv
-  obtain ⟨a,b,rfl⟩ := (mem_completion Q g T u).mp hu
-  obtain ⟨c,e,rfl⟩ := (mem_completion Q g T v).mp hv
+  obtain ⟨a, b, rfl⟩ := (mem_completion Q g T u).mp hu
+  obtain ⟨c, e, rfl⟩ := (mem_completion Q g T v).mp hv
   by_cases ha : a = 0
   · have hc : c ≠ 0 := by
       intro hc
@@ -340,19 +349,19 @@ theorem module_completion (Q : ℤ) (hQ : 0 < Q) (g T : QuotRing d) (hg : g ≠ 
     (hmin : MinimumDistanceSq g T δ) :
     ExactSecondMinimumSq (completion Q g T) (Q ^ 2 + δ) := by
   refine ⟨?_, pair_lower_bound Q g T hQT hmin⟩
-  obtain ⟨b,hb⟩ := hmin.1
+  obtain ⟨b, hb⟩ := hmin.1
   let u : QuotRing d × QuotRing d := ((Q : QuotRing d), T - g * b)
-  let v : QuotRing d × QuotRing d := (0,g)
+  let v : QuotRing d × QuotRing d := (0, g)
   have hu : u ∈ completion Q g T := by
     apply (mem_completion Q g T u).mpr
-    exact ⟨1, -b, by dsimp [u]; ext <;> simp [sub_eq_add_neg]⟩
+    exact ⟨1, - b, by dsimp [u]; ext <;> simp [sub_eq_add_neg]⟩
   have hv : v ∈ completion Q g T := by
     apply (mem_completion Q g T v).mpr
     exact ⟨0, 1, by simp [v]⟩
   have huv : Independent u v := by
     rw [independent_iff]
-    simpa [u,v] using mul_ne_zero (intCast_ne_zero (ne_of_gt hQ)) hg
-  refine ⟨u,hu,v,hv,huv,?_⟩
+    simpa [u, v] using mul_ne_zero (intCast_ne_zero (ne_of_gt hQ)) hg
+  refine ⟨u, hu, v, hv, huv, ?_⟩
   have hun : vectorNormSq u = Q ^ 2 + δ := by simp [vectorNormSq, u, hb]
   have hvn : vectorNormSq v = normSq g := by simp [vectorNormSq, v]
   rw [hun, hvn, max_eq_left]
@@ -363,11 +372,11 @@ theorem module_completion (Q : ℤ) (hQ : 0 < Q) (g T : QuotRing d) (hg : g ≠ 
 theorem secondMinimumSq_iff {M : Submodule (QuotRing d) (QuotRing d × QuotRing d)}
     {r Γ : ℤ} (h : ExactSecondMinimumSq M r) : SecondMinimumSq M Γ ↔ r ≤ Γ := by
   constructor
-  · rintro ⟨u,hu,v,hv,hi,hn1,hn2⟩
+  · rintro ⟨u, hu, v, hv, hi, hn1, hn2⟩
     exact (h.2 u hu v hv hi).trans (max_le hn1 hn2)
   · intro hr
-    obtain ⟨u,hu,v,hv,hi,he⟩ := h.1
-    exact ⟨u,hu,v,hv,hi, (le_max_left _ _).trans (he.le.trans hr),
+    obtain ⟨u, hu, v, hv, hi, he⟩ := h.1
+    exact ⟨u, hu, v, hv, hi, (le_max_left _ _).trans (he.le.trans hr),
       (le_max_right _ _).trans (he.le.trans hr)⟩
 
 theorem normSq_residual (g T b : R d) :
@@ -390,22 +399,24 @@ theorem minimumDistance_of_coeff {g T : R d} {δ : ℤ}
     (h : MinimumSquaredDistance (principalIdealLattice g) T δ) :
     MinimumDistanceSq (toQuot g) (toQuot T) δ := by
   constructor
-  · obtain ⟨v,hv,hd⟩ := h.1
-    obtain ⟨b,rfl⟩ := (mem_principalIdealLattice g v).mp hv
+  · obtain ⟨v, hv, hd⟩ := h.1
+    obtain ⟨b, rfl⟩ := (mem_principalIdealLattice g v).mp hv
     exact ⟨toQuot b, (normSq_residual g T b).trans hd⟩
   · intro b
-    obtain ⟨b,rfl⟩ := (toQuot_bijective dimension_pos).surjective b
+    obtain ⟨b, rfl⟩ := (toQuot_bijective dimension_pos).surjective b
     rw [normSq_residual]
-    exact h.2 _ ⟨b,rfl⟩
+    exact h.2 _ ⟨b, rfl⟩
 
 /-- The paper's integer scale `1 + ceil(sqrt(max(‖T‖², ‖g‖²)))`. -/
 def completionScale (g T : R d) : ℤ :=
   1 + (ReductionData.ceilSqrt (max (sqNorm T) (sqNorm g)).toNat : ℤ)
 
+omit [Fact (∃ k, d = 2 ^ k)] in
 theorem completionScale_pos (g T : R d) : 0 < completionScale g T := by
   unfold completionScale
   positivity
 
+omit [Fact (∃ k, d = 2 ^ k)] in
 theorem completionScale_bounds (g T : R d) :
     sqNorm T < completionScale g T ^ 2 ∧ sqNorm g < completionScale g T ^ 2 := by
   let m := max (sqNorm T) (sqNorm g)
@@ -426,7 +437,7 @@ theorem completionScale_bounds (g T : R d) :
 /-- The two columns are literally `(Q,T)` and `(0,g)`. -/
 theorem completionBasis_columns (Q : ℤ) (hQ : Q ≠ 0) (g T : QuotRing d) (hg : g ≠ 0) :
     (completionBasis Q hQ g T hg 0).val = ((Q : QuotRing d), T) ∧
-    (completionBasis Q hQ g T hg 1).val = (0,g) := by
+    (completionBasis Q hQ g T hg 1).val = (0, g) := by
   constructor
   · simp only [completionBasis, Module.Basis.map_apply, LinearEquiv.trans_apply,
       LinearEquiv.finTwoArrow_apply, Pi.basisFun_apply]
@@ -452,14 +463,17 @@ structure ModuleSIVPInstance where
   Γ : ℤ
   Γ_nonneg : 0 ≤ Γ
 
+/-- The module contains two field-independent vectors within the squared threshold. -/
 def ModuleSIVPInstance.Yes (J : ModuleSIVPInstance) : Prop :=
   letI : Fact (∃ k, J.d = 2 ^ k) := ⟨J.power_two⟩
   SecondMinimumSq J.module J.Γ
 
+/-- The exact squared second minimum of this module equals `r`. -/
 def ModuleSIVPInstance.ExactMinimum (J : ModuleSIVPInstance) (r : ℤ) : Prop :=
   letI : Fact (∃ k, J.d = 2 ^ k) := ⟨J.power_two⟩
   ExactSecondMinimumSq J.module r
 
+/-- Every pair of field-independent module vectors has maximum squared norm at least `r`. -/
 def ModuleSIVPInstance.LowerBound (J : ModuleSIVPInstance) (r : ℤ) : Prop :=
   letI : Fact (∃ k, J.d = 2 ^ k) := ⟨J.power_two⟩
   ∀ u ∈ J.module, ∀ v ∈ J.module, Independent u v →
@@ -485,7 +499,7 @@ def PrincipalCVPInstance.toModuleSIVP (I : PrincipalCVPInstance) : ModuleSIVPIns
 theorem PrincipalCVPInstance.module_exact (I : PrincipalCVPInstance) {δ : ℤ}
     (hmin : MinimumSquaredDistance (principalIdealLattice I.g) I.T δ) :
     I.toModuleSIVP.ExactMinimum (completionScale I.g I.T ^ 2 + δ) := by
-  letI : Fact (∃ k, I.d = 2 ^ k) := ⟨I.power_two⟩
+  let : Fact (∃ k, I.d = 2 ^ k) := ⟨I.power_two⟩
   have hg : toQuot I.g ≠ 0 := by
     intro h
     exact I.g_ne_zero ((toQuot_bijective dimension_pos).injective
@@ -507,14 +521,14 @@ theorem x3c_module_sivp_yes (I : X3CInstance) (hy : I.HasExactCover) :
 theorem x3c_module_sivp_no (I : X3CInstance) (hn : ¬ I.HasExactCover) :
     (x3cToModuleSIVP I).LowerBound ((x3cToModuleSIVP I).Γ + 4) := by
   let C := x3cToCVP I
-  letI : Fact (∃ k, C.d = 2 ^ k) := ⟨C.power_two⟩
-  obtain ⟨δ,hmin⟩ := exists_minimumDistance (toQuot C.g) (toQuot C.T)
+  let : Fact (∃ k, C.d = 2 ^ k) := ⟨C.power_two⟩
+  obtain ⟨δ, hmin⟩ := exists_minimumDistance (toQuot C.g) (toQuot C.T)
   have hδ : C.Δ + 4 ≤ δ := by
-    obtain ⟨b,hb⟩ := hmin.1
-    obtain ⟨b,rfl⟩ := (toQuot_bijective dimension_pos).surjective b
+    obtain ⟨b, hb⟩ := hmin.1
+    obtain ⟨b, rfl⟩ := (toQuot_bijective dimension_pos).surjective b
     rw [normSq_residual] at hb
     rw [← hb]
-    exact x3c_no_gap I hn _ ⟨b,rfl⟩
+    exact x3c_no_gap I hn _ ⟨b, rfl⟩
   have hQT : normSq (toQuot C.T) < completionScale C.g C.T ^ 2 := by
     rw [normSq_toQuot]; exact (completionScale_bounds C.g C.T).1
   intro u hu v hv hi
@@ -526,13 +540,13 @@ theorem x3c_module_sivp_no (I : X3CInstance) (hn : ¬ I.HasExactCover) :
 /-- Mathematical reduction correctness; no complexity-class assertion. -/
 theorem x3c_module_sivp_correct (I : X3CInstance) :
     I.HasExactCover ↔ (x3cToModuleSIVP I).Yes := by
-  letI : Fact (∃ k, (x3cToModuleSIVP I).d = 2 ^ k) := ⟨(x3cToModuleSIVP I).power_two⟩
+  let : Fact (∃ k, (x3cToModuleSIVP I).d = 2 ^ k) := ⟨(x3cToModuleSIVP I).power_two⟩
   constructor
   · intro hy
     exact (secondMinimumSq_iff (x3c_module_sivp_yes I hy)).mpr le_rfl
   · intro hy
     by_contra hn
-    obtain ⟨u,hu,v,hv,hi,hn1,hn2⟩ := hy
+    obtain ⟨u, hu, v, hv, hi, hn1, hn2⟩ := hy
     have hl := x3c_module_sivp_no I hn u hu v hv hi
     have hh := max_le hn1 hn2
     omega

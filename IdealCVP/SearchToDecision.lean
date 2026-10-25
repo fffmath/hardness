@@ -15,22 +15,23 @@ variable {M n : ℕ} (D : ReductionData M n)
 
 /-- The odd coordinate containing the Boolean coefficient for index j. -/
 def selectionCoordinate (j : Fin n) : Fin D.d :=
-  ⟨2*(D.alpha j).val+1, by
-    change 2*(D.alpha j).val+1 < 2*D.N
+  ⟨2 * (D.alpha j).val + 1, by
+    change 2 * (D.alpha j).val + 1 < 2 * D.N
     have := (D.alpha j).isLt
     omega⟩
 
-/-- Read the unshifted product's odd block; selected entries are exactly `2*P`. -/
+/-- Read the unshifted product's odd block; selected entries are exactly `2 * P`. -/
 def decodeBits (v : R D.d) : Fin n → Bool :=
-  fun j => decide (v (D.selectionCoordinate j) = 2*(D.P : ℤ))
+  fun j => decide (v (D.selectionCoordinate j) = 2 * (D.P : ℤ))
 
+/-- Decoding an encoded lattice product recovers its Boolean selection. -/
 theorem decodeBits_encoded_product (ξ : Fin n → Bool) :
     D.decodeBits (mul D.g (D.encode ξ)) = ξ := by
   funext j
   unfold decodeBits selectionCoordinate
   rw [encode, D.generator_product, interleave_odd]
   simp only [mul_zero, smul_zero, zero_add, Pi.smul_apply, smul_eq_mul, D.a_at]
-  have hp : (2*(D.P : ℤ)) ≠ 0 := by
+  have hp : (2 * (D.P : ℤ)) ≠ 0 := by
     have := D.P_pos
     omega
   cases ξ j <;> simp [bit, Ne.symm hp]
@@ -56,6 +57,7 @@ theorem decode_exactCoverEquivClosest (I : X3CInstance) (s : {s // I.IsExactCove
   rw [exactCoverEquivClosest_apply]
   exact I.decode_encoded_product s.val
 
+/-- A lattice vector at the exact threshold decodes to an indexed exact cover. -/
 theorem decode_isExactCover_of_distance_eq (I : X3CInstance)
     (v : Coeff (x3cToCVP I).d)
     (hv : v ∈ principalIdealLattice (x3cToCVP I).g)
@@ -115,6 +117,7 @@ theorem x3c_iff_decode_oracle (oracle : ClosestVectorOracle) (I : X3CInstance) :
     I.HasExactCover ↔ I.IsExactCover (I.decode (oracle.vector I)) :=
   ⟨decode_oracle_isExactCover oracle I, fun hs => ⟨_, hs⟩⟩
 
+/-- A closest-vector oracle decides indexed X3C through the computable cover checker. -/
 theorem x3c_iff_checkDecoded_oracle (oracle : ClosestVectorOracle) (I : X3CInstance) :
     I.HasExactCover ↔ I.checkDecoded (oracle.vector I) = true :=
   (x3c_iff_decode_oracle oracle I).trans (I.checkDecoded_eq_true _).symm

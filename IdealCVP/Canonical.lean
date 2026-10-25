@@ -15,6 +15,7 @@ open IdealCVP
 /-- The specified primitive `2d`-th root of unity. -/
 def zeta (d : ℕ) : ℂ := Complex.exp (Real.pi * Complex.I / (d : ℂ))
 
+/-- The chosen complex phase is a primitive root of order twice the dimension. -/
 theorem zeta_primitive {d : ℕ} (hd : 0 < d) : IsPrimitiveRoot (zeta d) (2 * d) := by
   have hn : (d : ℂ) ≠ 0 := by exact_mod_cast hd.ne'
   have he : zeta d = Complex.exp (2 * Real.pi * Complex.I / (2 * d : ℕ)) := by
@@ -25,6 +26,7 @@ theorem zeta_primitive {d : ℕ} (hd : 0 < d) : IsPrimitiveRoot (zeta d) (2 * d)
   rw [he]
   exact Complex.isPrimitiveRoot_exp _ (by omega)
 
+/-- Squaring the chosen phase gives a primitive root of order the dimension. -/
 theorem zeta_sq_primitive {d : ℕ} (hd : 0 < d) : IsPrimitiveRoot (zeta d ^ 2) d := by
   have h := (zeta_primitive hd).pow_of_dvd (by decide : 2 ≠ 0) (dvd_mul_right 2 d)
   simpa using h
@@ -44,7 +46,7 @@ theorem odd_orthogonality {d : ℕ} (hd : 0 < d) (r s : Fin d) :
   · subst s
     simp only [sub_self, mul_zero, zpow_zero, Finset.sum_const, Finset.card_univ,
       Fintype.card_fin, nsmul_eq_mul, mul_one, ite_true]
-  · rw [if_neg hrs]
+  · rw [ite_eq_right hrs]
     let a : ℤ := (r.val : ℤ) - s.val
     let q : ℂ := (zeta d ^ 2) ^ a
     have hz := zeta_ne_zero hd
@@ -53,7 +55,7 @@ theorem odd_orthogonality {d : ℕ} (hd : 0 < d) (r s : Fin d) :
       have hdiv := ((zeta_sq_primitive hd).zpow_eq_one_iff_dvd a).mp h
       have ha : a = 0 := Int.eq_zero_of_dvd_of_natAbs_lt_natAbs hdiv (by
         rw [Int.natAbs_lt_iff_sq_lt]
-        have hlo : -(d : ℤ) < a := by dsimp [a]; omega
+        have hlo : - (d : ℤ) < a := by dsimp [a]; omega
         have hhi : a < (d : ℤ) := by dsimp [a]; omega
         nlinarith)
       apply hrs
@@ -107,7 +109,7 @@ theorem norm_identity {d : ℕ} (hd : 0 < d) (c : Fin d → ℝ) :
   classical
   have hexpand (k : Fin d) : sigma c k * conj (sigma c k) =
       ∑ r, ∑ s, (c r : ℂ) * (c s : ℂ) *
-        (zeta d ^ ((2*k.val+1)*r.val) * conj (zeta d ^ ((2*k.val+1)*s.val))) := by
+        (zeta d ^ ((2 * k.val + 1) * r.val) * conj (zeta d ^ ((2 * k.val + 1) * s.val))) := by
     simp only [sigma, map_sum, map_mul, Complex.conj_ofReal, Finset.sum_mul, Finset.mul_sum]
     rw [Finset.sum_comm]
     apply Finset.sum_congr rfl
@@ -116,11 +118,11 @@ theorem norm_identity {d : ℕ} (hd : 0 < d) (c : Fin d → ℝ) :
     intro s _
     ring
   have h : (∑ k, sigma c k * conj (sigma c k)) =
-      (d : ℂ) * ∑ r, (c r : ℂ)^2 := by
+      (d : ℂ) * ∑ r, (c r : ℂ) ^ 2 := by
     calc
       _ = ∑ r, ∑ s, (c r : ℂ) * (c s : ℂ) *
-          (∑ k : Fin d, zeta d ^ ((2*k.val+1)*r.val) *
-            conj (zeta d ^ ((2*k.val+1)*s.val))) := by
+          (∑ k : Fin d, zeta d ^ ((2 * k.val + 1) * r.val) *
+            conj (zeta d ^ ((2 * k.val + 1) * s.val))) := by
         simp_rw [hexpand]
         rw [Finset.sum_comm]
         apply Finset.sum_congr rfl
@@ -134,15 +136,16 @@ theorem norm_identity {d : ℕ} (hd : 0 < d) (c : Fin d → ℝ) :
   exact_mod_cast h
 
 /-- Each odd power is a root of the defining polynomial. -/
-theorem zeta_pow_dimension {d : ℕ} (hd : 0 < d) : zeta d ^ d = -1 := by
-  have hs : (zeta d ^ d)^2 = 1 := by
+theorem zeta_pow_dimension {d : ℕ} (hd : 0 < d) : zeta d ^ d = - 1 := by
+  have hs : (zeta d ^ d) ^ 2 = 1 := by
     rw [← pow_mul, Nat.mul_comm d 2]
     exact (zeta_primitive hd).pow_eq_one
   exact (sq_eq_one_iff.mp hs).resolve_left
     ((zeta_primitive hd).pow_ne_one_of_pos_of_lt hd.ne' (by omega))
 
+/-- Every odd power of the phase is a root of the negacyclic modulus. -/
 theorem odd_root {d : ℕ} (hd : 0 < d) (k : Fin d) :
-    (zeta d ^ (2 * k.val + 1)) ^ d = -1 := by
+    (zeta d ^ (2 * k.val + 1)) ^ d = - 1 := by
   rw [← pow_mul, Nat.mul_comm _ d, pow_mul, zeta_pow_dimension hd]
   simp only [pow_add, pow_mul, neg_one_sq, one_pow, pow_one, one_mul]
 
@@ -160,7 +163,7 @@ def rationalEmbedding {d : ℕ} (hd : 0 < d) (k : Fin d) :
     (by simp only [Polynomial.eval₂_add, Polynomial.eval₂_pow,
           Polynomial.eval₂_X, Polynomial.eval₂_one, odd_root hd k, neg_add_cancel])
 
-/-- The representative-based sum agrees with evaluation modulo `X^d+1`. -/
+/-- The representative-based sum agrees with evaluation modulo `X ^ d+1`. -/
 theorem integralEmbedding_toQuot {d : ℕ} (hd : 0 < d) (k : Fin d) (c : Coeff d) :
     integralEmbedding hd k (Cyclotomic.toQuot c) = sigma (fun i => (c i : ℝ)) k := by
   simp [Cyclotomic.toQuot, integralEmbedding, sigma, ← pow_mul]
@@ -168,12 +171,13 @@ theorem integralEmbedding_toQuot {d : ℕ} (hd : 0 < d) (k : Fin d) (c : Coeff d
 /-- Evaluation on a polynomial class is `Polynomial.aeval`, so it descends modulo the modulus. -/
 theorem integralEmbedding_mk {d : ℕ} (hd : 0 < d) (k : Fin d) (p : Polynomial ℤ) :
     integralEmbedding hd k (AdjoinRoot.mk (Cyclotomic.modulus d) p) =
-      Polynomial.aeval (zeta d ^ (2*k.val+1)) p := by
+      Polynomial.aeval (zeta d ^ (2 * k.val + 1)) p := by
   rfl
 
+/-- Rational polynomial classes evaluate at the corresponding odd root of the modulus. -/
 theorem rationalEmbedding_mk {d : ℕ} (hd : 0 < d) (k : Fin d) (p : Polynomial ℚ) :
-    rationalEmbedding hd k (AdjoinRoot.mk ((Polynomial.X : Polynomial ℚ)^d+1) p) =
-      Polynomial.aeval (zeta d ^ (2*k.val+1)) p := by
+    rationalEmbedding hd k (AdjoinRoot.mk ((Polynomial.X : Polynomial ℚ) ^ d + 1) p) =
+      Polynomial.aeval (zeta d ^ (2 * k.val + 1)) p := by
   rfl
 
 /-- In particular the embedding is multiplicative on coefficient representatives. -/
@@ -198,7 +202,7 @@ theorem rationalEmbedding_eq_sigma {d : ℕ} [Fact (∃ k, d = 2 ^ k)]
 /-- `lem:canonical` on the actual rational quotient field. -/
 theorem field_norm_identity {d : ℕ} [Fact (∃ k, d = 2 ^ k)] (f : ModuleSIVP.K d) :
     (∑ k, ‖rationalEmbedding ModuleSIVP.dimension_pos k f‖^2) =
-      (d : ℝ) * ∑ i, (ModuleSIVP.rationalBasis.equivFun f i : ℝ)^2 := by
+      (d : ℝ) * ∑ i, (ModuleSIVP.rationalBasis.equivFun f i : ℝ) ^ 2 := by
   simp_rw [rationalEmbedding_eq_sigma]
   exact norm_identity ModuleSIVP.dimension_pos _
 
@@ -218,7 +222,7 @@ theorem rational_field_norm_identity {d : ℕ} [Fact (∃ k, d = 2 ^ k)] (f : Mo
 def PrincipalCVPYes {d : ℕ} [Fact (∃ k, d = 2 ^ k)]
     (g : Cyclotomic.QuotRing d) (T : ModuleSIVP.K d) (Δ : ℝ) : Prop :=
   ∃ a : Cyclotomic.QuotRing d,
-    (∑ k, ‖rationalEmbedding ModuleSIVP.dimension_pos k (ModuleSIVP.scalarMap (g*a) - T)‖^2) ≤ Δ
+    (∑ k, ‖rationalEmbedding ModuleSIVP.dimension_pos k (ModuleSIVP.scalarMap (g * a) - T)‖^2) ≤ Δ
 
 /-- For every principal ideal and rational field target, squared thresholds scale by `d`. -/
 theorem principalCVP_iff_rational {d : ℕ} [Fact (∃ k, d = 2 ^ k)]
@@ -278,6 +282,7 @@ theorem cvp_iff_rational {d : ℕ} (hd : 0 < d) (L : AddSubgroup (Coeff d))
 def ringNormSq {d : ℕ} (hd : 0 < d) (x : Cyclotomic.QuotRing d) : ℝ :=
   ∑ k, ‖integralEmbedding hd k x‖^2
 
+/-- Canonical squared norm on the integral quotient is dimension times coefficient norm. -/
 theorem ringNormSq_identity {d : ℕ} [Fact (∃ k, d = 2 ^ k)]
     (x : Cyclotomic.QuotRing d) :
     ringNormSq ModuleSIVP.dimension_pos x = (d : ℝ) * (ModuleSIVP.normSq x : ℝ) := by
@@ -291,6 +296,7 @@ def vectorNormSq {d : ℕ} (hd : 0 < d)
     (v : Cyclotomic.QuotRing d × Cyclotomic.QuotRing d) : ℝ :=
   ringNormSq hd v.1 + ringNormSq hd v.2
 
+/-- The same norm factor holds for pairs of integral quotient elements. -/
 theorem vectorNormSq_identity {d : ℕ} [Fact (∃ k, d = 2 ^ k)]
     (v : Cyclotomic.QuotRing d × Cyclotomic.QuotRing d) :
     vectorNormSq ModuleSIVP.dimension_pos v = (d : ℝ) * (ModuleSIVP.vectorNormSq v : ℝ) := by
@@ -353,7 +359,7 @@ theorem x3c_module_sivp_yes_canonical (I : X3CInstance) (hy : I.HasExactCover) :
       (J.d : ℝ) * J.Γ ≤ max (Canonical.vectorNormSq ModuleSIVP.dimension_pos u)
         (Canonical.vectorNormSq ModuleSIVP.dimension_pos v) := by
   let J := x3cToModuleSIVP I
-  letI : Fact (∃ k, J.d = 2 ^ k) := ⟨J.power_two⟩
+  let : Fact (∃ k, J.d = 2 ^ k) := ⟨J.power_two⟩
   obtain ⟨⟨u, hu, v, hv, hi, he⟩, hl⟩ := x3c_module_sivp_yes I hy
   refine ⟨⟨u, hu, v, hv, hi, ?_⟩, ?_⟩
   · rw [Canonical.pairMax_identity, he]
@@ -369,7 +375,7 @@ theorem x3c_module_sivp_no_canonical (I : X3CInstance) (hn : ¬ I.HasExactCover)
       (J.d : ℝ) * ((J.Γ : ℝ) + 4) ≤ max (Canonical.vectorNormSq ModuleSIVP.dimension_pos u)
         (Canonical.vectorNormSq ModuleSIVP.dimension_pos v) := by
   let J := x3cToModuleSIVP I
-  letI : Fact (∃ k, J.d = 2 ^ k) := ⟨J.power_two⟩
+  let : Fact (∃ k, J.d = 2 ^ k) := ⟨J.power_two⟩
   dsimp only
   intro u hu v hv hi
   rw [Canonical.pairMax_identity]

@@ -1,6 +1,10 @@
 import IdealCVP.Lattice
 
-/-! # Indexed exact covers and masked Boolean systems -/
+/-! # Indexed exact covers and masked Boolean systems
+
+These finite incidence systems give the input language and Boolean
+formulation used in `paper/src/chapter/principal-ideal.tex`.
+-/
 namespace IdealCVP
 
 /-- The integer represented by a Boolean bit. -/
@@ -22,17 +26,18 @@ structure MaskedSystem (M n : ℕ) where
 namespace MaskedSystem
 variable {M n : ℕ} (S : MaskedSystem M n)
 
+/-- Every selected variable is permitted by the mask. -/
 def Allowed (ξ : Fin n → Bool) : Prop := ∀ j, ξ j = true → S.μ j = true
 
+/-- The integral residual vector of the Boolean incidence equations. -/
 def residual (ξ : Fin n → Bool) : Coeff M :=
   fun i => (∑ j, bit (S.A i j) * bit (ξ j)) - bit (S.b i)
 
+/-- A Boolean assignment satisfies both the mask and every incidence equation. -/
 def Feasible (ξ : Fin n → Bool) : Prop := S.Allowed ξ ∧ S.residual ξ = 0
 
+/-- There exists a feasible Boolean assignment. -/
 def HasSolution : Prop := ∃ ξ, S.Feasible ξ
-
-theorem residual_norm_zero (ξ : Fin n → Bool) :
-    sqNorm (S.residual ξ) = 0 ↔ S.residual ξ = 0 := sqNorm_eq_zero_iff _
 
 end MaskedSystem
 
@@ -53,8 +58,10 @@ variable (I : X3CInstance)
 def IsExactCover (s : Finset (Fin I.n)) : Prop :=
   ∀ i, (s.filter fun j => i ∈ I.triples j).card = 1
 
+/-- Some subcollection of indexed triples covers every universe element exactly once. -/
 def HasExactCover : Prop := ∃ s, I.IsExactCover s
 
+/-- The all-ones incidence equations associated to an indexed X3C instance. -/
 def system : MaskedSystem (3 * I.q) I.n where
   A i j := decide (i ∈ I.triples j)
   b _ := true
@@ -67,6 +74,7 @@ def selectionEquiv : Finset (Fin I.n) ≃ (Fin I.n → Bool) where
   left_inv s := by ext j; simp
   right_inv ξ := by funext j; cases h : ξ j <;> simp [h]
 
+/-- Indexed exact covers correspond exactly to feasible Boolean incidence selections. -/
 theorem cover_iff_feasible (s : Finset (Fin I.n)) :
     I.IsExactCover s ↔ I.system.Feasible (I.selectionEquiv s) := by
   have hsum (i : Fin (3 * I.q)) :
@@ -82,9 +90,10 @@ theorem cover_iff_feasible (s : Finset (Fin I.n)) :
   change (∀ i, (s.filter fun j => i ∈ I.triples j).card = 1) ↔
     ((∀ j, I.selectionEquiv s j = true → true = true) ∧
       (fun i => (∑ j, bit (I.system.A i j) * bit (I.selectionEquiv s j)) - 1) = 0)
-  simp only [implies_true, forall_const, true_and, funext_iff, Pi.zero_apply,
+  simp only [implies_true, true_and, funext_iff, Pi.zero_apply,
     sub_eq_zero, hsum, Nat.cast_eq_one]
 
+/-- The indexed cover instance and its masked Boolean system are equisatisfiable. -/
 theorem hasExactCover_iff_hasSolution : I.HasExactCover ↔ I.system.HasSolution := by
   constructor
   · rintro ⟨s, hs⟩; exact ⟨I.selectionEquiv s, (I.cover_iff_feasible s).mp hs⟩

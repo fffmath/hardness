@@ -16,6 +16,7 @@ def matrixMap {m n : ℕ} (B : Matrix (Fin m) (Fin n) ℤ) : Coeff n →+ Coeff 
   map_zero' := Matrix.mulVec_zero B
   map_add' := Matrix.mulVec_add B
 
+/-- The additive image of the integer matrix, viewed as a coefficient lattice. -/
 def matrixLattice {m n : ℕ} (B : Matrix (Fin m) (Fin n) ℤ) : AddSubgroup (Coeff m) :=
   (matrixMap B).range
 
@@ -24,6 +25,7 @@ def verify {m n : ℕ} (B : Matrix (Fin m) (Fin n) ℤ)
     (t : Coeff m) (Δ : ℤ) (x : Coeff n) : Bool :=
   decide (sqNorm (B.mulVec x - t) ≤ Δ)
 
+/-- The executable verifier accepts precisely the certificates within the threshold. -/
 theorem verify_eq_true {m n : ℕ} (B : Matrix (Fin m) (Fin n) ℤ)
     (t : Coeff m) (Δ : ℤ) (x : Coeff n) :
     verify B t Δ x = true ↔ sqNorm (B.mulVec x - t) ≤ Δ := by
@@ -43,6 +45,7 @@ theorem matrix_cvp_iff {m n : ℕ} (B : Matrix (Fin m) (Fin n) ℤ)
 def multiplicationMatrix {d : ℕ} (g : R d) : Matrix (Fin d) (Fin d) ℤ :=
   fun i j => mul g (monomial j 1) i
 
+/-- The monomial multiplication matrix computes negacyclic multiplication. -/
 theorem multiplicationMatrix_mulVec {d : ℕ} (g x : R d) :
     (multiplicationMatrix g).mulVec x = mul g x := by
   have hx : (∑ j, x j • monomial j 1) = x := by
@@ -57,6 +60,7 @@ theorem multiplicationMatrix_mulVec {d : ℕ} (g x : R d) :
   intro j _
   ring
 
+/-- The multiplication matrix generates precisely the principal ideal lattice. -/
 theorem matrixLattice_multiplication {d : ℕ} (g : R d) :
     matrixLattice (multiplicationMatrix g) = principalIdealLattice g := by
   ext v

@@ -1,6 +1,10 @@
 import IdealCVP.Cyclotomic
 
-/-! # Even/odd multiplication in the negacyclic coefficient model -/
+/-! # Even/odd multiplication in the negacyclic coefficient model
+
+The parity identities establish the block-product algebra in
+`paper/src/chapter/principal-ideal.tex`.
+-/
 namespace IdealCVP.Cyclotomic
 open IdealCVP
 
@@ -12,7 +16,7 @@ theorem sum_parity {A : Type*} [AddCommMonoid A] {N : ℕ} (f : Fin (2 * N) → 
   rw [← e.sum_comp, Fintype.sum_prod_type]
   apply Finset.sum_congr rfl; intro i _
   rw [Fin.sum_univ_two]
-  congr 1 <;> congr 1 <;> apply Fin.ext <;> simp [e, finProdFinEquiv] <;> omega
+  congr 1 <;> congr 1 <;> apply Fin.ext <;> simp [e, finProdFinEquiv]; omega
 
 theorem coeff_ext_parity {N : ℕ} {a b : R (2 * N)}
     (he : ∀ i : Fin N, a ⟨2 * i.val, by omega⟩ = b ⟨2 * i.val, by omega⟩)
@@ -33,6 +37,7 @@ theorem double_add_one_mod {N : ℕ} (hN : 0 < N) (s : ℕ) :
   rw [Nat.add_mod, double_mod, Nat.mod_eq_of_lt (show 1 < 2 * N by omega),
     Nat.mod_eq_of_lt (by have := Nat.mod_lt s hN; omega)]
 
+/-- Multiplication by an even block acts separately on both parity blocks. -/
 theorem even_mul {N : ℕ} (h a b : R N) :
     mul (interleave h 0) (interleave a b) = interleave (mul h a) (mul h b) := by
   apply coeff_ext_parity
@@ -43,7 +48,7 @@ theorem even_mul {N : ℕ} (h a b : R N) :
     rw [sum_parity]
     simp_rw [sum_parity, interleave_even, interleave_odd]
     simp only [Pi.zero_apply, MulZeroClass.mul_zero, MulZeroClass.zero_mul,
-      ite_self, Finset.sum_const_zero, add_zero, zero_add]
+      ite_self, Finset.sum_const_zero, add_zero]
     apply Finset.sum_congr rfl; intro i _
     apply Finset.sum_congr rfl; intro j _
     have he : 2 * i.val + 2 * j.val = 2 * (i.val + j.val) := by omega
@@ -61,7 +66,7 @@ theorem even_mul {N : ℕ} (h a b : R N) :
     rw [sum_parity]
     simp_rw [sum_parity, interleave_even, interleave_odd]
     simp only [Pi.zero_apply, MulZeroClass.mul_zero, MulZeroClass.zero_mul,
-      ite_self, Finset.sum_const_zero, add_zero, zero_add]
+      ite_self, Finset.sum_const_zero, add_zero]
     apply Finset.sum_congr rfl; intro i _
     apply Finset.sum_congr rfl; intro j _
     have he : 2 * i.val + 2 * j.val = 2 * (i.val + j.val) := by omega
@@ -71,7 +76,7 @@ theorem even_mul {N : ℕ} (h a b : R N) :
         (i.val + j.val) % N = r.val := by omega
     have hn : 2 * ((i.val + j.val) % N) ≠ 2 * r.val + 1 := by omega
     have hs : 2 * (i.val + j.val) + 1 < 2 * N ↔ i.val + j.val < N := by omega
-    simp [hc, hn, hs]
+    simp [hn, hs]
 
 theorem interleave_smul {N : ℕ} (k : ℤ) (a b : R N) :
     k • interleave a b = interleave (k • a) (k • b) := by
@@ -106,6 +111,7 @@ theorem interleave_monomial_one {N : ℕ} (hN : 0 < N) (a : R N) (z : ℤ) :
         i = ⟨0, hN⟩ := by simp only [Fin.ext_iff]; omega
     simp only [hh]
 
+/-- Multiplication by the variable swaps the parity blocks and shifts the odd block. -/
 theorem shift_interleave {N : ℕ} (hN : 0 < N) (a b : R N) :
     shift (by omega) (interleave a b) = interleave (shift hN b) a := by
   apply coeff_ext_parity
@@ -113,19 +119,19 @@ theorem shift_interleave {N : ℕ} (hN : 0 < N) (a b : R N) :
     rw [interleave_even]
     by_cases hi : i.val = 0
     · have he : (⟨2 * N - 1, by omega⟩ : Fin (2 * N)) =
-          ⟨2 * (N - 1) + 1, by omega⟩ := by apply Fin.ext; dsimp <;> omega
+          ⟨2 * (N - 1) + 1, by omega⟩ := by apply Fin.ext; dsimp; omega
       simp only [shift, hi, MulZeroClass.mul_zero, ite_true]
       rw [he]
       exact congrArg Neg.neg (interleave_odd a b ⟨N - 1, by omega⟩)
     · have he : (⟨2 * i.val - 1, by omega⟩ : Fin (2 * N)) =
-          ⟨2 * (i.val - 1) + 1, by omega⟩ := by apply Fin.ext; dsimp <;> omega
+          ⟨2 * (i.val - 1) + 1, by omega⟩ := by apply Fin.ext; dsimp; omega
       simp only [shift, show 2 * i.val ≠ 0 by omega, hi, ite_false]
       rw [he]
       exact interleave_odd a b ⟨i.val - 1, by omega⟩
   · intro i
     rw [interleave_odd]
     have he : (⟨2 * i.val + 1 - 1, by omega⟩ : Fin (2 * N)) =
-        ⟨2 * i.val, by omega⟩ := by apply Fin.ext; dsimp <;> omega
+        ⟨2 * i.val, by omega⟩ := by apply Fin.ext; dsimp
     simp only [shift, show 2 * i.val + 1 ≠ 0 by omega, ite_false]
     rw [he]
     exact interleave_even a b i

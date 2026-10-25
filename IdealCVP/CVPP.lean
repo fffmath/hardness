@@ -21,10 +21,12 @@ def fixedBasisMatrix (m : ℕ) (hm : 3 ≤ m) :
     Matrix (Fin (Fixed.baseData m hm).d) (Fin (Fixed.baseData m hm).d) ℤ :=
   multiplicationMatrix (Fixed.generator m hm)
 
+/-- The fixed matrix generates exactly the fixed principal ideal lattice. -/
 theorem matrixLattice_fixedBasisMatrix (m : ℕ) (hm : 3 ≤ m) :
     matrixLattice (fixedBasisMatrix m hm) = Fixed.lattice m hm :=
   matrixLattice_multiplication _
 
+/-- Each column of the fixed matrix is the corresponding multiplication basis vector. -/
 theorem fixedBasisMatrix_column (m : ℕ) (hm : 3 ≤ m)
     (j : Fin (Fixed.baseData m hm).d) :
     (fun i => fixedBasisMatrix m hm i j) = (Fixed.basis m hm j).val := by
@@ -44,6 +46,7 @@ theorem advice_def (m : ℕ) :
     S.advice m = (if hm : 3 ≤ m then S.Pre (fixedBasisMatrix m hm)
       else S.Pre (0 : Matrix (Fin 0) (Fin 0) ℤ)) := rfl
 
+/-- For a valid universe size, advice is preprocessing of its fixed basis matrix. -/
 theorem advice_eq (m : ℕ) (hm : 3 ≤ m) :
     S.advice m = S.Pre (fixedBasisMatrix m hm) := dite_eq_left hm
 
@@ -70,12 +73,12 @@ theorem cvpp_advice_decides {Advice : Type*} (S : CVPPScheme Advice)
   rw [S.advice_eq m hm, S.spec, matrixLattice_fixedBasisMatrix]
   exact Fixed.fixed_family_correct m hm C
 
-/-- Indexed X3C, including inputs with repeated triples, uses advice for `3*q`. -/
+/-- Indexed X3C, including inputs with repeated triples, uses advice for `3 * q`. -/
 theorem cvpp_advice_decides_indexed {Advice : Type*} (S : CVPPScheme Advice)
     (I : X3CInstance) :
-    I.HasExactCover ↔ S.Dec (S.advice (3*I.q))
-      (Fixed.target (3*I.q) I.fixed_universe_ge_three I.toTripleSet)
-      (Fixed.threshold (3*I.q) I.fixed_universe_ge_three I.toTripleSet) = true :=
+    I.HasExactCover ↔ S.Dec (S.advice (3 * I.q))
+      (Fixed.target (3 * I.q) I.fixed_universe_ge_three I.toTripleSet)
+      (Fixed.threshold (3 * I.q) I.fixed_universe_ge_three I.toTripleSet) = true :=
   I.hasExactCover_iff_toTripleSet.trans
     (cvpp_advice_decides S _ I.fixed_universe_ge_three I.toTripleSet)
 
