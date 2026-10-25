@@ -1,8 +1,11 @@
 # r7-assembly — paper v2 Theorem 1.1
 
+This is a retained round note. See [the current paper-to-Lean map](../NOTES.md)
+for the final interfaces; unused intermediate corollaries were removed during cleanup.
+
 Owned files: `Rank2ModuleSVP/Main.lean` and this note. No other repository
-source was edited. `Main.lean` imports `Reduction`, `ReductionMap`, and
-`MembershipCert`; it does **not** import `ReductionMapPoly`.
+source was edited in that round. The final `Main.lean` imports `Reduction`,
+`ReductionMap`, `ReductionMapPoly`, and `MembershipCert`.
 
 ## Paper-to-Lean correspondence
 
@@ -10,7 +13,7 @@ All declarations below are in namespace `Rank2ModuleSVP`.
 
 | Paper v2 item | Lean declaration | Status / hypotheses |
 | --- | --- | --- |
-| Absolute constants for §5.3 | `mainK0`, `mainC0`, `mainK0_ge_redK0`, `mainC0_ge_redC0`, `mainK0_pos`, `mainC0_pos` | Done. `mainK0 = max redK0 1 = 100000000`; `mainC0 = max redC0 8 = 1000`. Both are explicit naturals and at least one. |
+| Absolute constants for §5.3 | `mainK0`, `mainC0`, `mainK0_ge_redK0`, `mainC0_ge_redC0`, `mainC0_pos` | Done. `mainK0 = max redK0 1 = 100000000`; `mainC0 = max redC0 8 = 1000`. Both are explicit naturals and at least one. |
 | Cubic Sidon positions satisfy (16) | `main_cubic_offsets` | Done. For `1 ≤ k`, `I.n ≤ k`, `I.q ≤ I.n`, and `(2*k)^8 ≤ q`. No external estimate. |
 | Equations (22)–(23) in the executable power-basis encoding | Private helpers `main_coreInput_m₁`, `main_coreInput_m₂`, `main_coreInput_S` | Done. Match `coreInput_m₁/m₂/S` with `redM1/redM2/redS`; `mapGamma` and `redGamma` have the same natural square-root definition. |
 | Nondegenerate output promises in §5.4 | `main_coreInput_wellFormed` | Done. Odd prime, `redK0 ≤ k`, `(2*k)^redC0 ≤ q`, and `3*I.q ≤ Checker.W I`. Uses `redDet_ne_zero`, `redS_nonneg`, and the four proved coordinate lengths. Does not need Wan. |
@@ -42,13 +45,11 @@ branches reuse their existing correctness theorems and fixed well-formed outputs
 
 ## Integration and remaining scope
 
-The requested conditional NP-completeness theorem is complete. The final
-unconditional-in-time corollary can be added by the integrator after importing
-the separate polynomial-time module and supplying
-`ReductionMap.reductionMap_polytime mainK0 mainC0` as `hpoly`. That certificate
-is not assumed to exist by this module, and this note does not claim the final
-corollary already exists. `WanPowerSumEstimates` remains the sole external
-mathematical estimate.
+The final `moduleSVP_npComplete_of` supplies
+`ReductionMap.reductionMap_polytime mainK0 mainC0` to
+`moduleSVP_npComplete_of_polytime`. Thus polynomial time is proved, and
+`WanPowerSumEstimates` remains the sole named mathematical hypothesis.
+`x3c_polyTimeReducible_moduleSVP` exposes the resulting many-one reduction.
 
 Corollary 1.2 is not formalized here. The current SVP development defines the
 decision language, not a shortest-vector search relation with an encoded oracle

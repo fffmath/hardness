@@ -1,5 +1,8 @@
 # Round 3 — membership
 
+This is a retained round note. See [the current paper-to-Lean map](../NOTES.md)
+for the final interfaces; unused intermediate corollaries were removed during cleanup.
+
 Assigned files: `MembershipAux.lean`, `Membership.lean`. The arithmetic API is in
 `Rank2ModuleSVP.Membership`; the final resource-bound theorem is in
 `Rank2ModuleSVP`. Only those files and this note are changed.
@@ -12,7 +15,7 @@ Assigned files: `MembershipAux.lean`, `Membership.lean`. The arithmetic API is i
 | Cyclic convolution followed by elimination of the last coefficient | `Membership.cyclicCoeff`, `mul`, `cyclicCoeff_eq`, `powerCoeffs_mul`, `powerElement_mul` |
 | Power-basis addition and subtraction | `Membership.powerElement_add`, `powerElement_sub` |
 | `lem:cyclotomic-form`, executable norm | `Membership.norm_eq`, `pairNorm_eq` |
-| Short-vector coefficient bound (pre.tex NP paragraph) | `Membership.powerCoeffs_abs_le_norm`, `exists_norm_bounded_rep` |
+| Short-vector coefficient bound (pre.tex NP paragraph) | `Membership.powerCoeffs_abs_le_norm` |
 | Input promises (intro.tex and final membership paragraph in reduction.tex) | `Membership.primeCheck_eq`, `det_eq`, `wellFormedCheck_eq` |
 | Nonzero short module-vector certificate | `Membership.product_eq`, `verifier_spec`, `moduleSVP_iff_exists_check` |
 | Polynomial-time arithmetic and trial-division verifier | `Membership.poly_mul`, `poly_norm`, `poly_primeCheck`, `poly_wellFormedCheck`, `poly_verifier` |
@@ -58,7 +61,7 @@ precisely to discharge `hcertificateBits` in
 3. Apply IdealCVP's `exists_integer_preimage_bits` (which also handles deficient
    rank), or an adjugate argument, to a short vector. The required bound on the
    short vector's power-basis coordinates is already
-   `powerCoeffs_abs_le_norm` / `exists_norm_bounded_rep`.
+   `powerCoeffs_abs_le_norm`.
 4. Transfer the small matrix preimage back to accepted multiplier lists and
    obtain a polynomial in `(encSVP x).length`.
 

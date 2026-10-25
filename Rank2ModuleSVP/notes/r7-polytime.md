@@ -1,5 +1,8 @@
 # r7-polytime — paper v2 §5.3
 
+This is a retained round note. See [the current paper-to-Lean map](../NOTES.md)
+for the final interfaces; unused intermediate corollaries were removed during cleanup.
+
 Owned source: `Rank2ModuleSVP/ReductionMapPoly.lean`, namespace
 `Rank2ModuleSVP.ReductionMap`. The existing `ReductionMap.lean` and
 `ReductionMapAux.lean` were left unchanged. No other Lean source was edited.

@@ -1,5 +1,8 @@
 # r5-counting — paper v2
 
+This is a retained round note. See [the current paper-to-Lean map](../NOTES.md)
+for the final interfaces; unused intermediate corollaries were removed during cleanup.
+
 Status: **done** for all assigned counting and abstract admissibility obligations.
 All names below are in namespace `Rank2ModuleSVP`.
 
@@ -9,7 +12,7 @@ All names below are in namespace `Rank2ModuleSVP`.
 |---|---|---|
 | §3.2 absolute constants | `cntK0 = 100000000`, `cntC0 = 1000` | done |
 | (6), h = floor(21k/20) | `cntH`, `cntH_rounding`, `cntH_real_rounding`, `cntH_bounds` | done |
-| (7), H = h(q-h), L = 2kq | `cntNormH : ℤ`, `cntL : ℕ` | done |
+| (7), H = h(q-h), L = 2kq | the expressions `cntH k * (q - cntH k)` and `2*k*q` | done |
 | Uniform range for Wan after prescribing bits | `cnt_sqrt_small`, `cnt_parameter_range` | done |
 | Increasing absolute constants | `cnt_regime_mono` | done |
 | (8), the finite family F(u;P,η) | `completions`, `mem_completions` | retained, generic |
@@ -18,7 +21,7 @@ All names below are in namespace `Rank2ModuleSVP`.
 | (10), ordered tuples and factorial division | `orderedCompletions_eq_good`, `factorial_mul_card_completions` | retained, generic |
 | Wan finite counting skeleton | `completions_count_bounds` (uses `wan_good_count_bounds`) | retained, generic |
 | Theorem 3.4 | `uniform_completions`, `uniform_completions_div` | done, factors 3/4 and 5/4 |
-| Theorem 3.4, strict relative error < 1/4 | `uniform_completions_relative_error` | done |
+| Theorem 3.4, strict relative error < 1/4 | `uniform_completions_div` | done |
 | Stronger counting interval | `uniform_completions_sharp` | done, factors 13/16 and 17/16 |
 | F nonempty | `uniform_completions_nonempty` | done |
 | §4.3, strict coordinate ratio | `fixed_coordinate_ratio`, `fixed_coordinate_ratio_div` | done; any number of added coordinates within the size budget, including 1 and 2 |
@@ -28,7 +31,6 @@ All names below are in namespace `Rank2ModuleSVP`.
 | §4.3, union bound < 1 | `cnt_clean_budget` | done |
 | Theorem 4.4, all external pairs at supplied offsets | `admissible_completions` | done |
 | Theorem 4.4, arbitrary forbidden-pair predicate | `admissible_representative` | done |
-| (20), generic correlation tools | `cyclicCorrelation_eq_single`, `cyclicCorrelation_eq_zero`, `enhanced_clean_of_budget` | retained, generic |
 
 ## Hypotheses and consumer interface
 

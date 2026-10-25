@@ -1,5 +1,8 @@
 # r6-reduction — paper v2 §§4.3–5.2
 
+This is a retained round note. See [the current paper-to-Lean map](../NOTES.md)
+for the final interfaces; unused intermediate corollaries were removed during cleanup.
+
 Owned files: `Rank2ModuleSVP/Reduction.lean` and `Rank2ModuleSVP/ReductionAux.lean`.
 All declarations below are in namespace `Rank2ModuleSVP`.
 
@@ -15,15 +18,10 @@ All declarations below are in namespace `Rank2ModuleSVP`.
 | Generators in (22) | `redM1`, `redM2`, `red_moduleVector`, `red_moduleVector_norm`, `redCost` | Done; integral second coordinate is `-QΓw` |
 | Nonzero determinant | `redDet_ne_zero` | Done, without assuming a domain structure on the coefficient quotient |
 | Parameters (23) | `redGamma`, `redF`, `redNu`, `redS`, `redS_eq` | Done; `redS` is the explicit integer `thresholdNumerator` |
-| Exact floor in (23) | `redGamma_real_floor` | Done: `Nat.sqrt (9*k/10) = floor(sqrt(9*k/10))` over the reals |
 | Lemma 5.1 / (24) | `red_global_stability`, `red_global_stability_int`, `redNu_bounds` | Done over arbitrary rational cyclotomic elements and in the integral model |
-| Γ² = 9k/10 + O(√k) | `redGamma_rounding`, `redGamma_bounds`, `redGamma_error` | Done with explicit errors |
-| ν = O(k^(-3/2)), κ = O(q/k) | `redNu_decay`, `red_kappa_bounds` | Done: `ν*k*sqrt(k) ≤ 1/32`, `0 < κ ≤ q/(5000*k)` |
-| Baseline error | `red_baseline_upper`, `red_baseline_lower`, `red_baseline_error` | Done; two-sided results assume `3*I.q ≤ Checker.W I` |
-| H = (21/40)L + o(L) | `red_H_error` | Done: absolute error at most `q + 4*k²` |
-| F = (18/40)L + o(L) | `red_F_error` | Done: absolute error at most `(2*sqrt(k)+1)*q + k` |
-| S/Q² = (39/40)L + o(L) | `red_S_error`, `red_S_relative_error` | Done under the paper's row-count premise; relative error at most `2/sqrt(k)` |
-| Positive/nonnegative threshold | `redS_nonneg`, `redS_pos_of_cover` | Done with the necessary premises described below |
+| Γ² = 9k/10 + O(√k) | `redGamma_rounding`, `redGamma_bounds` | Done with explicit errors |
+| Baseline error | `red_baseline_upper`, `red_baseline_lower` | Done; two-sided results assume `3*I.q ≤ Checker.W I` |
+| Positive/nonnegative threshold | `redS_nonneg` | Done with the necessary premises described below |
 | Theorem 5.2, completeness | `red_completeness` | Done with strict `< redS` |
 | Theorem 5.2, roots of unity | `red_signed_isometry`, `red_signed_inverse`, `red_root_normalization`, `red_no_cover_error` | Done in the coefficient quotient model |
 | Theorem 5.2, all four soundness cases | `red_soundness_cost`, `red_soundness` | Done with strict `redS < pairNormSq` for every nonzero module vector |
@@ -59,7 +57,7 @@ The job's listed assumptions omit the paper's preprocessed-input condition
 in its two-sided parameter estimates. `redS_nonneg` and the two-sided baseline
 and threshold estimates take that elementary inequality as an explicit
 premise. For inputs with no zero row it follows from
-`Checker.rows_le_incidence_count`. `redS_pos_of_cover` instead obtains positivity
+`Checker.rows_le_incidence_count`. Cover completeness obtains positivity
 from completeness whenever there is an exact cover.
 
 Unconditional nonnegativity under only the listed assumptions is false, so it

@@ -1,17 +1,20 @@
 # r5-separation — paper v2 §3.3
 
+This is a retained round note. See [the current paper-to-Lean map](../NOTES.md)
+for the final interfaces; unused intermediate corollaries were removed during cleanup.
+
 Owned source: `Rank2ModuleSVP/RobustCenter.lean`. No additional module is needed.
 
 | Paper v2 label | Lean declarations | Status |
 | --- | --- | --- |
 | Lemma 3.5(i) | `sparse_tools_i_v2` | Done: both squared coefficient norm and support bounds, without a smallness assumption |
-| Lemma 3.5(ii) | `second_shell_v2` | Done: signed monomial with norm `q-1`, or norm at least `2q-4` |
-| Lemma 3.6 | `sparse_tools_ii_v2` | Done: wrapper for `SparsePolynomial.sparse_tools_ii` |
+| Lemma 3.5(ii) | `second_shell` | Done: signed monomial with norm `q-1`, or norm at least `2q-4` |
+| Lemma 3.6 | `sparse_tools_ii` | Done: wrapper for `SparsePolynomial.sparse_tools_ii` |
 | Equation (11) | `robustCenter`, `sepWeight`, `sepCenter` | Done: `sepWeight k = 21*k/20`, `sepCenter k = sepWeight k + pi^(k/2)` |
 | Explicit coefficient representative | `robustCenterPolynomial`, `robustCenterCoeffs`, `classOf_robustCenterCoeffs` | Done for `k/2 < q` |
 | Coefficient sum following (11) | `sum_robustCenterCoeffs`, `sepCenter_representative` | Done: sum is exactly `h`; prescribed-weight form included |
-| Theorem 3.7, pointwise | `robust_center_explicit`, `robust_center`, `robust_center_sub_ideal`, `separation_v2` | Done: `2*k*q < 10*normSq (w*c-a)` |
-| Theorem 3.7, squared ideal distance | `idealDistanceSq`, `idealDistanceSq_attained`, `idealDistanceSq_le`, `robust_center_distance`, `separation_distance_v2` | Done: attained integer minimum satisfies `2*k*q < 10*distanceSq` |
+| Theorem 3.7, pointwise | `robust_center_explicit`, `robust_center`, `robust_center_sub_ideal` | Done: `2*k*q < 10*normSq (w*c-a)` |
+| Theorem 3.7, squared ideal distance | `idealDistanceSq`, `idealDistanceSq_attained`, `robust_center_distance`, `separation_distance_v2` | Done: attained integer minimum satisfies `2*k*q < 10*distanceSq` |
 
 Explicit constants are `sepK0 = 100` and `sepC0 = 1`. The final v2 theorems assume `k ≥ sepK0`, `q` prime, `q ≥ (2*k)^sepC0`, `w ≠ 0`, and `normSq w ≤ 3*q`. In particular, this works for every odd prime in the required range. Increasing either constant preserves the parameter conditions. No named analytic hypothesis, including `WanPowerSumEstimates`, is needed.
 

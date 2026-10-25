@@ -1,5 +1,8 @@
 # Descent — round 2
 
+This is a retained round note. See [the current paper-to-Lean map](../NOTES.md)
+for the final interfaces; unused intermediate corollaries were removed during cleanup.
+
 Completed the assigned descent, Bennett–Peikert, and robust-centre scope.
 There are no remaining named hypotheses for the resulting main theorems.
 Only `Descent2.lean`, `RobustCenter.lean`, `BennettPeikert.lean`, and this note
@@ -20,7 +23,7 @@ All declarations below are in namespace `Rank2ModuleSVP`.
 | `lem:coset-syndrome`, actual principal-ideal coset | `ramified_coset_syndrome` |
 | `lem:rs-minimum`, Bennett–Peikert Theorem 14 | `bennettPeikertMinimum` |
 | Canonical ideal minimum `2kq` | `ramifiedIdeal_minimum` |
-| `eq:rs-parameters` | `descentParameter`, `descentWeight` |
+| v2 separation parameters | `sepK0`, `sepC0`, `sepWeight` |
 | `eq:robust-center` | `robustCenter` |
 | `thm:robust-center`, explicit finite bounds | `robust_center_explicit` |
 | `thm:robust-center`, sufficiently large primes | `robust_center`, `robust_center_sub_ideal`, `robust_center_distance` |
@@ -59,12 +62,12 @@ nearby point and at most six for the short multiplier. Two applications of
 zero residue polynomial: divisibility of all coefficients by `q` would make its
 positive integral norm at least `q² > 3q`.
 
-For the paper's local parameters, `q ≥ 200^1000` ensures the required bounds.
-`idealDistanceSq` is the attained natural-number minimum of the canonical
-squared norms over an ideal; `idealDistanceSq_attained` and
-`idealDistanceSq_le` verify its minimum property. `robust_center_distance` proves
-`2kq < 100 * idealDistanceSq`, equivalently squared distance greater than `L/100`.
-This uses no Bennett–Peikert, Wan, prime-distribution, or embedding hypothesis.
+The v2 separation interface uses `sepK0 = 100`, `sepC0 = 1`, and
+`sepWeight k = 21*k/20`. `idealDistanceSq` is the attained natural-number
+minimum of canonical squared norms over an ideal; `idealDistanceSq_attained`
+realizes that minimum. `robust_center_distance` and `separation_distance_v2`
+prove `2*k*q < 10*idealDistanceSq`, the v2 lower bound `L/10`.
+No Wan estimate is needed for separation.
 
 ## Validation
 

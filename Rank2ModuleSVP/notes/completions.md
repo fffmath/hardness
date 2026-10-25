@@ -1,5 +1,8 @@
 # Round 2 — completions
 
+This is a retained round note. See [the current paper-to-Lean map](../NOTES.md)
+for the final interfaces; unused intermediate corollaries were removed during cleanup.
+
 Assigned files: `Rank2ModuleSVP/Wan.lean`, `Rank2ModuleSVP/Completions.lean`.
 The round-1 files are imported, not modified; in particular the syndrome and
 binary-vector predicates come from `Descent`, which reuses IdealCVP.

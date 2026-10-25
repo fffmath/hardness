@@ -1,5 +1,8 @@
 # Round 4 — certificate bound
 
+This is a retained round note. See [the current paper-to-Lean map](../NOTES.md)
+for the final interfaces; unused intermediate corollaries were removed during cleanup.
+
 Assigned file: `Rank2ModuleSVP/MembershipCert.lean`. All earlier round sources
 and other jobs' files are unchanged. Imports `Membership` and
 `IdealCVP.IntegerPreimage`; no `Rank2ModuleSVP.Reduction*` or `Clearing*` imports.
