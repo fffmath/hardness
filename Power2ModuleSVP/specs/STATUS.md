@@ -1,6 +1,6 @@
 # Power2ModuleSVP status
 
-**Current state (2026-10-25 08:10 UTC+8, local commits only, nothing pushed).**
+**Current state (2026-10-25 08:35 UTC+8, local commits only, nothing pushed).**
 Working copy: /workspace/shared/projects/hardness. Build: `lake build Power2ModuleSVP`.
 
 Proved, 0 sorry, axioms only propext/Classical.choice/Quot.sound:
@@ -19,7 +19,12 @@ ASSEMBLED (MainAssembly.lean): `moduleSVP_npComplete_of_remaining
   NPComplete encSVP ModuleSVPLang` -- standard axioms only. These two are the ONLY remaining inputs
   (PartialColoringNativeHypothesis is not needed on the AUDIT2 route, though useful for hN).
 
-Remaining for the unconditional `moduleSVP_npComplete`:
+NOW: `flatFrontend_preparation` and `markedRunGeometryHypothesis_holds` proved (FlatFrontend3*.lean),
+so `moduleSVP_npComplete_of_fullColoringNative (hN : FullColoringNativeHypothesis partialColor)`
+(MainAssembly.lean) -- the ONLY remaining hypothesis is the native runtime of fullColor partialColor
+(job p2s-colornative3).
+
+Remaining for the unconditional `moduleSVP_npComplete` (history):
 1. Native TM certificates for partialColor / fullColor (`PartialColoringNativeHypothesis`,
    `FullColoringNativeHypothesis partialColor`; per AUDIT2 the old `FullColoringRuntimeHypothesis`
    is unsatisfiable and must NOT be used). p2s-colornative delivered primitives + denominator
@@ -1579,3 +1584,82 @@ corollaries. `#print axioms Power2ModuleSVP.flatFrontend_runtime` reports only
 `[propext, Classical.choice, Quot.sound]`. The new Lean files contain no
 `sorry`, `admit`, new axiom or implementation override. Root, Lake configuration,
 existing Lean files and the concurrent jobs' sources were not edited.
+
+## Flat seed frontend 3 (p2s-frontend3)
+
+**Complete: the original frontend preparation is unconditional.** All six
+fields of `MarkedRunEstimates d` are proved for dyadic degrees at the cutoff.
+No corrected frontend, implementation override, or residual geometry or
+sampling hypothesis is introduced. The original `flatFrontend`, marker,
+precision, Taylor order, and run endpoints are unchanged.
+
+Seventeen new owned modules culminate in `FlatFrontend3Main.lean`:
+
+- `FlatFrontend3Words`, `Blocks`, `Even`, and `Cosine` identify the actual
+  background pair averages/differences, both shifted RS blocks, the removed
+  stable-prefix blocks, and their circle evaluations. The even-part bound
+  follows from `rudinShapiroEvenSinePart_bound`. The cosine is identified
+  both with the normalized RS wave and with a reduced polynomial in
+  `cos(2*theta)`.
+- `FlatFrontend3Grid`, `Polynomial`, `Sampling`, and `Parameters` prove the
+  reflected/clamped sample enclosure, exact rational polynomial comparison,
+  continuous marked witnesses, unmarked-sample transfer, reduced polynomial
+  degree, wave normalization, and the seven-cell numerical allowance.
+- `FlatFrontend3Scan` proves that every interior cell of an output run is
+  marked, every nonterminal run ends at an unmarked cell, and every scanned
+  marked cell lies in an output run. Width and clearance transfer lemmas
+  refer to the actual `scanCells` output.
+- `FlatFrontend3Wave` and `Budget` connect marked-cell witnesses to the
+  proved RS seven-cell exclusion and both axis estimates. They discharge
+  run width and both 100-cell clearances. In particular, the right axis has
+  normalized value one; no parity or nonexistent terminal cell is assumed.
+  The sample-error budget is proved from the explicit precision, using a
+  coarse uniform lower bound on `height`.
+- `FlatFrontend3Margin`, `Coverage`, and `Complement` establish the height
+  margin, a fine sample in every closed coarse cell, folding invariance,
+  and the complementary cosine bound. The remaining unscanned half-cell
+  when `seedN d` is odd is covered by the right-axis derivative estimate.
+- `FlatFrontend3Ordering` proves a first-quadrant cosine-node gap, bounds
+  the actual grid size, and shows that its enclosure error is smaller than
+  that gap. Consequently the implemented rational samples are strictly
+  decreasing on the first half-grid, and their reduced nodes
+  `2*sample^2-1` are antitone on the scanned range.
+- `FlatFrontend3Count` transfers the existing polynomial sublevel component
+  theorem to the inclusive Boolean scan. A run witness is assigned to a
+  sublevel component. The unmarked cell between two runs prevents their
+  witnesses from occupying the same component. Monotonicity, rather than
+  strict ordering, suffices for this transfer. The reduced polynomial has
+  degree at most `stageWidth (stage N)`, giving the sharp count budget.
+
+Principal exports, all in `Power2ModuleSVP.FlatFrontend`:
+
+```lean
+markedRun_width_clearances (hd : Dyadic d) (hlarge : 2^512 <= d)
+markedRun_count (hd : Dyadic d) (hlarge : 2^512 <= d) :
+  intervalCount d * 2^66 <= seedN d
+cosine_good (hd : Dyadic d) (hlarge : 2^512 <= d) (theta : Real)
+  (hout : Not (runContains d (foldAngle theta))) :
+  seedCosineMargin * Real.sqrt (seedN d) <= |cosine d theta|
+evenPart_bound (hd : Dyadic d) (hlarge : 2^512 <= d) (theta : Real) :
+  |evenPart d theta| <= 6 * Real.sqrt (seedN d)
+markedRunEstimates (hd : Dyadic d) (hlarge : 2^512 <= d) :
+  MarkedRunEstimates d
+markedRunGeometryHypothesis_holds : MarkedRunGeometryHypothesis
+flatFrontend_preparation : FlatSeedPreparationHypothesis flatFrontend
+```
+
+The final preparation theorem applies
+`flatFrontend_preparation_of_geometry`; it reuses the second frontend job's
+unconditional enclosure results. Native runtime remains the separate runtime
+job's responsibility. Existing Lean files, the root import, Lake configuration,
+and other jobs' sources were not edited. No private source text was copied.
+
+Validation: all seventeen new modules were checked individually; the aggregate
+`lake build Power2ModuleSVP.FlatFrontend3Main` succeeded. Eleven principal
+export axiom audits, including both final theorems, report only `propext`,
+`Classical.choice`, and `Quot.sound`. The final preparation type has no
+premises. No unfinished proof, new axiom, or native decision occurs in the
+new files. `git diff --check` passed. Build messages for the new files are
+limited to long-line style warnings; dependency compatibility warnings are
+inherited. Job-local scratch was removed after the audit. Root integration
+remains with the dispatcher.

@@ -1,6 +1,7 @@
 import Power2ModuleSVP.AnchorRepairPoly2
 import Power2ModuleSVP.FlatSeedMain
 import Power2ModuleSVP.FlatFrontend2Main
+import Power2ModuleSVP.FlatFrontend3Main
 import Power2ModuleSVP.FlatFrontendRuntime
 import Power2ModuleSVP.ColoringTrajectory
 import Power2ModuleSVP.SineKernelProofDecomposition
@@ -33,5 +34,12 @@ theorem moduleSVP_npComplete_of_remaining
     (hN : FullColoringNativeHypothesis partialColor) :
     NPComplete encSVP ModuleSVPLang :=
   moduleSVP_npComplete_of_seed (spectralSeedFamily_of_remaining hG hN)
+
+/-- With the marked-run geometry proved (FlatFrontend3Main.lean), the single remaining input is
+the native polynomial-time certificate of the concrete full coloring. -/
+theorem moduleSVP_npComplete_of_fullColoringNative
+    (hN : FullColoringNativeHypothesis partialColor) :
+    NPComplete encSVP ModuleSVPLang :=
+  moduleSVP_npComplete_of_remaining FlatFrontend.markedRunGeometryHypothesis_holds hN
 
 end Power2ModuleSVP
