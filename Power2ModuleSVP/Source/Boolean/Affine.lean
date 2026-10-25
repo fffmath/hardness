@@ -14,7 +14,6 @@ namespace SparseEncoding
 noncomputable section
 open Polynomial
 open scoped BigOperators
-set_option maxHeartbeats 800000
 
 /-- Which input variables contribute to an ordinary product coefficient. -/
 def rowIndices {v r : ℕ} (C : Clauses v r) (ell z : ℕ) : Finset (Fin v) :=
@@ -22,7 +21,7 @@ def rowIndices {v r : ℕ} (C : Clauses v r) (ell z : ℕ) : Finset (Fin v) :=
     z - Sidon.position ell i ∈ support C ell
 
 /-- A cluster is strictly above every input position and below the midpoint. -/
-theorem cluster_bounds {ell v r : ℕ} (j : Fin (2*r)) :
+theorem cluster_bounds {ell v r : ℕ} (j : Fin (2 * r)) :
     B ell v < cluster ell v j.val ∧ cluster ell v j.val ≤ 2*r*delta ell v := by
   have hd : delta ell v = 4*B ell v+1 := rfl
   have h1 := Nat.mul_le_mul_right (delta ell v) (show 1 ≤ j.val+1 by omega)
@@ -31,7 +30,7 @@ theorem cluster_bounds {ell v r : ℕ} (j : Fin (2*r)) :
   constructor <;> omega
 
 /-- Distinct clusters are separated by more than the total input range. -/
-theorem cluster_isolation {ell v r : ℕ} {j k : Fin (2*r)} {a b : ℕ}
+theorem cluster_isolation {ell v r : ℕ} {j k : Fin (2 * r)} {a b : ℕ}
     (ha : a ≤ B ell v) (hb : b ≤ B ell v)
     (he : cluster ell v j.val + a = cluster ell v k.val + b) : j = k := by
   have hd : delta ell v = 4*B ell v+1 := rfl
@@ -48,7 +47,7 @@ theorem cluster_isolation {ell v r : ℕ} {j k : Fin (2*r)} {a b : ℕ}
 /-- The central coefficient reads exactly the variables of the clause.
 This part of row isolation needs only monotonicity, not the Sidon property. -/
 theorem center_row {v r : ℕ} (C : Clauses v r) {ell : ℕ} (hell : 0 < ell)
-    (j : Fin (2*r)) : rowIndices C ell (cluster ell v j.val) = C (originalRow j) := by
+    (j : Fin (2 * r)) : rowIndices C ell (cluster ell v j.val) = C (originalRow j) := by
   ext k
   have hak := Sidon.position_le_bound hell k
   have hcb := cluster_bounds (ell := ell) (v := v) j
@@ -161,11 +160,10 @@ theorem origin_ranges {v r : ℕ} (C : Clauses v r) {ell z : ℕ} (hell : 0 < el
     apply Or.inr (Or.inr (Or.inr ?_))
     refine ⟨j,a,ha,h,?_,?_,?_,?_⟩ <;> dsimp [B] at * <;> omega
 
-
 /-- Cluster centers within `2B` of each other are equal. -/
-theorem nearby_clusters_eq {ell v r : ℕ} {j k : Fin (2*r)}
-    (h1 : cluster ell v j.val ≤ cluster ell v k.val + 2*B ell v)
-    (h2 : cluster ell v k.val ≤ cluster ell v j.val + 2*B ell v) : j = k := by
+theorem nearby_clusters_eq {ell v r : ℕ} {j k : Fin (2 * r)}
+    (h1 : cluster ell v j.val ≤ cluster ell v k.val + 2 * B ell v)
+    (h2 : cluster ell v k.val ≤ cluster ell v j.val + 2 * B ell v) : j = k := by
   have hd : delta ell v = 4*B ell v+1 := rfl
   apply Fin.ext
   by_contra hne
@@ -179,10 +177,10 @@ theorem nearby_clusters_eq {ell v r : ℕ} {j k : Fin (2*r)}
 
 /-- Every contributor to an unreflected row uses the same clause copy. -/
 theorem lower_row_contributors {v r : ℕ} (C : Clauses v r) {ell z : ℕ}
-    (hell : 0 < ell) (j : Fin (2*r))
+    (hell : 0 < ell) (j : Fin (2 * r))
     (hz1 : cluster ell v j.val - B ell v ≤ z)
     (hz2 : z ≤ cluster ell v j.val + B ell v)
-    (hz3 : B ell v < z) (hz4 : z ≤ 2*r*delta ell v+B ell v)
+    (hz3 : B ell v < z) (hz4 : z ≤ 2 * r * delta ell v + B ell v)
     {k : Fin v} (hk : k ∈ rowIndices C ell z) :
     ∃ a ∈ C (originalRow j),
       z = cluster ell v j.val - Sidon.position ell a + Sidon.position ell k := by
@@ -203,10 +201,10 @@ theorem lower_row_contributors {v r : ℕ} (C : Clauses v r) {ell z : ℕ}
 
 /-- Every contributor to a reflected row uses the same clause copy. -/
 theorem upper_row_contributors {v r : ℕ} (C : Clauses v r) {ell z : ℕ}
-    (hell : 0 < ell) (j : Fin (2*r))
+    (hell : 0 < ell) (j : Fin (2 * r))
     (hz1 : T ell v r - cluster ell v j.val ≤ z)
-    (hz2 : z ≤ T ell v r - cluster ell v j.val + 2*B ell v)
-    (hz3 : 2*r*delta ell v+B ell v < z) (hz4 : z < T ell v r)
+    (hz2 : z ≤ T ell v r - cluster ell v j.val + 2 * B ell v)
+    (hz3 : 2 * r * delta ell v + B ell v < z) (hz4 : z < T ell v r)
     {k : Fin v} (hk : k ∈ rowIndices C ell z) :
     ∃ a ∈ C (originalRow j),
       z = T ell v r - cluster ell v j.val + Sidon.position ell a + Sidon.position ell k := by
@@ -408,7 +406,7 @@ theorem vectorPolynomial_bit {len : ℕ} {a : ℕ → ℤ}
     · exact ha z h
     · exact Or.inl rfl
 
-theorem odd_center_offset {v r : ℕ} (C : Clauses v r) {ell : ℕ} (hell : 0 < ell)
+theorem odd_center_offset {v r : ℕ} (C : Clauses v r) {ell : ℕ} (_hell : 0 < ell)
     (hC : WellFormed C) (hrows : RowIsolation C ell) (j : Fin r) :
     translation C ell (cluster ell v (2*j.val)) = 0 := by
   have hd : 0 < delta ell v := by unfold delta; positivity

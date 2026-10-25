@@ -12,7 +12,6 @@ namespace Power2ModuleSVP
 namespace FlatFrontend
 noncomputable section
 
-
 theorem gridSample_error {N : ℕ} (hN : 0 < N) {r : ℕ} (hr : r ≤ gridSize N)
     (hM : 0 < gridSize N) :
     |(gridSample N r : ℝ) - Real.cos (seedFineAngle (gridSize N) r)| ≤

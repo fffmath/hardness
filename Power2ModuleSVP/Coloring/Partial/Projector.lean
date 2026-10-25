@@ -21,8 +21,10 @@ namespace Power2ModuleSVP.PartialColoringAlg
 
 open scoped BigOperators
 
+/-- A finite rational vector with `r` coordinates. -/
 abbrev Vec (r : ℕ) := Fin r → ℚ
 
+/-- The rational dot product of two finite vectors. -/
 def dot {r : ℕ} (u v : Vec r) : ℚ := ∑ j, u j * v j
 
 theorem dot_comm {r : ℕ} (u v : Vec r) : dot u v = dot v u := by
@@ -87,6 +89,7 @@ def project {r : ℕ} : List (Vec r) → Vec r → Vec r
   | [], v => v
   | a :: C, v => reject (project C a) (project C v)
 
+/-- The vector is orthogonal to every constraint in the list. -/
 def OrthogonalTo {r : ℕ} (C : List (Vec r)) (v : Vec r) : Prop :=
   ∀ a ∈ C, dot a v = 0
 
@@ -141,6 +144,7 @@ theorem project_selfAdjoint {r : ℕ} (C : List (Vec r)) (u v : Vec r) :
     _ = dot (project C u) v :=
       dot_project_of_orthogonal C _ v (project_orthogonal C u)
 
+/-- The coordinate unit vector at index `j`. -/
 def coordinate {r : ℕ} (j : Fin r) : Vec r := fun k => if k = j then 1 else 0
 
 @[simp] theorem dot_coordinate {r : ℕ} (v : Vec r) (j : Fin r) :
@@ -161,6 +165,7 @@ needed to evaluate a candidate's Rayleigh quotient. -/
 def energy {r : ℕ} (a : List (ℚ × Vec r)) (v : Vec r) : ℚ :=
   (a.map fun row => row.1 * dot row.2 v ^ 2).sum
 
+/-- The weighted quadratic energy divided by the squared vector norm. -/
 def score {r : ℕ} (a : List (ℚ × Vec r)) (v : Vec r) : ℚ :=
   energy a v / dot v v
 

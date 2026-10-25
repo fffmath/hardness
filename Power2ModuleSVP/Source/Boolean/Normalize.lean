@@ -13,6 +13,7 @@ namespace Power2ModuleSVP
 namespace BooleanSource
 open Cslib.Logic.PL
 
+/-- Read a literal occurrence from a row known to contain exactly three literals. -/
 def literalAt (f : CNF ℕ) (hw : ∀ c ∈ f, c.length = 3)
     (j : Fin f.length) (k : Fin 3) : Literal ℕ :=
   f[j.val][k.val]'(by rw [hw _ (List.getElem_mem j.isLt)]; exact k.isLt)
@@ -137,7 +138,6 @@ theorem fromThreeSAT_counts (f : CNF ℕ) :
     · change (normalizeTotal (Cslib.Complexity.toExactThreeSAT f)).rowCount ≤ _
       rw [normalizeTotal,dite_eq_right hw]
       simp
-
   · exact normalizeTotal_variables_bound _
 
 end BooleanSource

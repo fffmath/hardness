@@ -37,7 +37,7 @@ theorem finiteClauses_wellFormed {v r : ℕ} (f : ThreeFormula v r) :
 
 /-- Summing over the numbered clause agrees with counting the three tuple bits. -/
 theorem clauseFinset_sum {v r : ℕ} (c : Triple (GadgetVar v r)) (hc : Distinct c)
-    (a : Fin (4+2*v+6*r) → Bool) :
+    (a : Fin (4 + 2 * v + 6 * r) → Bool) :
     (∑ i ∈ clauseFinset c, (if a i then (1 : ℤ) else 0)) =
       (bit (a (variableFin c.1)) + bit (a (variableFin c.2.1)) +
         bit (a (variableFin c.2.2)) : ℕ) := by
@@ -149,7 +149,8 @@ def threeSATEncode (f : Cslib.Logic.PL.CNF ℕ) : SparseEncoding.EncodedSource :
 theorem threeSAT_affine_correct (f : Cslib.Logic.PL.CNF ℕ) :
     f ∈ Cslib.Complexity.ThreeSAT ↔ ∃ x y,
       SparseEncoding.AffineSolution (finiteClauses (fromThreeSAT f).formula)
-        (SparseEncoding.positionPrime (4+2*(fromThreeSAT f).varCount+6*(fromThreeSAT f).rowCount)) x y :=
+        (SparseEncoding.positionPrime
+          (4 + 2 * (fromThreeSAT f).varCount + 6 * (fromThreeSAT f).rowCount)) x y :=
   (fromThreeSAT_correct f).trans (boolean_affine_correct (fromThreeSAT f).formula)
 
 /-- Uniform cubic output dimension, independent of binary variable labels. -/

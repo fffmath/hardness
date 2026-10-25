@@ -38,6 +38,7 @@ theorem project_norm_le {r : ℕ} (C : List (Vec r)) (v : Vec r) :
     ← project_norm_identity] at h
   linarith
 
+/-- The sum of squared norms of the projected coordinate vectors. -/
 def projectorTrace {r : ℕ} (C : List (Vec r)) : ℚ :=
   ∑ j, dot (project C (coordinate j)) (project C (coordinate j))
 

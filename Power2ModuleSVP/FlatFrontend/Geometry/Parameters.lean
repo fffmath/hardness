@@ -67,14 +67,18 @@ theorem height_wave_budget {N : ℕ} (hN : 0 < N) :
     have hp := pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 3) Real.pi_gt_three.le 3
     norm_num at hp
     exact hp
-  have hc : (0 : ℝ) ≤ (2 : ℝ) ^ (stageIndex N + 1) * (2 * (blockShift N : ℝ) / N) ^ 3 := by positivity
+  have hc : (0 : ℝ) ≤ (2 : ℝ) ^ (stageIndex N + 1) * (2 * (blockShift N : ℝ) / N) ^ 3 := by
+    positivity
   nlinarith only [mul_le_mul_of_nonneg_left hpi hc, hc]
 
 theorem height_small {N : ℕ} (hN : stageWidth 1 * 2 ^ 66 ≤ N) :
     3 * (height N : ℝ) / 4 < (2 : ℝ) ^ (stageIndex N + 1) := by
   have hb := (block_parameters N).1
   have ha := waveCellWidth_small hN
-  have hNp : 0 < N := by have := stage_admissible hN; have := stageWidth_positive (stage N); nlinarith
+  have hNp : 0 < N := by
+    have := stage_admissible hN
+    have := stageWidth_positive (stage N)
+    nlinarith
   have hNr : (0 : ℝ) < N := by exact_mod_cast hNp
   have hratio : 0 ≤ 2 * (blockShift N : ℝ) / N := by positivity
   have hratio' : 2 * (blockShift N : ℝ) / N ≤ 1 := by

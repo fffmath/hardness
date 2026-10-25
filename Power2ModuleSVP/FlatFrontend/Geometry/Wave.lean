@@ -13,6 +13,7 @@ namespace FlatFrontend
 open scoped BigOperators
 noncomputable section
 
+/-- The width in the wave variable corresponding to one angular grid cell. -/
 def waveCellWidth (N : ℕ) : ℝ := 2 * blockShift N * Real.pi / N
 
 theorem cosine_axes {d : ℕ} (hd : d = 4 * seedN d + 4)
@@ -22,17 +23,21 @@ theorem cosine_axes {d : ℕ} (hd : d = 4 * seedN d + 4)
   have he := rudinShapiro_odd_endpoints (stageIndex (seedN d))
   have hzero : seedCircle 0 = 1 := by simp [seedCircle]
   have hright : seedCircle (Real.pi / 2) = -1 := by
-    simp only [seedCircle, mul_div_cancel₀ Real.pi (by norm_num : (2 : ℝ) ≠ 0), Complex.exp_ofReal_mul_I]
+    simp only [seedCircle, mul_div_cancel₀ Real.pi (by norm_num : (2 : ℝ) ≠ 0),
+      Complex.exp_ofReal_mul_I]
     simp
   constructor
   · rw [cosine_eq_rudinShapiro hd hfit, rudinShapiroCosinePart, hzero]
     change (1 ^ blockShift (seedN d) * rsEval (rudinShapiroP (2 * stageIndex (seedN d) + 1)) 1 +
-      1 ^ (2 * blockShift (seedN d)) * rsEval (rudinShapiroQ (2 * stageIndex (seedN d) + 1)) 1).re = _
+      1 ^ (2 * blockShift (seedN d)) *
+        rsEval (rudinShapiroQ (2 * stageIndex (seedN d) + 1)) 1).re = _
     simp only [he.1, he.2.1, one_pow, one_mul, add_zero]
     norm_cast
   · rw [cosine_eq_rudinShapiro hd hfit, rudinShapiroCosinePart, hright]
-    change ((-1) ^ blockShift (seedN d) * rsEval (rudinShapiroP (2 * stageIndex (seedN d) + 1)) (-1) +
-      (-1) ^ (2 * blockShift (seedN d)) * rsEval (rudinShapiroQ (2 * stageIndex (seedN d) + 1)) (-1)).re = _
+    change ((-1) ^ blockShift (seedN d) *
+        rsEval (rudinShapiroP (2 * stageIndex (seedN d) + 1)) (-1) +
+      (-1) ^ (2 * blockShift (seedN d)) *
+        rsEval (rudinShapiroQ (2 * stageIndex (seedN d) + 1)) (-1)).re = _
     have hp : (-1 : ℂ) ^ (2 * blockShift (seedN d)) = 1 := by
       rw [pow_mul]
       norm_num
@@ -95,7 +100,7 @@ theorem axis_unmarked_of_wave {d : ℕ} (hd : d = 4 * seedN d + 4)
     positivity
   have hs' : |rudinShapiroWave (stage (seedN d)) 0 x| < 1 / 2 := by
     have hp : waveCellWidth (seedN d) ^ 3 ≤ 1 :=
-      pow_le_one₀ ha.le (by linarith) 
+      pow_le_one₀ ha.le (by linarith)
     linarith
   have hnr : (0 : ℝ) < seedN d := by exact_mod_cast hN
   have haxis : (blockShift (seedN d) : ℝ) * Real.pi =
@@ -115,7 +120,8 @@ theorem axis_unmarked_of_wave {d : ℕ} (hd : d = 4 * seedN d + 4)
     exact (not_lt_of_ge he.le) hs'
   · by_contra h
     have hj' : (seedN d : ℝ) / 2 - (j : ℝ) ≤ 101 := by
-      have hn : (seedN d : ℝ) < 2 * ((j : ℝ) + 101) := by exact_mod_cast (show seedN d < 2 * (j + 101) by omega)
+      have hn : (seedN d : ℝ) < 2 * ((j : ℝ) + 101) := by
+        exact_mod_cast (show seedN d < 2 * (j + 101) by omega)
       linarith
     have hcell : (j : ℝ) + 1 ≤ (seedN d : ℝ) / 2 := by
       have hn : 2 * (j + 1) ≤ seedN d := by omega

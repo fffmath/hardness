@@ -21,7 +21,7 @@ open Polynomial
 
 noncomputable section
 
-/-- Outstanding Newton/power-sum input for `lem:elementary-mahler`.
+/-- Newton/power-sum contract for `lem:elementary-mahler`.
 For a nonreciprocal monic integer unit polynomial, a positive power sum of
 order at most its degree differs from the inverse power sum by a nonzero
 integer.  Bounding this difference gives precisely the witness below.
@@ -34,7 +34,7 @@ structure ElementaryMahlerHypothesis : Prop where
         Real.exp ((m : ℝ) * Real.log (integerMahlerMeasure p)) *
           Real.log (integerMahlerMeasure p)
 
-/-- Outstanding reciprocal-root product input for
+/-- Reciprocal-root product contract for
 `lem:reciprocal-resultant`.  This is the radial-gap estimate obtained from
 the nonzero integer reciprocal resultant by bounding its off-diagonal
 factors.  The subsequent binomial estimate is proved in the auxiliary file. -/
@@ -44,7 +44,7 @@ structure ReciprocalResultantHypothesis : Prop where
     1 ≤ (2 : ℝ) ^ (p.natDegree * (p.natDegree - 1)) *
       integerMahlerMeasure p ^ (2 * (p.natDegree - 1)) * radialGapProduct p
 
-/-- Outstanding factor/multiplicity extraction in `lem:elementary-separation`.
+/-- Factor/multiplicity extraction contract in `lem:elementary-separation`.
 The witness is an irreducible monic factor `p` and the first nonzero divided
 derivative of `e` at its roots.  All divided derivatives of `w` through that
 order vanish.  This hypothesis contains no congruence, binomial exponent,
@@ -63,7 +63,7 @@ structure DividedDerivativeWitnessHypothesis : Prop where
           (∀ k < j, (complexPolynomial (hasseDeriv k e)).eval z = 0) ∧
           (∀ k ≤ j, (complexPolynomial (hasseDeriv k w)).eval z = 0)
 
-/-- The explicitly unproved inputs of this partial formalization. -/
+/-- The algebraic and analytic contracts used in bounded-remainder separation. -/
 structure NormSeparationHypothesis : Prop extends
     ElementaryMahlerHypothesis, ReciprocalResultantHypothesis,
     DividedDerivativeWitnessHypothesis

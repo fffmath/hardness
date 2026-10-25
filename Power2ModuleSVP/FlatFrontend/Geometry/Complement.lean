@@ -40,7 +40,8 @@ theorem cosine_right_tail {d : ℕ} (hd : d = 4 * seedN d + 4)
       nlinarith only [hlow, mul_le_mul_of_nonneg_right hfloor Real.pi_pos.le]
     have hangle : Real.pi / 2 - θ ≤ Real.pi / seedN d :=
       (le_div_iff₀ hn).mpr hphase
-    have he := mul_le_mul_of_nonneg_left hangle (show (0 : ℝ) ≤ 2 * blockShift (seedN d) by positivity)
+    have he := mul_le_mul_of_nonneg_left hangle
+      (show (0 : ℝ) ≤ 2 * blockShift (seedN d) by positivity)
     change _ ≤ 101 * (2 * blockShift (seedN d) * Real.pi / seedN d)
     have ha' : (0 : ℝ) ≤ 2 * blockShift (seedN d) * Real.pi / seedN d := by positivity
     have he' : (blockShift (seedN d) : ℝ) * Real.pi - 2 * blockShift (seedN d) * θ ≤

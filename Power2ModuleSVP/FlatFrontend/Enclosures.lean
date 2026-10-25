@@ -36,6 +36,7 @@ theorem cosinePolynomialValue_spec (N : ℕ) (q : ℚ) :
   simp [cosinePolynomialValue, list_sum_range, cosinePolynomial, chebyshevPair_spec,
     Polynomial.map_sum, Polynomial.Chebyshev.map_T, Polynomial.eval_finsetSum]
 
+/-- A rational Taylor approximation to the derivative phase of sine. -/
 def phaseTaylor (ell n : ℕ) (q : ℚ) : ℚ :=
   (phase ell).1 * sinTaylor n q + (phase ell).2 * cosTaylor n q
 

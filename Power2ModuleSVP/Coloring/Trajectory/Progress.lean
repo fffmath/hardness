@@ -18,11 +18,13 @@ namespace Power2ModuleSVP.PartialColoringAlg
 
 open scoped BigOperators
 
+/-- Count the updates actually performed before the walk stops or exhausts its fuel. -/
 def usedSteps {r m : ℕ} (a : Fin m → Row r) : ℕ → State r m → ℕ
   | 0, _ => 0
   | fuel + 1, s => if r ≤ 2 * signCoordinateCount s.x then 0
       else usedSteps a fuel (nextState a s) + 1
 
+/-- The squared coloring norm augmented by a bonus for sign coordinates. -/
 def progressMeasure {r m : ℕ} (s : State r m) : ℚ :=
   dot s.x s.x + stepSize r ^ 2 / 4 * signCoordinateCount s.x
 

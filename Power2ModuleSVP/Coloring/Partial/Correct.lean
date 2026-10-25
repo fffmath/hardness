@@ -20,6 +20,7 @@ namespace Power2ModuleSVP.PartialColoringAlg
 
 open scoped BigOperators
 
+/-- The sum of exponential entropy contributions of the stored constraint rows. -/
 noncomputable def rowEntropy {r : ℕ} (rows : List (Row r)) : ℝ :=
   (rows.map fun row => Real.exp (-((row.threshold : ℝ) ^ 2) / 16)).sum
 
@@ -69,6 +70,7 @@ theorem prepareRows_row_properties {r m : ℕ} (V : Fin m → Vec r) (c : Fin m 
     · exact ⟨hc i, hthr, hnorm⟩
     · exact ⟨hc i, hthr, by simpa [dot] using hnorm⟩
 
+/-- Dimension, cube, row-normalization, and entropy assumptions for the rational walk. -/
 structure WalkPremises {r m : ℕ} (a : Fin m → Row r) (x : Vec r) : Prop where
   dimension : 64 ≤ r
   cube : RationalCube x

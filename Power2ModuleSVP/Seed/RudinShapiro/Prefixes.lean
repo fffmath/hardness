@@ -214,6 +214,7 @@ theorem rudinShapiroCoefficient_sign (j : ℕ) :
     ((show j < 2 ^ j from Nat.lt_two_pow_self).trans_le
       (Nat.pow_le_pow_right (by omega) (by omega))) |>.1
 
+/-- Evaluate the first `m` coefficients of the stable Rudin–Shapiro sequence. -/
 def rudinShapiroPrefix (m : ℕ) (z : ℂ) : ℂ :=
   ∑ j ∈ Finset.range m, (rudinShapiroCoefficient j : ℂ) * z ^ j
 

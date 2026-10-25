@@ -165,7 +165,6 @@ theorem polynomial_sublevel_islands_bound (p : ℝ[X]) {τ : ℝ} (hτ : 0 ≤ �
   rw [hdeg] at hb
   omega
 
-
 /-- Ordered rational samples can be used directly to bound the number of
 marked runs. One marked witness per run and strict unmarked separators
 suffice; no algebraic root-finding or genericity assumption is needed. -/

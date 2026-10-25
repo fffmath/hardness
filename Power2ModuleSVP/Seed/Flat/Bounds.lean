@@ -10,6 +10,7 @@ Paper: `paper/power2svp.pdf`, Appendix A (Theorem 5, the deterministic flat seed
 -/
 namespace Power2ModuleSVP
 
+/-- The fixed positive cosine margin used in the flat-seed estimates. -/
 noncomputable def seedCosineMargin : ℝ := 1 / 2 ^ 250
 
 theorem seedCosineMargin_pos : 0 < seedCosineMargin := by

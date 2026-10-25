@@ -20,6 +20,7 @@ namespace Power2ModuleSVP
 
 open scoped BigOperators
 
+/-- The semantic partial-coloring contract for a fixed total list program. -/
 def PartialColoringCorrect (F : PartialColoringInput → List ℚ) : Prop :=
   ∀ (r m : ℕ) (V : Fin m → Fin r → ℚ) (x : Fin r → ℚ) (c : Fin m → ℚ),
     64 ≤ r → RationalCube x → (∀ i, 0 ≤ c i) →
@@ -27,6 +28,7 @@ def PartialColoringCorrect (F : PartialColoringInput → List ℚ) : Prop :=
     ∃ y : Fin r → ℚ, F (partialColoringInput V x c) = List.ofFn y ∧
       PartialColoringSpec V x y c
 
+/-- Read a finite rational vector from a list, padding missing entries with zero. -/
 def readColoringVector (r : ℕ) (l : List ℚ) : Fin r → ℚ := fun j => l.getD j 0
 
 @[simp] theorem readColoringVector_ofFn {r : ℕ} (x : Fin r → ℚ) :
@@ -51,6 +53,7 @@ def fullColorCore (F : PartialColoringInput → List ℚ) (r m : ℕ)
     else fun j => nearestRationalSign (x j)
 termination_by r
 
+/-- The full-sign coloring bound used in the dimension-halving induction. -/
 def FullBound {r m : ℕ} (V : Fin m → Fin r → ℚ)
     (x y : Fin r → ℚ) (c : Fin m → ℚ) : Prop :=
   (∀ j, y j = -1 ∨ y j = 1) ∧

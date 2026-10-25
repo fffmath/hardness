@@ -12,6 +12,7 @@ namespace FlatFrontend
 open scoped BigOperators
 noncomputable section
 
+/-- The rational error allowance for evaluating the cosine polynomial on the sampling grid. -/
 def sampleError (N : ℕ) : ℚ := (4 * (N : ℚ) + 2) * fineError N
 
 theorem cosinePolynomialValue_cast (N : ℕ) (q : ℚ) :
@@ -122,6 +123,7 @@ theorem cosinePolynomialValue_reduced (N : ℕ) (q : ℚ)
   rw [seedN_four, Real.cos_two_mul, Real.cos_arccos hq.1 hq.2] at hred
   rw [cosinePolynomialValue_cast, ← hpoly, hred]
 
+/-- The polynomial sampling node obtained from a rational cosine approximation. -/
 def reducedGridNode (N r : ℕ) : ℝ := 2 * (gridSample N r : ℝ) ^ 2 - 1
 
 theorem reducedGridNode_mem (N r : ℕ) : reducedGridNode N r ∈ Set.Icc (-1) 1 := by

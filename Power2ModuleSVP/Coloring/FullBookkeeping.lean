@@ -22,6 +22,7 @@ open scoped BigOperators
 
 namespace Coloring
 
+/-- The coordinates already equal to one or minus one. -/
 def signSet {r : ℕ} (x : Fin r → ℚ) : Finset (Fin r) :=
   Finset.univ.filter fun j => x j = -1 ∨ x j = 1
 
@@ -30,6 +31,7 @@ are available. The order is the ordinary coordinate order. -/
 def fixedSet {r : ℕ} (x : Fin r → ℚ) : Finset (Fin r) :=
   (((signSet x).sort (· ≤ ·)).take (r - r / 2)).toFinset
 
+/-- The coordinates left available after selecting the fixed sign coordinates. -/
 def activeSet {r : ℕ} (x : Fin r → ℚ) : Finset (Fin r) :=
   Finset.univ \ fixedSet x
 
@@ -51,8 +53,10 @@ theorem activeSet_card {r : ℕ} (x : Fin r → ℚ)
     Fintype.card_fin, hf]
   omega
 
+/-- Enumerate a finite set of coordinates in increasing order. -/
 def embed {r : ℕ} (A : Finset (Fin r)) : Fin A.card ↪o Fin r := A.orderEmbOfFin rfl
 
+/-- Replace the coordinates in `A` by an enumerated vector, keeping the others from `y`. -/
 def extend {r : ℕ} (A : Finset (Fin r)) (y : Fin r → ℚ)
     (z : Fin A.card → ℚ) : Fin r → ℚ := fun j =>
   if h : j ∈ A then z ((A.orderIsoOfFin rfl).symm ⟨j, h⟩) else y j

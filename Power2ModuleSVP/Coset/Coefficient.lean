@@ -9,16 +9,22 @@ Paper: `paper/power2svp.pdf`, Sections 2–3.1 (coefficient arithmetic and Theor
 -/
 namespace Power2ModuleSVP
 
+/-- Integer coefficient vectors in the negacyclic ring model. -/
 abbrev Coeff := IdealCVP.Coeff
+/-- The integer quotient ring modulo `X^d + 1`. -/
 abbrev Rd := IdealCVP.Cyclotomic.QuotRing
 
+/-- The degree is a power of two. -/
 def Dyadic (d : ℕ) : Prop := ∃ k : ℕ, d = 2^k
 /-- Every coefficient lies in the integer unit cube. -/
 def Cube {d : ℕ} (a : Coeff d) : Prop := ∀ i, |a i| ≤ 1
 /-- Every coefficient is either minus one or one. -/
 def Signs {d : ℕ} (a : Coeff d) : Prop := ∀ i, a i = -1 ∨ a i = 1
+/-- Every coefficient is zero or one. -/
 def Bits {d : ℕ} (a : Coeff d) : Prop := ∀ i, a i = 0 ∨ a i = 1
+/-- Every coefficient is even. -/
 def EvenCoeffs {d : ℕ} (a : Coeff d) : Prop := ∀ i, Even (a i)
+/-- A coordinate monomial with coefficient one or minus one. -/
 def SignedMonomial {d : ℕ} (a : Coeff d) : Prop :=
   ∃ j : Fin d, a = IdealCVP.Cyclotomic.monomial j 1 ∨
     a = -IdealCVP.Cyclotomic.monomial j 1
@@ -27,7 +33,9 @@ def Rigid {d : ℕ} (J : Coeff d) : Prop :=
   ∀ v : Coeff d, Cube (IdealCVP.Cyclotomic.mul J v) →
     v = 0 ∨ SignedMonomial v
 
+/-- The maximum absolute coefficient, valued in the natural numbers. -/
 def coeffSup {d : ℕ} (a : Coeff d) : ℕ := Finset.univ.sup (fun i => (a i).natAbs)
+/-- The coefficient maximum norm of a pair of ring elements. -/
 def pairSup {d : ℕ} (z : Coeff d × Coeff d) : ℕ := max (coeffSup z.1) (coeffSup z.2)
 
 theorem Dyadic.pos {d : ℕ} (hd : Dyadic d) : 0 < d := by

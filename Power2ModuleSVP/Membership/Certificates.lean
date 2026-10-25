@@ -73,8 +73,8 @@ theorem module_certificate_bound (x : SVPInput) (uv : List ℤ × List ℤ)
     (huv : moduleVerifier (x, uv) = true) :
     ∀ z ∈ uv.1 ++ uv.2, |z| ≤ cvpCertificateBound (moduleBoundInput x) := by
   obtain ⟨hw, hl, hr, hn, hc, he⟩ := (moduleVerifier_spec x uv).mp huv
-  letI : Fact (∃ k : ℕ, x.1 = 2 ^ k) := ⟨hw.1⟩
-  letI : Fact (∃ k : ℕ, (moduleNormInput x).1 = 2 ^ k) := ⟨hw.1⟩
+  let : Fact (∃ k : ℕ, x.1 = 2 ^ k) := ⟨hw.1⟩
+  let : Fact (∃ k : ℕ, (moduleNormInput x).1 = 2 ^ k) := ⟨hw.1⟩
   let M := generalMatrix (listRingPair x.1 x.2.1) (listRingPair x.1 x.2.2)
   have hdet : M.det ≠ 0 := (generalMatrix_det_iff _ _).mpr
     ((listIndependent_iff _ _).mp hw.2.2.2.2.2)

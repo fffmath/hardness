@@ -142,6 +142,7 @@ theorem localExpectation_le_one (p : ℚ) (hp : 0 ≤ p) (hp' : p ≤ 1)
       have h1 := mul_le_mul_of_nonneg_left (ih (Function.update base j true)) hp
       nlinarith
 
+/-- Use one assignment on the listed variables and the base assignment elsewhere. -/
 def completeAssignment : List ℕ → (ℕ → Bool) → (ℕ → Bool) → (ℕ → Bool)
   | [], _, base => base
   | j :: js, target, base =>
@@ -157,7 +158,7 @@ theorem completeAssignment_apply (vars : List ℕ) (target base : ℕ → Bool) 
     · simp [hmem]
     · by_cases hji : j = i
       · subst j; simp [hmem]
-      · simp [hmem, hji, Function.update_of_ne hji]
+      · simp [hmem, hji]
 
 /-- Probability weight of one fully specified local assignment. -/
 def assignmentWeight (p : ℚ) : List ℕ → (ℕ → Bool) → ℚ
@@ -259,6 +260,7 @@ theorem assignmentWeight_singleton (p : ℚ) (vars : List ℕ) (hnodup : vars.No
 def rowFlags (d : ℕ) (support : Finset ℕ) (i : ℕ) : Finset ℕ :=
   support.image (fun j => (i+d-j) % d)
 
+/-- The flag coordinates that can affect a row with the given multiplier support. -/
 def rowVariables (d : ℕ) (support : Finset ℕ) (i : ℕ) : List ℕ :=
   (rowFlags d support i).sort (· ≤ ·)
 
@@ -405,9 +407,11 @@ theorem mem_conflictingRows {d : ℕ} (support : Finset ℕ)
   refine ⟨(j,k), by simp [hj,hk], ?_⟩
   rw [← hcancel, he, Nat.mod_add_mod]
 
+/-- The nonzero coordinates of the multiplier within the stored dimension. -/
 def multiplierSupport (d : ℕ) (v : List ℤ) : Finset ℕ :=
   (Finset.range d).filter (fun j => v.getD j 0 ≠ 0)
 
+/-- The rows selected for the local repair tests. -/
 def selectedRows (d : ℕ) (v : List ℤ) : List ℕ :=
   greedySelect (rowFlags d (multiplierSupport d v)) (List.range d)
 
@@ -461,6 +465,7 @@ def rowValue (d : ℕ) (s v : List ℤ) (i : ℕ) (flags : ℕ → Bool) : ℤ :
     (if j ≤ i then (1 : ℤ) else -1) * s.getD ((i+d-j)%d) 0 * v.getD j 0 *
       (if flags ((i+d-j)%d) then -1 else 1)
 
+/-- The rational indicator that the row product is either minus one or one. -/
 def rowIndicator (d : ℕ) (s v : List ℤ) (i : ℕ) (flags : ℕ → Bool) : ℚ :=
   if rowValue d s v i flags = -1 ∨ rowValue d s v i flags = 1 then 1 else 0
 
@@ -472,7 +477,7 @@ theorem rowValue_eq_mul {d : ℕ} (hd : 0 < d) (s v : List ℤ)
         (fun k : Fin d => s.getD k.val 0 * (if flags k.val then -1 else 1))
         (IdealCVP.ofList v) i := by
   rw [mul_row_formula hd]
-  simp only [Fin.val_mk, IdealCVP.ofList]
+  simp only [IdealCVP.ofList]
   rw [Fin.sum_univ_eq_sum_range (fun j =>
     (if j ≤ i.val then (1 : ℤ) else -1) *
       (s.getD ((i.val+d-j)%d) 0 * (if flags ((i.val+d-j)%d) then -1 else 1)) *
@@ -483,7 +488,7 @@ theorem rowValue_eq_mul {d : ℕ} (hd : 0 < d) (s v : List ℤ)
   intro j hj
   by_cases hv : v.getD j 0 = 0
   · simp only [hv, ne_eq, not_true_eq_false, ite_false, mul_zero]
-  · simp only [hv, ne_eq, not_false_eq_true, ite_true, IdealCVP.ofList]
+  · simp only [hv, ne_eq, not_false_eq_true, ite_true]
     ring
 
 theorem rowIndicator_depends (d : ℕ) (s v : List ℤ) (i : ℕ) :
@@ -532,13 +537,13 @@ theorem rowValue_singleton {d : ℕ} (s v : List ℤ) {i : ℕ} (hi : i < d)
       ∑ k ∈ S.erase j, t k := by
     apply Finset.sum_congr rfl
     intro k hk
-    exact if_neg (Finset.mem_erase.mp hk).1
+    exact ite_eq_right (Finset.mem_erase.mp hk).1
   rw [hrest] at hsum'
   simp only [ite_true] at hsum'
   linarith
 
 theorem half_le_one_sub_pow (p : ℚ) (hp : p ≤ 1) (m : ℕ)
-    (hmp : (m : ℚ) * p ≤ 1/2) : (1/2 : ℚ) ≤ (1-p)^m := by
+    (hmp : (m : ℚ) * p ≤ 1 / 2) : (1 / 2 : ℚ) ≤ (1 - p) ^ m := by
   have hh := one_add_mul_le_pow (a := -p) (by linarith : (-2 : ℚ) ≤ -p) m
   have he : (1 + -p)^m = (1-p)^m := by congr 1; ring
   rw [he] at hh
@@ -563,7 +568,7 @@ theorem rowProbability_le_one_sub_half {d : ℕ} (hd : 0 < d)
     (hs : Signs (IdealCVP.ofList (d := d) s))
     (hm : 2 ≤ (multiplierSupport d v).card)
     (p : ℚ) (hp : 0 ≤ p) (hp' : p ≤ 1)
-    (hmp : ((multiplierSupport d v).card : ℚ) * p ≤ 1/2) :
+    (hmp : ((multiplierSupport d v).card : ℚ) * p ≤ 1 / 2) :
     rowProbability d s v i [] p ≤ 1-p/2 := by
   let S := multiplierSupport d v
   let vars := rowVariables d S i
@@ -590,7 +595,7 @@ theorem rowProbability_le_one_sub_half {d : ℕ} (hd : 0 < d)
   rcases exists_illegal_flip S t hm ht with hbad | ⟨j, hj, hbad⟩
   · have hrow : rowIndicator d s v i (fun _ => false) = 0 := by
       unfold rowIndicator
-      rw [hzero, if_neg (not_or.mpr hbad)]
+      rw [hzero, ite_eq_right (not_or.mpr hbad)]
     have he : rowProbability d s v i [] p ≤
         1-assignmentWeight p vars (fun _ => false) :=
       localExpectation_le_one_sub_leaf p hp hp' vars (rowIndicator d s v i)
@@ -603,7 +608,7 @@ theorem rowProbability_le_one_sub_half {d : ℕ} (hd : 0 < d)
     have hrow : rowIndicator d s v i target = 0 := by
       unfold rowIndicator
       rw [rowValue_singleton s v hi hj, hzero]
-      exact if_neg (not_or.mpr hbad)
+      exact ite_eq_right (not_or.mpr hbad)
     have hn : n ∈ vars := by
       apply (mem_rowVariables _ _ _ _).mpr
       exact Finset.mem_image.mpr ⟨j, hj, rfl⟩
@@ -630,7 +635,6 @@ theorem prefixFixed_append (pre : List Bool) (bit : Bool) :
     · simp [List.getElem?_append, hlt, Function.update_of_ne hj]
     · have hgt : pre.length < j := by omega
       simp [List.getElem?_append, hlt, Function.update_of_ne hj,
-        List.getElem?_eq_none_iff.mpr (by omega : pre.length ≤ j),
         List.getElem?_eq_none_iff.mpr (by simp; omega : [bit].length ≤ j-pre.length)]
 
 theorem rowProbability_branch (d : ℕ) (s v : List ℤ) (i : ℕ)
@@ -744,7 +748,7 @@ theorem eventProbability_le_pow {d : ℕ} (hd : 0 < d) (s v : List ℤ)
     (hs : Signs (IdealCVP.ofList (d := d) s))
     (hm : 2 ≤ (multiplierSupport d v).card)
     (p : ℚ) (hp : 0 ≤ p) (hp' : p ≤ 1)
-    (hmp : ((multiplierSupport d v).card : ℚ) * p ≤ 1/2) :
+    (hmp : ((multiplierSupport d v).card : ℚ) * p ≤ 1 / 2) :
     eventProbability d s v [] p ≤ (1-p/2)^(selectedRows d v).length := by
   have hbase : (0 : ℚ) ≤ 1-p/2 := by linarith
   have hbound (rows : List ℕ) (hr : ∀ i ∈ rows, i < d) :
@@ -769,6 +773,7 @@ theorem eventProbability_le_pow {d : ℕ} (hd : 0 < d) (s v : List ℤ)
         _ = _ := by rw [pow_succ]; ring
   exact hbound _ (fun i hi => selectedRows_lt d v hi)
 
+/-- The rational indicator of the combined local repair event. -/
 def eventIndicator (d : ℕ) (s v : List ℤ) (flags : ℕ → Bool) : ℚ :=
   if (selectedRows d v).all (fun i =>
     decide (rowValue d s v i flags = -1 ∨ rowValue d s v i flags = 1)) then 1 else 0

@@ -21,11 +21,14 @@ namespace Power2ModuleSVP.PartialColoringAlg
 
 open scoped BigOperators
 
+/-- Read a rational matrix entry, padding absent rows and entries with zero. -/
 def tableEntry (T : List (List ℚ)) (j k : ℕ) : ℚ := (T.getD j []).getD k 0
 
+/-- Apply a stored rational matrix to a finite vector. -/
 def tableApply {r : ℕ} (T : List (List ℚ)) (v : Vec r) : Vec r :=
   fun j => ∑ k : Fin r, tableEntry T j k * v k
 
+/-- The stored rational matrix of the orthogonal projection away from the constraint list. -/
 def projectorTable {r : ℕ} : List (Vec r) → List (List ℚ)
   | [] => List.ofFn fun j : Fin r => List.ofFn (coordinate j)
   | a :: C =>

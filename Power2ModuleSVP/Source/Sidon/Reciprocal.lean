@@ -54,7 +54,7 @@ rational polynomial of degree less than `p-1`. -/
 theorem prime_root_degree_obstruction {p : ℕ} (hp : p.Prime)
     {f : ℚ[X]} (hf : f ≠ 0) (hdeg : f.natDegree < p - 1)
     {a : ℂ} (ha : a ^ p = 1) (ha1 : a ≠ 1) : aeval a f ≠ 0 := by
-  letI : Fact p.Prime := ⟨hp⟩
+  let : Fact p.Prime := ⟨hp⟩
   have he := congrArg (fun q : ℚ[X] => aeval a q)
     (cyclotomic_prime_mul_X_sub_one ℚ p)
   simp only [map_mul, map_sub, map_pow, aeval_X, map_one] at he
@@ -73,7 +73,7 @@ theorem no_common_root {P : ℚ[X]} {T L p : ℕ}
     (hexp : L - T + L = p) (hdeg : L < p - 1)
     (hone : aeval (1 : ℂ) (modulus P L) ≠ 0) (a : ℂ) :
     ¬ (aeval a (modulus P L) = 0 ∧
-       aeval a (reciprocalModulus P T L) = 0) := by
+      aeval a (reciprocalModulus P T L) = 0) := by
   rintro ⟨hw, hs⟩
   have ha1 : a ≠ 1 := by
     intro he
@@ -114,7 +114,7 @@ theorem no_unit_circle_root {P : ℚ[X]} {T L p : ℕ}
   have ha0 : a ≠ 0 := by intro h; simp [h] at ha
   have hi : aeval a⁻¹ (modulus P L) = 0 := by
     rw [Complex.inv_eq_conj ha, aeval_conj_rat, hw, map_zero]
-  letI : Invertible a⁻¹ := invertibleOfNonzero (inv_ne_zero ha0)
+  let : Invertible a⁻¹ := invertibleOfNonzero (inv_ne_zero ha0)
   have hr : aeval a (modulus P L).reverse = 0 := by
     have h := (eval₂_reverse_eq_zero_iff (algebraMap ℚ ℂ) a⁻¹ (modulus P L)).mpr hi
     simpa [aeval_def] using h
@@ -135,7 +135,7 @@ theorem modulus_coprime_reverse {P : ℚ[X]} {T L p : ℕ}
 this rules out reciprocal irreducible factors as in `lem:sidon-reciprocal`. -/
 theorem reciprocal_factor_isUnit {P q : ℚ[X]} {T L p : ℕ}
     (hP : P.natDegree ≤ T) (hTL : T < L) (hrec : P.reflect T = P)
-    (hp : p.Prime) (hexp : L-T+L = p) (hdeg : L < p-1)
+    (hp : p.Prime) (hexp : L - T + L = p) (hdeg : L < p - 1)
     (hone : aeval (1 : ℂ) (modulus P L) ≠ 0)
     (hq : q.reverse = q) (hdvd : q ∣ modulus P L) : IsUnit q := by
   have hr : q ∣ (modulus P L).reverse := by

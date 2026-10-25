@@ -45,11 +45,13 @@ theorem zero_mem_atoms (d : ℕ) : (0 : Coeff d) ∈ atoms d := by
   simp [atoms]
 
 theorem monomial_mem_atoms {d : ℕ} (j : Fin d) : monomial j 1 ∈ atoms d := by
-  simp [atoms, List.mem_flatMap]
+  simp only [atoms, List.mem_cons, List.mem_flatMap, List.mem_finRange,
+    List.not_mem_nil, or_false, true_and]
   exact Or.inr ⟨j, Or.inl rfl⟩
 
 theorem neg_monomial_mem_atoms {d : ℕ} (j : Fin d) : -monomial j 1 ∈ atoms d := by
-  simp [atoms, List.mem_flatMap]
+  simp only [atoms, List.mem_cons, neg_eq_zero, List.mem_flatMap, List.mem_finRange,
+    neg_inj, List.not_mem_nil, or_false, true_and]
   exact Or.inr ⟨j, Or.inr rfl⟩
 
 theorem zero_mem_atomSums (d n : ℕ) : (0 : Coeff d) ∈ atomSums d n := by
@@ -329,8 +331,10 @@ theorem admissible_of_cutoff {d : ℕ} (hd : Dyadic d) (hlarge : 2 ^ 3600 ≤ d)
   have hk : 3600 ≤ k := (Nat.pow_le_pow_iff_right (by decide : 1 < (2 : ℕ))).mp hlarge
   obtain ⟨hC, hdim, hspec⟩ := repair_cutoff k hk
   refine ⟨⟨k, rfl⟩, hC, ?_, ?_⟩
-  · simpa only [screeningBound, Nat.log2_eq_log_two, Nat.log_pow (by decide : 1 < (2 : ℕ))] using hdim
-  · simpa only [screeningBound, Nat.log2_eq_log_two, Nat.log_pow (by decide : 1 < (2 : ℕ))] using hspec
+  · simpa only [screeningBound, Nat.log2_eq_log_two, Nat.log_pow (by decide : 1 < (2 : ℕ))]
+      using hdim
+  · simpa only [screeningBound, Nat.log2_eq_log_two, Nat.log_pow (by decide : 1 < (2 : ℕ))]
+      using hspec
 
 /-- Linear expected flip penalty after exposing a prefix. -/
 def penalty (d : ℕ) (σ : List Bool) : ℚ :=
@@ -464,7 +468,8 @@ private theorem rational_sum_le {α : Type*} (xs : List α) (F : α → ℚ) (K 
   | cons x xs ih =>
     have hx := h x (by simp)
     have ht := ih (fun y hy => h y (by simp [hy]))
-    simp only [List.map_cons, List.sum_cons, Rat.cast_add, List.length_cons, Nat.cast_add, Nat.cast_one]
+    simp only [List.map_cons, List.sum_cons, Rat.cast_add, List.length_cons,
+      Nat.cast_add, Nat.cast_one]
     nlinarith
 
 /-- The disjoint-row estimate and sparse candidate count bound the initial
@@ -627,7 +632,8 @@ theorem rigid_of_initial_potential {d : ℕ} (hd : Admissible d) (s : List ℤ)
   have hsize : 4 * ((flipSet d σ).card : ℝ) ≤ (seedConstant : ℝ) * Real.sqrt d := by
     rw [flipSet_card σ hlen]
     calc
-      4 * (σ.count true : ℝ) ≤ 4 * (flipBudget d : ℝ) := by exact_mod_cast Nat.mul_le_mul_left 4 hcount
+      4 * (σ.count true : ℝ) ≤ 4 * (flipBudget d : ℝ) := by
+        exact_mod_cast Nat.mul_le_mul_left 4 hcount
       _ = (64 * screeningBound ^ 3 * Nat.log2 d : ℕ) := by
         unfold flipBudget
         push_cast

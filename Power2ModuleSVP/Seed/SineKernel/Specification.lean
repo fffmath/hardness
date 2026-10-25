@@ -117,12 +117,15 @@ structure SeedKernelIntervals (N J : ℕ) where
 
 namespace SeedKernelIntervals
 
+/-- The left endpoint of a kernel interval expressed as an angle. -/
 def leftAngle {N J : ℕ} (I : SeedKernelIntervals N J) (i : Fin J) : ℝ :=
   I.left i * Real.pi / N
 
+/-- The right endpoint of a kernel interval expressed as an angle. -/
 def rightAngle {N J : ℕ} (I : SeedKernelIntervals N J) (i : Fin J) : ℝ :=
   I.right i * Real.pi / N
 
+/-- The angle belongs to one of the closed kernel intervals. -/
 def contains {N J : ℕ} (I : SeedKernelIntervals N J) (θ : ℝ) : Prop :=
   ∃ i, θ ∈ Set.Icc (I.leftAngle i) (I.rightAngle i)
 

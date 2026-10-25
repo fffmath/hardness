@@ -12,17 +12,21 @@ namespace Power2ModuleSVP
 namespace FlatFrontend
 open scoped BigOperators
 
+/-- Dimension and list-length conditions for a partial-coloring input. -/
 structure InputShape (P : PartialColoringInput) (r m : ℕ) : Prop where
   rows : P.1.length = m
   columns : ∀ row ∈ P.1, row.length = r
   starting : P.2.1.length = r
   thresholds : P.2.2.length = m
 
+/-- The finite rational matrix read from the stored input rows. -/
 def inputMatrix (P : PartialColoringInput) {r m : ℕ} (i : Fin m) (j : Fin r) : ℚ :=
   (P.1.getD i []).getD j 0
 
+/-- The finite starting vector read from the stored input. -/
 def inputStart (P : PartialColoringInput) {r : ℕ} (j : Fin r) : ℚ := P.2.1.getD j 0
 
+/-- The finite row thresholds read from the stored input. -/
 def inputThreshold (P : PartialColoringInput) {m : ℕ} (i : Fin m) : ℚ := P.2.2.getD i 0
 
 theorem ofFn_getD_length {α : Type*} (l : List α) (a : α) {n : ℕ} (hl : l.length = n) :

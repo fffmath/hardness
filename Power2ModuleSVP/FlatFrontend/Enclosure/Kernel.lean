@@ -87,6 +87,7 @@ theorem first_start_zero (d : ℕ) (i : Fin (intervalCount d)) :
   · omega
   · simp [List.getD_eq_getElem?_getD, hi]
 
+/-- View a seed coefficient index as a row of the nonempty interval-coloring input. -/
 def firstRowIndex {d : ℕ} (hJ : 0 < intervalCount d) (j : Fin (seedN d)) :
     Fin (seedIntervalRows (seedN d) (intervalCount d)) :=
   ⟨j, by simp [seedIntervalRows, Nat.ne_of_gt hJ]⟩
@@ -124,7 +125,8 @@ theorem fractionalCoefficient_discrepancy {d : ℕ}
             kernelEntry (seedN d) ((intervals (seedN d)).getD i (0, 0)) j) := by
   dsimp only [FlatSeedAnalyticData.FirstSpec, analyticData] at hα
   have hh := hα.2 (firstRowIndex hJ j)
-  change coloringDiscrepancy (inputMatrix (intervalInput d) _) (inputStart (intervalInput d)) α ≤ _ at hh
+  change coloringDiscrepancy (inputMatrix (intervalInput d) _)
+    (inputStart (intervalInput d)) α ≤ _ at hh
   have hm : inputMatrix (intervalInput d) (firstRowIndex hJ j) =
       fun i : Fin (intervalCount d) =>
         kernelEntry (seedN d) ((intervals (seedN d)).getD i (0, 0)) j :=
@@ -177,7 +179,8 @@ theorem fractional_bound_of_entries {d : ℕ}
     have ht := abs_sub_le (fractional I α j)
       (fractionalCoefficient (seedN d) (intervals (seedN d)) (List.ofFn α) j : ℝ) 0
     rw [sub_zero, sub_zero, abs_sub_comm] at ht
-    exact (ht.trans (add_le_add herr hq)).trans (by simpa [FirstThresholdMargin, add_comm] using hmargin)
+    exact (ht.trans (add_le_add herr hq)).trans
+      (by simpa [FirstThresholdMargin, add_comm] using hmargin)
   · let : IsEmpty (Fin (intervalCount d)) := ⟨fun i => by have := i.isLt; omega⟩
     norm_num [fractional_eq_sum]
 

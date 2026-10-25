@@ -21,6 +21,7 @@ namespace Power2ModuleSVP.PartialColoringAlg
 
 open scoped BigOperators
 
+/-- The natural ceiling square root, with value zero at zero. -/
 def ceilSqrt (n : ℕ) : ℕ := if n = 0 then 0 else Nat.sqrt (n - 1) + 1
 
 theorem ceilSqrt_bounds {n : ℕ} (hn : 0 < n) :
@@ -60,6 +61,7 @@ theorem normScale_bounds {s : ℚ} (hs : 0 < s) :
     rw [div_pow, div_lt_iff₀ (sq_pos_of_pos hd)]
     nlinarith [hid]
 
+/-- Scale a rational vector by the reciprocal of its rational norm upper bound. -/
 def normalize {r : ℕ} (v : Vec r) : Vec r := (normScale (dot v v))⁻¹ • v
 
 theorem normalize_bounds {r : ℕ} (v : Vec r) (hv : v ≠ 0) :
@@ -78,6 +80,7 @@ theorem normalize_bounds {r : ℕ} (v : Vec r) (hv : v ≠ 0) :
   · apply (div_le_iff₀ (sq_pos_of_pos hscale)).mpr
     simpa using hlo
 
+/-- Choose the sign of a direction so its dot product with the current vector is nonnegative. -/
 def orient {r : ℕ} (x z : Vec r) : Vec r := if 0 ≤ dot x z then z else -z
 
 theorem orient_nonneg {r : ℕ} (x z : Vec r) : 0 ≤ dot x (orient x z) := by
@@ -88,15 +91,20 @@ theorem orient_nonneg {r : ℕ} (x z : Vec r) : 0 ≤ dot x (orient x z) := by
     rw [hid]
     exact neg_nonneg.mpr (le_of_not_ge h)
 
+/-- The rational step size of the partial-coloring walk. -/
 def stepSize (r : ℕ) : ℚ := 1 / (16 * r)
+/-- The cubic upper bound on the number of rational walk steps. -/
 def stepBudget (r : ℕ) : ℕ := 2048 * r ^ 3
+/-- The binary precision budget controlling accumulated row-weight rounding errors. -/
 def precision (r m : ℕ) : ℕ := (1024 * m * (stepBudget r + 1)).size
+/-- The dyadic mesh used for upward rounding of the row weights. -/
 def mesh (r m : ℕ) : ℚ := 1 / (2 : ℚ) ^ precision r m
 
 theorem mesh_pos (r m : ℕ) : 0 < mesh r m := by
   unfold mesh
   positivity
 
+/-- Round a rational weight upward to the mesh `η` when `η` is positive. -/
 def roundUp (η w : ℚ) : ℚ := η * (⌈w / η⌉ : ℤ)
 
 theorem roundUp_bounds {η : ℚ} (hη : 0 < η) (w : ℚ) :
@@ -126,9 +134,11 @@ theorem roundUp_half_enclosure {η w : ℚ} {target : ℝ} (hη : 0 < η)
 def expSum (s : ℚ) (L : ℕ) : ℚ :=
   ((List.range L).map fun k => s ^ k / (Nat.factorial k : ℚ)).sum
 
+/-- The upward-rounded reciprocal Taylor approximation used as an initial row weight. -/
 def initialWeight (r m : ℕ) (lam : ℚ) : ℚ :=
   roundUp (mesh r m / 2) ((expSum (lam ^ 2) (max (32 * r) (precision r m + 4)))⁻¹)
 
+/-- A rational constraint row together with its discrepancy threshold. -/
 structure Row (r : ℕ) where
   a : Vec r
   threshold : ℚ
@@ -139,16 +149,20 @@ def prepareRows {r m : ℕ} (V : Fin m → Vec r) (lam : Fin m → ℚ) : List (
     if dot (V i) (V i) = 0 ∨ 4 * (r : ℚ) < lam i ^ 2 then []
     else [⟨normalize (V i), lam i⟩, ⟨-normalize (V i), lam i⟩]
 
+/-- The current coloring vector and constraint weights of the rational walk. -/
 structure State (r m : ℕ) where
   x : Vec r
   w : Fin m → ℚ
 
+/-- The rational damping factor applied to one row weight at each step. -/
 def damping {r m : ℕ} (a : Fin m → Row r) (i : Fin m) : ℚ :=
   1 - 4 * stepSize r ^ 2 * (a i).threshold ^ 2 / r
 
+/-- Select up to the ceiling of `r / 8` row indices with the largest weights. -/
 def heavyRows {r m : ℕ} (w : Fin m → ℚ) : List (Fin m) :=
   ((List.finRange m).mergeSort (fun i j => decide (w j ≤ w i))).take ((r + 7) / 8)
 
+/-- The linear constraints preserving fixed coordinates, heavy and small rows, and potential. -/
 def constraints {r m : ℕ} (a : Fin m → Row r) (s : State r m) : List (Vec r) :=
   let fixed := ((List.finRange r).filter fun j => s.x j = -1 ∨ s.x j = 1).map coordinate
   let heavy := (heavyRows (r := r) s.w).map fun i => (a i).a
@@ -156,9 +170,11 @@ def constraints {r m : ℕ} (a : Fin m → Row r) (s : State r m) : List (Vec r)
   let h : Vec r := fun j => ∑ i, s.w i * damping a i * (a i).threshold * (a i).a j
   h :: (fixed ++ heavy ++ small)
 
+/-- The constraint rows weighted for the quadratic direction-selection energy. -/
 def quadraticRows {r m : ℕ} (a : Fin m → Row r) (s : State r m) : List (ℚ × Vec r) :=
   List.ofFn fun i => (s.w i * (a i).threshold ^ 2, (a i).a)
 
+/-- Choose, normalize, and orient a projected direction with low quadratic energy. -/
 def direction {r m : ℕ} (a : Fin m → Row r) (s : State r m) : Vec r :=
   orient s.x (normalize (bestColumn (quadraticRows a s) (cachedColumns (constraints a s))))
 
@@ -168,9 +184,11 @@ def capacity {r : ℕ} (x z : Vec r) (j : Fin r) : ℚ :=
   if 0 < z j then (1 - x j) / (stepSize r * z j)
   else if z j < 0 then (-1 - x j) / (stepSize r * z j) else 1
 
+/-- The minimum coordinate boundary capacity, capped at one full step. -/
 def stepFraction {r : ℕ} (x z : Vec r) : ℚ :=
   ((List.finRange r).map (capacity x z)).foldr min 1
 
+/-- Update the coloring vector and the upward-rounded damped row weights for one step. -/
 def nextState {r m : ℕ} (a : Fin m → Row r) (s : State r m) : State r m :=
   let z := direction a s
   let α := stepFraction s.x z
@@ -180,14 +198,17 @@ def nextState {r m : ℕ} (a : Fin m → Row r) (s : State r m) : State r m :=
       let t := stepSize r * (a i).threshold * dot (a i).a y
       roundUp (mesh r m) (s.w i * damping a i * (1 + t + t ^ 2)) }
 
+/-- Iterate the rational walk until the fuel is exhausted or half the coordinates are signs. -/
 def walk {r m : ℕ} (a : Fin m → Row r) : ℕ → State r m → State r m
   | 0, s => s
   | fuel + 1, s =>
     if r ≤ 2 * signCoordinateCount s.x then s else walk a fuel (nextState a s)
 
+/-- Initialize the coloring vector and approximate exponential row weights. -/
 def initialState {r m : ℕ} (a : Fin m → Row r) (x : Vec r) : State r m :=
   ⟨x, fun i => initialWeight r m (a i).threshold⟩
 
+/-- Run the rational coloring walk from its initial state for the cubic step budget. -/
 def run {r m : ℕ} (a : Fin m → Row r) (x : Vec r) : State r m :=
   walk a (stepBudget r) (initialState a x)
 

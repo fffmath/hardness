@@ -120,7 +120,6 @@ theorem seedModulatedJet_hasDerivAt (A : ℕ → ℝ → ℂ)
   rw [iteratedDeriv_succ]
   exact (hf.differentiable_iteratedDeriv' r x).hasDerivAt
 
-
 /-- A real two-carrier derivative family. -/
 def seedWaveJet (A B : ℕ → ℝ → ℂ) (r : ℕ) (x : ℝ) : ℝ :=
   (seedModulatedJet A 1 r x + seedModulatedJet B 2 r x).re
@@ -243,7 +242,6 @@ theorem seedWaveJet_nondegenerate (A B : ℕ → ℝ → ℂ)
   · simpa [he2] using seedWaveJet_error_lt A B hA hB (by norm_num : 2 ≤ 4) x
   · simpa [he3] using seedWaveJet_error_lt A B hA hB (by norm_num : 3 ≤ 4) x
 
-
 /-- Normalized slowly varying first Rudin--Shapiro block and all its
 rescaled angular derivatives. -/
 def rudinShapiroSlowP (k r : ℕ) (x : ℝ) : ℂ :=
@@ -318,7 +316,6 @@ theorem rudinShapiroWave_seven_cells_unmarked (k : ℕ) {a b : ℝ}
   seed_seven_cells_unmarked (rudinShapiroWave k) (rudinShapiroWave_hasDerivAt k)
     (rudinShapiroWave_nondegenerate k) (fun _ hr x => rudinShapiroWave_bound k hr x)
     ha haMax
-
 
 /-- Zeroth jet in the original circle-evaluation notation. -/
 theorem rudinShapiroWave_zero (k : ℕ) (x : ℝ) :

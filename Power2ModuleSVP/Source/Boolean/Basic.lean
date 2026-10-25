@@ -13,7 +13,6 @@ namespace Power2ModuleSVP
 namespace BooleanSource
 open scoped BigOperators
 set_option maxRecDepth 2000
-set_option maxHeartbeats 1000000
 
 /-- Computable coefficient value of a Boolean bit. -/
 def bit (b : Bool) : ℕ := if b then 1 else 0
@@ -23,18 +22,22 @@ def bit (b : Bool) : ℕ := if b then 1 else 0
 
 theorem bit_le_one (b : Bool) : bit b ≤ 1 := by cases b <;> decide
 
+/-- A positive clause with three variable occurrences. -/
 abbrev Triple (V : Type*) := V × V × V
 
 /-- Exactly one of the three positive variables is set. -/
 def One {V : Type*} (a : V → Bool) (c : Triple V) : Prop :=
   bit (a c.1) + bit (a c.2.1) + bit (a c.2.2) = 1
 
+/-- An assignment satisfies every positive exactly-one clause in the list. -/
 def Satisfies {V : Type*} (a : V → Bool) (cs : List (Triple V)) : Prop :=
   ∀ c ∈ cs, One a c
 
+/-- The positive clause list has an exactly-one satisfying assignment. -/
 def Satisfiable {V : Type*} (cs : List (Triple V)) : Prop :=
   ∃ a : V → Bool, Satisfies a cs
 
+/-- The three variables of a positive clause are pairwise distinct. -/
 def Distinct {V : Type*} (c : Triple V) : Prop :=
   c.1 ≠ c.2.1 ∧ c.1 ≠ c.2.2 ∧ c.2.1 ≠ c.2.2
 
@@ -59,32 +62,45 @@ theorem selector_gadget (s l : Bool) :
 Boolean tag is the value of its variable making it true, as in complexitylib. -/
 abbrev ThreeFormula (v r : ℕ) := Fin r → Fin 3 → Fin v × Bool
 
+/-- Evaluate a literal using its satisfying Boolean tag. -/
 def literalValue {v : ℕ} (a : Fin v → Bool) (l : Fin v × Bool) : Bool :=
   a l.1 == l.2
 
+/-- Every row of the three-literal formula contains a true literal. -/
 def ThreeSatisfiable {v r : ℕ} (f : ThreeFormula v r) : Prop :=
   ∃ a : Fin v → Bool, ∀ j, ∃ k, literalValue a (f j k) = true
 
 /-- Four constant tags, two copies of each input, and six variables per row. -/
 abbrev GadgetVar (v r : ℕ) := Fin 4 ⊕ ((Fin v × Bool) ⊕ (Fin r × Fin 3 × Bool))
 
+/-- The gadget variable forced to be true. -/
 def tVar {v r : ℕ} : GadgetVar v r := .inl 0
+/-- The first gadget variable forced to be false. -/
 def aVar {v r : ℕ} : GadgetVar v r := .inl 1
+/-- The second gadget variable forced to be false. -/
 def bVar {v r : ℕ} : GadgetVar v r := .inl 2
+/-- The third gadget variable forced to be false. -/
 def dVar {v r : ℕ} : GadgetVar v r := .inl 3
+/-- The gadget copy of an input variable with the given Boolean tag. -/
 def xVar {v r : ℕ} (i : Fin v) (b : Bool) : GadgetVar v r := .inr (.inl (i,b))
+/-- The selector variable for a literal occurrence. -/
 def sVar {v r : ℕ} (j : Fin r) (k : Fin 3) : GadgetVar v r := .inr (.inr (j,k,true))
+/-- The auxiliary variable for a selector implication. -/
 def zVar {v r : ℕ} (j : Fin r) (k : Fin 3) : GadgetVar v r := .inr (.inr (j,k,false))
 
+/-- The fixed clauses forcing the gadget constants. -/
 def forceClauses (v r : ℕ) : List (Triple (GadgetVar v r)) :=
   [(tVar,aVar,bVar), (tVar,aVar,dVar), (tVar,bVar,dVar)]
 
+/-- The clause forcing the two copies of an input variable to be complements. -/
 def complementClause {v r : ℕ} (i : Fin v) : Triple (GadgetVar v r) :=
   (xVar i true, xVar i false, aVar)
 
+/-- The clause selecting exactly one literal occurrence in an input row. -/
 def choiceClause {v r : ℕ} (j : Fin r) : Triple (GadgetVar v r) :=
   (sVar j 0, sVar j 1, sVar j 2)
 
+/-- The clause ensuring a selected literal occurrence is true. -/
 def implicationClause {v r : ℕ} (f : ThreeFormula v r) (j : Fin r) (k : Fin 3) :
     Triple (GadgetVar v r) :=
   (sVar j k, xVar (f j k).1 (!(f j k).2), zVar j k)
@@ -170,7 +186,7 @@ theorem positiveEncoding_sound {v r : ℕ} (f : ThreeFormula v r)
   have hnot : a (xVar (f j k).1 (!(f j k).2)) = false := by
     have hbound := bit_le_one (a (zVar j k))
     simp only [One, implicationClause, hk, bit_true] at hi
-    cases he : a (xVar (f j k).1 (!(f j k).2)) <;> simp_all <;> omega
+    cases he : a (xVar (f j k).1 (!(f j k).2)) <;> simp_all; omega
   cases he : (f j k).2 <;> simp [literalValue, he, hcomp] at hnot ⊢ <;> simpa using hnot
 
 /-- Completeness: choose one true occurrence in each disjunctive row. -/
@@ -207,7 +223,6 @@ theorem positiveEncoding_complete {v r : ℕ} (f : ThreeFormula v r)
       bit (lit j k && !(sel j k)) = 1
     rw [hneg]
     cases hs : sel j k <;> cases hl : lit j k <;> simp_all
-
 
 /-- Pure mathematical correctness of the positive exactly-one translation. -/
 theorem positiveEncoding_correct {v r : ℕ} (f : ThreeFormula v r) :

@@ -18,10 +18,13 @@ namespace SparseEncoding
 open Polynomial
 open scoped BigOperators
 
+/-- A finite family of clauses represented as sets of variable indices. -/
 abbrev Clauses (v r : ℕ) := Fin r → Finset (Fin v)
 
+/-- Every clause contains exactly three distinct variables. -/
 def WellFormed {v r : ℕ} (C : Clauses v r) : Prop := ∀ j, (C j).card = 3
 
+/-- A Boolean assignment selects exactly one variable in each clause. -/
 def Satisfiable {v r : ℕ} (C : Clauses v r) : Prop :=
   ∃ b : Fin v → Bool, ∀ j, ∑ i ∈ C j, (if b i then (1 : ℤ) else 0) = 1
 
@@ -31,19 +34,24 @@ theorem existsPositionPrime (v : ℕ) :
   obtain ⟨ell,hp,ho,hl,hu⟩ := Sidon.exists_prime_interval (v := max v 2) (by omega)
   exact ⟨ell,hp,ho,by omega,hu⟩
 
+/-- The least strict odd prime satisfying the safe Sidon-position bounds. -/
 def positionPrime (v : ℕ) : ℕ := Nat.find (existsPositionPrime v)
 
 theorem positionPrime_spec (v : ℕ) :
     (positionPrime v).Prime ∧ 2 < positionPrime v ∧ v < positionPrime v ∧
       positionPrime v < 2 * max v 2 := Nat.find_spec (existsPositionPrime v)
 
+/-- The upper bound on the input Sidon positions. -/
 def B (ell v : ℕ) := Sidon.bound ell v
+/-- The spacing between adjacent clause clusters. -/
 def delta (ell v : ℕ) := 4 * B ell v + 1
 /-- `j` is zero-based; this is the paper's `U_(j+1)`. -/
 def cluster (ell v j : ℕ) := (j+1) * delta ell v
+/-- The degree of the guarded reciprocal source polynomial. -/
 def T (ell v r : ℕ) := (4*r+1) * delta ell v
 
-def originalRow {r : ℕ} (j : Fin (2*r)) : Fin r := ⟨j.val / 2, by omega⟩
+/-- The original clause index associated with a duplicated row. -/
+def originalRow {r : ℕ} (j : Fin (2 * r)) : Fin r := ⟨j.val / 2, by omega⟩
 
 /-- The unreflected cluster exponents. Duplicates from the same clause list
 are discarded exactly as membership in a clause is a finite set. -/
@@ -171,7 +179,9 @@ theorem existsExponentPrime {t : ℕ} (ht : 0 < t) :
     rcases hh with hh | hh <;> omega
   exact ⟨p,hp,hl,by omega⟩
 
+/-- The least prime used to choose the affine modulus exponent. -/
 def exponentPrime (ell v r : ℕ) := Nat.find (existsExponentPrime (T_pos ell v r))
+/-- The affine modulus degree determined by the exponent-prime choice. -/
 def L (ell v r : ℕ) := (exponentPrime ell v r + T ell v r) / 2
 
 theorem exponentPrime_spec (ell v r : ℕ) :
@@ -198,7 +208,7 @@ theorem L_spec (ell v r : ℕ) :
 theorem T_eq (ell v r : ℕ) : T ell v r = (4*r+1)*(4*B ell v+1) := rfl
 
 /-- An explicit polynomial bound, with the harmless empty-clause convention. -/
-theorem size_bound {ell v r : ℕ} (hell : 0 < ell) (hhi : ell < 2*v) :
+theorem size_bound {ell v r : ℕ} (hell : 0 < ell) (hhi : ell < 2 * v) :
     L ell v r ≤ 9*(4*r+1)*(16*v^2+8*v+1) := by
   have hb := Sidon.bound_lt hell hhi
   have hm : 4*B ell v+1 ≤ 16*v^2+8*v+1 := by dsimp [B]; omega
@@ -391,7 +401,7 @@ theorem encoding_no_common_root {v r : ℕ} (C : Clauses v r) {ell : ℕ}
     (L_spec ell v r).2.2.1 hone a
 
 /-- Explicit polynomial bound in the nonempty regime of the reduction. -/
-theorem size_bound_nonempty {ell v r : ℕ} (hell : 0 < ell) (hhi : ell < 2*v)
+theorem size_bound_nonempty {ell v r : ℕ} (hell : 0 < ell) (hhi : ell < 2 * v)
     (_hv : 1 ≤ v) (hr : 1 ≤ r) : L ell v r ≤ 1125*r*v^2 := by
   have h1 : 4*r+1 ≤ 5*r := by omega
   have hv2 : v ≤ v^2 := by nlinarith

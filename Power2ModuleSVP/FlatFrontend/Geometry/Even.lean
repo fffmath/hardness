@@ -12,6 +12,7 @@ namespace FlatFrontend
 open scoped BigOperators
 noncomputable section
 
+/-- The unit-circle point with argument twice the given angle. -/
 def seedCircle (θ : ℝ) : ℂ := Complex.exp (((2 * θ : ℝ) : ℂ) * Complex.I)
 
 theorem seedCircle_norm (θ : ℝ) : ‖seedCircle θ‖ = 1 := by
@@ -41,8 +42,10 @@ theorem evenPart_eq_rudinShapiro {d : ℕ} (hd : d = 4 * seedN d + 4)
       (if cosineSelected (seedN d) j then (0 : ℂ)
         else (rudinShapiroCoefficient j : ℂ)) * seedCircle θ ^ j) =
       rudinShapiroPrefix (seedN d + 1) (seedCircle θ) -
-        (seedCircle θ ^ blockShift (seedN d) * rsEval (rudinShapiroP (stage (seedN d))) (seedCircle θ) +
-        seedCircle θ ^ (2 * blockShift (seedN d)) * rsEval (rudinShapiroP (stage (seedN d))) (seedCircle θ)) := by
+        (seedCircle θ ^ blockShift (seedN d) *
+            rsEval (rudinShapiroP (stage (seedN d))) (seedCircle θ) +
+        seedCircle θ ^ (2 * blockShift (seedN d)) *
+            rsEval (rudinShapiroP (stage (seedN d))) (seedCircle θ)) := by
     rw [← removed_block_evaluation hfit, rudinShapiroPrefix, ← Finset.sum_sub_distrib]
     apply Finset.sum_congr rfl
     intro j _

@@ -20,22 +20,30 @@ namespace Power2ModuleSVP
 open Cslib.Logic.PL Cslib.Complexity Turing.MultiTapeTM
 open BooleanSource
 
+/-- Stored affine dimension, polynomial degree, polynomial coefficients, and offset. -/
 abbrev SourceInput := ℕ × (ℕ × (List ℤ × List ℤ))
+/-- Unary dimensions and signed binary coefficient encoding of an affine source input. -/
 abbrev encSource : SourceInput ↪ List Bool :=
   encPair encUnary (encPair encUnary
     (encPair (encList encIntBin) (encList encIntBin)))
 
 namespace SourceRuntime
-set_option maxHeartbeats 1200000
 attribute [local irreducible] BooleanSource.positiveEncoding List.getD
 
+/-- The executable Sidon position of a zero-based input variable. -/
 def position (ell i : ℕ) := IdealCVP.SidonPositions.erdosTuranAlpha ell (i+1)
+/-- The executable upper bound on the input Sidon positions. -/
 def bound (ell v : ℕ) := IdealCVP.SidonPositions.erdosTuranAlpha ell v
+/-- The spacing between adjacent executable clause clusters. -/
 def delta (ell v : ℕ) := 4*bound ell v+1
+/-- The executable exponent of a zero-based clause cluster. -/
 def cluster (ell v j : ℕ) := (j+1)*delta ell v
+/-- The executable degree of the reciprocal source polynomial. -/
 def top (ell v r : ℕ) := (4*r+1)*delta ell v
+/-- The executable dimension determined by the exponent-prime choice. -/
 def dimension (ell v r : ℕ) := (exponentPrime (top ell v r)+top ell v r)/2
 
+/-- Test membership in the unreflected clause support by a bounded scan. -/
 def lowerCheck (p : PositiveInput) (ell z : ℕ) : Bool :=
   (List.range (2*p.2.length)).any fun j =>
     let t := p.2.getD (j/2) (0,0,0)
@@ -43,19 +51,23 @@ def lowerCheck (p : PositiveInput) (ell z : ℕ) : Bool :=
       z = cluster ell p.1 j - position ell t.2.1 ∨
       z = cluster ell p.1 j - position ell t.2.2)
 
+/-- Test membership in the guarded reciprocal polynomial support. -/
 def supportCheck (p : PositiveInput) (ell z : ℕ) : Bool :=
   decide (z = 0 ∨ z = top ell p.1 p.2.length) || lowerCheck p ell z ||
     (List.range (top ell p.1 p.2.length+1)).any (fun a =>
       lowerCheck p ell a && decide (top ell p.1 p.2.length-a = z))
 
+/-- Test whether an exponent is reached by an input position plus a support exponent. -/
 def touchedCheck (p : PositiveInput) (ell z : ℕ) : Bool :=
   (List.range p.1).any fun i =>
     (List.range (top ell p.1 p.2.length+1)).any fun a =>
       supportCheck p ell a && decide (position ell i+a = z)
 
+/-- Test membership in the clause rows receiving negative translation. -/
 def negativeCheck (p : PositiveInput) (ell z : ℕ) : Bool :=
   (List.range p.2.length).any fun j => decide (cluster ell p.1 (2*j+1) = z)
 
+/-- Compute the ternary affine translation with the negative case taking priority. -/
 def offset (p : PositiveInput) (ell z : ℕ) : ℤ :=
   if negativeCheck p ell z then -1 else if touchedCheck p ell z then 0 else 1
 
@@ -78,13 +90,14 @@ theorem dimension_eq (ell v r : ℕ) : dimension ell v r = SparseEncoding.L ell 
   rw [top_eq, exponentPrime_eq]
   rfl
 
+/-- Relabel the positive gadget variables by their bounded natural-number codes. -/
 abbrev numbered {v r : ℕ} (f : ThreeFormula v r) : PositiveInput :=
   (4+2*v+6*r, (positiveEncoding f).map codeTriple)
 
 theorem lowerCheck_spec {v r : ℕ} (f : ThreeFormula v r) (ell z : ℕ) :
     lowerCheck (numbered f) ell z = true ↔
       z ∈ SparseEncoding.lowerSupport (finiteClauses f) ell := by
-  simp only [lowerCheck, numbered, List.length_map, any_range_iff, decide_eq_true_eq,
+  simp only [lowerCheck, List.length_map, any_range_iff, decide_eq_true_eq,
     SparseEncoding.lowerSupport, Finset.mem_biUnion, Finset.mem_univ, true_and]
   apply exists_congr
   intro j
@@ -141,7 +154,7 @@ theorem touchedCheck_spec {v r : ℕ} (f : ThreeFormula v r) {ell : ℕ}
 theorem negativeCheck_spec {v r : ℕ} (f : ThreeFormula v r) (ell z : ℕ) :
     negativeCheck (numbered f) ell z = true ↔
       z ∈ SparseEncoding.negativeRows ell (4+2*v+6*r) (positiveEncoding f).length := by
-  simp only [negativeCheck, numbered, List.length_map, any_range_iff,
+  simp only [negativeCheck, List.length_map, any_range_iff,
     decide_eq_true_eq, SparseEncoding.negativeRows, Finset.mem_image,
     Finset.mem_univ, true_and]
   rfl
@@ -241,16 +254,19 @@ theorem sourcePolynomial_indicator {v r : ℕ} (C : SparseEncoding.Clauses v r)
 theorem sourceMap_polynomial (f : CNF ℕ) :
     sourcePolynomial (sourceMap f).2.2.1 =
       SparseEncoding.P (finiteClauses (fromThreeSAT f).formula)
-        (SparseEncoding.positionPrime (4+2*(fromThreeSAT f).varCount+6*(fromThreeSAT f).rowCount)) := by
+        (SparseEncoding.positionPrime
+          (4 + 2 * (fromThreeSAT f).varCount + 6 * (fromThreeSAT f).rowCount)) := by
   rw [sourceMap_eq]
   exact sourcePolynomial_indicator _
-    (SparseEncoding.positionPrime_spec (4+2*(fromThreeSAT f).varCount+6*(fromThreeSAT f).rowCount)).1.pos
+    (SparseEncoding.positionPrime_spec
+      (4 + 2 * (fromThreeSAT f).varCount + 6 * (fromThreeSAT f).rowCount)).1.pos
 
 /-- Agreement of the affine predicates, exposing only coefficient arrays to callers. -/
 theorem sourceMap_solution_iff (f : CNF ℕ) (x y : Polynomial ℤ) :
     SourceAffineSolution (sourceMap f) x y ↔
       SparseEncoding.AffineSolution (finiteClauses (fromThreeSAT f).formula)
-        (SparseEncoding.positionPrime (4+2*(fromThreeSAT f).varCount+6*(fromThreeSAT f).rowCount)) x y := by
+        (SparseEncoding.positionPrime
+          (4 + 2 * (fromThreeSAT f).varCount + 6 * (fromThreeSAT f).rowCount)) x y := by
   unfold SourceAffineSolution
   rw [sourceMap_polynomial, sourceMap_eq]
   simp only [threeSATEncode, SparseEncoding.encode, SparseEncoding.AffineSolution]

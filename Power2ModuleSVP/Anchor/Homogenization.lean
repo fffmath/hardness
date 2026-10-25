@@ -14,7 +14,7 @@ open IdealCVP.Cyclotomic
 
 theorem SignedMonomial.mul_surjective {d : ℕ} (hd : Dyadic d) {v : Coeff d}
     (hv : SignedMonomial v) : Function.Surjective (mul v) := by
-  letI : Fact (∃ k, d = 2^k) := ⟨hd⟩
+  let : Fact (∃ k, d = 2^k) := ⟨hd⟩
   have hu : IsUnit (toQuot v) := by
     obtain ⟨j, rfl | rfl⟩ := hv
     · rw [IdealCVP.ModuleSIVP.toQuot_monomial]
@@ -110,7 +110,7 @@ theorem ofList_replicate_zero (d : ℕ) :
 theorem triangular_independent {d : ℕ} (hd : Dyadic d)
     (g h J : Coeff d) (hg : g ≠ 0) (hJ : J ≠ 0) :
     @IdealCVP.ModuleSIVP.Independent d ⟨hd⟩ (toQuot g, 0) (toQuot h, toQuot J) := by
-  letI : Fact (∃ k, d = 2^k) := ⟨hd⟩
+  let : Fact (∃ k, d = 2^k) := ⟨hd⟩
   rw [IdealCVP.ModuleSIVP.independent_iff]
   simp only [zero_mul, sub_zero]
   apply mul_ne_zero
@@ -123,7 +123,7 @@ theorem triangularInput_wellFormed (x : CosetInput) (hx : x.WellFormed)
     (J : List ℤ) (hlen : J.length = x.1)
     (hJs : Signs (IdealCVP.ofList (d := x.1) J)) :
     (triangularInput x J).WellFormed := by
-  letI : Fact (∃ k, x.1 = 2^k) := ⟨hx.1⟩
+  let : Fact (∃ k, x.1 = 2^k) := ⟨hx.1⟩
   refine ⟨hx.1, hx.2.1, by simp [triangularInput], hx.2.2.1, hlen, ?_⟩
   change IdealCVP.listIndependent x.1 _ _ = true
   apply (IdealCVP.listIndependent_iff _ _).mpr
@@ -142,10 +142,8 @@ theorem triangularInput_correct (x : CosetInput) (hx : x.WellFormed)
   simpa only [triangularInput, ofList_replicate_zero] using
     homogenization hx.1 _ _ _ hx.2.2.2.1 hx.2.2.2.2 hJs hJ
 
-
-
 /-- The existing basis construction supplies a free rank-two module. -/
-theorem triangular_free {d : ℕ} [Fact (∃ k, d = 2^k)]
+theorem triangular_free {d : ℕ} [Fact (∃ k, d = 2 ^ k)]
     (g h J : Coeff d) (hg : g ≠ 0) (hJs : Signs J) :
     Nonempty (Module.Basis (Fin 2) (Rd d)
       (IdealCVP.ModuleSIVP.basisSpan (toQuot g,0) (toQuot h,toQuot J))) := by
@@ -156,7 +154,7 @@ theorem triangular_free {d : ℕ} [Fact (∃ k, d = 2^k)]
 /-- The first-minimum and integral-gap conclusion for packed affine inputs. -/
 theorem packed_module_minimum (hSep : NormSeparationHypothesis)
     (q : AffineInput) (hq : q.WellFormed) (D : ℕ) (hDy : Dyadic D)
-    (hD : 16*q.1^3 ≤ D) (J : Coeff D) (hJs : Signs J) (hJ : Rigid J) :
+    (hD : 16 * q.1 ^ 3 ≤ D) (J : Coeff D) (hJs : Signs J) (hJ : Rigid J) :
     let g := IdealCVP.ofList (d := D) (packCoset D q).2.1
     let h := IdealCVP.ofList (d := D) (packCoset D q).2.2
     (AffineYes q → FirstMinimum (g,0) (h,J) 1) ∧
@@ -222,8 +220,6 @@ theorem exists_threeSAT_module_reduction (hSep : NormSeparationHypothesis)
   obtain ⟨hlen,hJs,hJ⟩ := hfamily _ (modulePackingDegree_dyadic _ _)
     (modulePackingDegree_cutoff _ _)
   exact threeSAT_module_correct hSep f k0 J hlen hJs hJ
-
-
 
 /-- The attained first minimum is one exactly for YES cosets. -/
 theorem homogenization_firstMinimum_iff {d : ℕ} (hd : Dyadic d)

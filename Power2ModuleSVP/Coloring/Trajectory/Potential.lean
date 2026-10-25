@@ -44,6 +44,7 @@ theorem damping_bounds {r m : ℕ} (hr : 0 < r) (a : Fin m → Row r)
   unfold damping
   constructor <;> linarith
 
+/-- The signed row increment appearing in the quadratic weight update. -/
 def rowIncrement {r m : ℕ} (a : Fin m → Row r) (s : State r m) (i : Fin m) : ℚ :=
   stepSize r * (a i).threshold *
     dot (a i).a (stepFraction s.x (direction a s) • direction a s)
@@ -149,6 +150,7 @@ theorem rowIncrement_quadratic_bound {r m : ℕ} (a : Fin m → Row r) (x : Vec 
       intro i _
       ring
 
+/-- The sum of the current rational row weights. -/
 def potential {r m : ℕ} (s : State r m) : ℚ := ∑ i, s.w i
 
 theorem nextState_potential {r m : ℕ} (a : Fin m → Row r) (x : Vec r)

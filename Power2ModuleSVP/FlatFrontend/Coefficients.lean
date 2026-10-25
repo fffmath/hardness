@@ -78,6 +78,7 @@ theorem centered_sum (m : ℕ) (a : ℕ → ℤ) (θ : ℝ) :
     exact circle_mode m (j + 1) (a (m + (j + 1))) (a (m - (j + 1))) θ
       (by have := Finset.mem_range.mp hj; omega)
 
+/-- The even-frequency cosine sum determined by the background sign vector. -/
 noncomputable def cosine (d : ℕ) (θ : ℝ) : ℝ :=
   let N := seedN d
   let b := background d
@@ -86,6 +87,7 @@ noncomputable def cosine (d : ℕ) (θ : ℝ) : ℝ :=
       seedIntegerSign (b.getD (2 * N - (2 * j + 2)) 1)) / 2 *
         Real.cos ((2 * (j : ℝ) + 2) * θ)
 
+/-- The even-frequency sine sum determined by the background sign vector. -/
 noncomputable def evenPart (d : ℕ) (θ : ℝ) : ℝ :=
   let N := seedN d
   let b := background d
@@ -94,6 +96,7 @@ noncomputable def evenPart (d : ℕ) (θ : ℝ) : ℝ :=
       seedIntegerSign (b.getD (2 * N - (2 * j + 2)) 1)) / 2 *
         Real.sin ((2 * (j : ℝ) + 2) * θ)
 
+/-- The odd-frequency sine sum determined by the rational coloring coefficients. -/
 noncomputable def oddPart {N : ℕ} (y : Fin N → ℚ) (θ : ℝ) : ℝ :=
   ∑ j ∈ Finset.range N, ((List.ofFn y).getD j 0 : ℝ) *
     Real.sin ((2 * (j : ℝ) + 1) * θ)
@@ -110,6 +113,7 @@ theorem background_tail (N k : ℕ) (hk : k < 3) :
     show 4 * N + 1 + k ≠ 2 * N by omega,
     show ¬ 4 * N + 1 + k ≤ 4 * N by omega]
 
+/-- Read one integer coefficient of the seed assembled from a coloring vector. -/
 def assembledCoefficient (N : ℕ) (y : Fin N → ℚ) (i : ℕ) : ℤ :=
   (seedAssemble (4 * N + 4) (background (4 * N + 4)) (List.ofFn y)).getD i 0
 

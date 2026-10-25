@@ -18,6 +18,7 @@ namespace Power2ModuleSVP.PartialColoringAlg
 
 open scoped BigOperators
 
+/-- The real loss subtracted from one in a row damping factor. -/
 noncomputable def dampingLoss {r m : ℕ} (a : Fin m → Row r) (i : Fin m) : ℝ :=
   4 * (stepSize r : ℝ) ^ 2 * ((a i).threshold : ℝ) ^ 2 / r
 

@@ -55,15 +55,15 @@ theorem product_coeff_low {P x : ℤ[X]} {B : ℕ}
 /-- Full padding theorem. `A` is the set of permitted input positions, all
 lying in `[0,B]`; the constructed translation satisfies the two stated rules. -/
 theorem sidon_padding {P x y : ℤ[X]} {T L B : ℕ} {A : Finset ℕ} {c : ℕ → ℤ}
-    (hT : 0 < T) (hBL : B < T) (hL : 3*T < L)
+    (_hT : 0 < T) (hBL : B < T) (hL : 3 * T < L)
     (hdeg : P.natDegree ≤ T) (hxdeg : x.degree < L)
     (hP : ∀ i, 0 ≤ P.coeff i) (hx : ∀ i, 0 ≤ x.coeff i)
     (hy : ∀ i < L, y.coeff i ≤ 1)
     (hzero : P.coeff 0 = 1) (htop : P.coeff T = 1)
     (hgap : ∀ i, 0 < i → i ≤ B → P.coeff i = 0)
-    (chigh : ∀ i, T+B < i → i < L → c i = 1)
+    (chigh : ∀ i, T + B < i → i < L → c i = 1)
     (clow : ∀ i, i ≤ B → i ∉ A → c i = 1)
-    (heq : ∀ i < L, y.coeff i = ((P*x) %ₘ (X^L+P)).coeff i + c i) :
+    (heq : ∀ i < L, y.coeff i = ((P * x) %ₘ (X ^ L + P)).coeff i + c i) :
     (∀ i, i ∉ A → x.coeff i = 0) ∧ (P*x) %ₘ (X^L+P) = P*x := by
   by_cases hx0 : x = 0
   · subst x

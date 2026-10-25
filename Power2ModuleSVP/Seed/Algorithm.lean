@@ -21,10 +21,13 @@ structure FlatSeedFrontend where
   intervalInput : ℕ → PartialColoringInput
   coefficientInput : ℕ × List ℚ → PartialColoringInput
 
+/-- The odd-frequency parameter extracted from the requested seed degree. -/
 def seedN (d : ℕ) : ℕ := d / 4 - 1
 
+/-- Round an integer to minus one when negative and to one otherwise. -/
 def seedIntegerSign (z : ℤ) : ℤ := if z < 0 then -1 else 1
 
+/-- Round a rational number to an integer sign, choosing one at zero. -/
 def seedRationalSign (q : ℚ) : ℤ := seedIntegerSign q.num
 
 theorem seedIntegerSign_sign (z : ℤ) :
@@ -43,6 +46,7 @@ def seedOddPosition (N i : ℕ) : Prop := i < 4 * N + 1 ∧ i % 2 = 1
 instance (N i : ℕ) : Decidable (seedOddPosition N i) :=
   inferInstanceAs (Decidable (i < 4 * N + 1 ∧ i % 2 = 1))
 
+/-- Read the odd-frequency index paired with a coefficient around the seed center. -/
 def seedOddIndex (N i : ℕ) : ℕ :=
   if i < 2 * N then (2 * N - i - 1) / 2 else (i - 2 * N - 1) / 2
 

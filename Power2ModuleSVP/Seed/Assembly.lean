@@ -16,6 +16,7 @@ Paper: `paper/power2svp.pdf`, Appendix A (Theorem 5, the deterministic flat seed
 namespace Power2ModuleSVP
 open Turing.MultiTapeTM
 
+/-- The number of derivative constraints in the second seed coloring call. -/
 def seedDerivativeRows (d : ℕ) : ℕ := 16 * seedN d * (seedN d + 1)
 
 /-- An empty interval family uses an empty first coloring problem. Keeping
@@ -42,9 +43,11 @@ structure FlatSeedAnalyticData (d : ℕ) where
 
 namespace FlatSeedAnalyticData
 
+/-- The full-coloring specification for the first, interval-based seed coloring call. -/
 def FirstSpec {d : ℕ} (D : FlatSeedAnalyticData d) (α : Fin D.J → ℚ) : Prop :=
   FullColoringSpec D.firstV D.firstX α D.firstC
 
+/-- The full-coloring specification for the second, coefficient-based seed coloring call. -/
 def SecondSpec {d : ℕ} (D : FlatSeedAnalyticData d)
     (α : Fin D.J → ℚ) (y : Fin (seedN d) → ℚ) : Prop :=
   FullColoringSpec (D.secondV α) (D.secondX α) y (D.secondC α)

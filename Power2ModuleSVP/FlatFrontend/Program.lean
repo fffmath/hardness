@@ -13,15 +13,20 @@ Paper: `paper/power2svp.pdf`, Appendices A.1–A.3 (the executable sampling grid
 namespace Power2ModuleSVP
 namespace FlatFrontend
 
+/-- The binary precision budget used by the rational frontend approximations. -/
 def precision (N : ℕ) : ℕ := 128 + 64 * Nat.log2 (N + 1)
 
+/-- The number of Taylor terms used by the rational frontend. -/
 def taylorOrder (N : ℕ) : ℕ := 128 * (N + 1) ^ 2 + precision N
 
+/-- A rational approximation from below to the square root, at binary precision `p`. -/
 def sqrtApprox (p N : ℕ) : ℚ :=
   (Nat.sqrt (N * (2 ^ p) ^ 2) : ℚ) / (2 ^ p : ℕ)
 
+/-- Truncate a rational number to the interval with endpoints `a` and `b` when `a ≤ b`. -/
 def clamp (a b q : ℚ) : ℚ := max a (min b q)
 
+/-- A symmetric rational approximation to cosine at a sampling-grid angle. -/
 def gridSample (N r : ℕ) : ℚ :=
   let M := gridSize N
   if r = 0 then 1
@@ -40,6 +45,7 @@ def chebyshevPair : ℕ → ℚ → ℚ × ℚ
     let p := chebyshevPair n q
     (p.2, 2 * q * p.2 - p.1)
 
+/-- Evaluate the concrete cosine polynomial using rational Chebyshev evaluation. -/
 def cosinePolynomialValue (N : ℕ) (q : ℚ) : ℚ :=
   ((List.range N).map fun j =>
     (cosineCoefficient N (j + 1) : ℚ) * (chebyshevPair (2 * (j + 1)) q).1).sum
@@ -61,12 +67,15 @@ def scanCells : ℕ → Option ℕ → List Bool → List (ℕ × ℕ)
     if b then scanCells (p + 1) (some a) bs
     else (a, p) :: scanCells (p + 1) none bs
 
+/-- The maximal runs of marked cells returned by the deterministic scan. -/
 def intervals (N : ℕ) : List (ℕ × ℕ) :=
   scanCells 0 none ((List.range (N / 2)).map (markedCell N))
 
+/-- The rational threshold supplied to the first coloring call. -/
 def firstThreshold (N J : ℕ) : ℚ :=
   (Nat.sqrt (56 * (Nat.log2 (64 * N / J) + 1) / 5) + 1 : ℕ)
 
+/-- The rational interval-kernel coefficient used in the first coloring matrix. -/
 def kernelEntry (N : ℕ) (I : ℕ × ℕ) (j : ℕ) : ℚ :=
   let m := 2 * j + 1
   let p := piTaylor (precision N)
@@ -74,6 +83,7 @@ def kernelEntry (N : ℕ) (I : ℕ × ℕ) (j : ℕ) : ℚ :=
   let b := cosTaylor (taylorOrder N) ((m * I.2 : ℕ) * p / N)
   36000 * sqrtApprox (precision N) N * (a - b) / m
 
+/-- Construct the rational coloring input for the computed marked-run intervals. -/
 def intervalInput (d : ℕ) : PartialColoringInput :=
   let N := seedN d
   let Is := intervals N
@@ -83,10 +93,12 @@ def intervalInput (d : ℕ) : PartialColoringInput :=
     ((List.range N).map (fun j => Is.map (fun I => kernelEntry N I j)),
       (List.replicate J 0, List.replicate N (firstThreshold N J)))
 
+/-- Form a rational fractional coefficient from interval-coloring weights. -/
 def fractionalCoefficient (N : ℕ) (Is : List (ℕ × ℕ)) (α : List ℚ) (j : ℕ) : ℚ :=
   ((List.range Is.length).map fun i =>
     α.getD i 1 * kernelEntry N (Is.getD i (0, 0)) j).sum
 
+/-- The rational Taylor approximation to a normalized odd sine derivative row. -/
 def derivativeEntry (N k ell j : ℕ) : ℚ :=
   let m := 2 * j + 1
   let q := (m * (2 * k + 1) : ℕ) * piTaylor (precision N) / (64 * (N : ℚ))
@@ -94,6 +106,7 @@ def derivativeEntry (N k ell j : ℕ) : ℚ :=
   ((m : ℚ) / (2 * N : ℕ)) ^ ell *
     ((phase ell).1 * p.2 + (phase ell).2 * p.1)
 
+/-- Construct the second coloring input from the fractional coefficient vector. -/
 def coefficientInput (a : ℕ × List ℚ) : PartialColoringInput :=
   let N := seedN a.1
   let Is := intervals N

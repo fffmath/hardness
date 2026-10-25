@@ -103,9 +103,11 @@ theorem intervals_separated {N : ℕ} (i j : Fin (intervals N).length) (hij : i 
 def runLeft (d : ℕ) (i : Fin (intervalCount d)) : ℕ :=
   ((intervals (seedN d)).getD i (0, 0)).1
 
+/-- The right grid index of a computed marked run. -/
 def runRight (d : ℕ) (i : Fin (intervalCount d)) : ℕ :=
   ((intervals (seedN d)).getD i (0, 0)).2
 
+/-- The angle lies in one of the closed intervals covered by the computed marked runs. -/
 def runContains (d : ℕ) (θ : ℝ) : Prop :=
   ∃ i : Fin (intervalCount d), θ ∈ Set.Icc
     (runLeft d i * Real.pi / seedN d) (runRight d i * Real.pi / seedN d)

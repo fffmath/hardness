@@ -34,6 +34,7 @@ attribute [local irreducible] List.getD
   unfold moduleWellFormedCheck encSVP encPairRingArgs
   fun_prop
 
+/-- Binary encoding of the two integer multiplier lists. -/
 def encMultipliers : (List ℤ × List ℤ) ↪ List Bool :=
   encPair (encList encIntBin) (encList encIntBin)
 
@@ -76,6 +77,7 @@ we do not use its two-short-vectors acceptance predicate. -/
 def moduleNormInput (x : SVPInput) : ModuleSIVPInput :=
   (x.1, x.2.1, x.2.2, (2 : ℤ) * x.1)
 
+/-- View a module input as a CVP input for the generic coefficient bound. -/
 def moduleBoundInput (x : SVPInput) : CVPInput :=
   IdealCVP.moduleBoundInput (moduleNormInput x)
 

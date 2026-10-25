@@ -15,25 +15,34 @@ Paper: `paper/power2svp.pdf`, Appendices A.1–A.3 (the executable sampling grid
 namespace Power2ModuleSVP
 namespace FlatFrontend
 
+/-- The frequency width needed by a Rudin–Shapiro stage and its translated blocks. -/
 def stageWidth (t : ℕ) : ℕ := 2 ^ (t + 11) + 2 ^ t - 1
 
+/-- The largest admissible odd-stage index within the logarithmic search bound. -/
 def stageIndex (N : ℕ) : ℕ :=
   Nat.findGreatest (fun r => stageWidth (2 * r + 1) * 2 ^ 66 ≤ N) (Nat.log2 N)
 
+/-- The odd Rudin–Shapiro stage selected for seed parameter `N`. -/
 def stage (N : ℕ) : ℕ := 2 * stageIndex N + 1
 
+/-- The frequency translation separating the Rudin–Shapiro blocks. -/
 def blockShift (N : ℕ) : ℕ := 2 ^ (stage N + 10)
 
+/-- The selected stage width relative to the seed parameter. -/
 def gamma (N : ℕ) : ℚ := (stageWidth (stage N) : ℚ) / N
 
+/-- The rational height scale used to mark small values of the cosine polynomial. -/
 def height (N : ℕ) : ℚ :=
   30 * (2 : ℚ) ^ ((stage N + 1) / 2) / 128 *
     (2 * (blockShift N : ℚ) / N) ^ 3
 
+/-- The even refinement factor of the rational sampling grid. -/
 def gridRatio (N : ℕ) : ℕ := 2 * (⌈64 * (N : ℚ) / height N⌉₊)
 
+/-- The total number of subdivisions in the rational sampling grid. -/
 def gridSize (N : ℕ) : ℕ := N * gridRatio N
 
+/-- The rational accuracy allowance determined by the height and sampling grid. -/
 def gridError (N : ℕ) : ℚ :=
   min (height N / (128 * (N : ℚ) ^ 3)) (1 / (4 * (gridSize N : ℚ) ^ 2))
 

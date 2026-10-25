@@ -14,13 +14,13 @@ open IdealCVP.Cyclotomic
 /-- The constant polynomial one in the coefficient model. -/
 def coeffOne {d : ℕ} (hd : 0 < d) : Coeff d := monomial ⟨0, hd⟩ 1
 
-@[simp]theorem mul_coeffOne {d : ℕ} (hd : 0 < d) (a : Coeff d) :
+@[simp] theorem mul_coeffOne {d : ℕ} (hd : 0 < d) (a : Coeff d) :
     mul (coeffOne hd) a = a := by
   funext r
   rw [coeffOne, mul_monomial_left]
   simp [Nat.mod_eq_of_lt, ← Fin.ext_iff]
 
-@[simp]theorem mul_coeffOne_right {d : ℕ} (hd : 0 < d) (a : Coeff d) :
+@[simp] theorem mul_coeffOne_right {d : ℕ} (hd : 0 < d) (a : Coeff d) :
     mul a (coeffOne hd) = a := by rw [mul_comm, mul_coeffOne]
 
 theorem coeff_mul_assoc {d : ℕ} (hd : 0 < d) (a b c : Coeff d) :
@@ -28,10 +28,10 @@ theorem coeff_mul_assoc {d : ℕ} (hd : 0 < d) (a b c : Coeff d) :
   apply (toQuot_bijective hd).injective
   simp only [toQuot_mul hd, _root_.mul_assoc]
 
-@[simp]theorem coeff_mul_zero_left {d : ℕ} (a : Coeff d) : mul 0 a = 0 := by
+@[simp] theorem coeff_mul_zero_left {d : ℕ} (a : Coeff d) : mul 0 a = 0 := by
   rw [mul_comm, mul_zero]
 
-@[simp]theorem coeff_mul_neg_left {d : ℕ} (a b : Coeff d) :
+@[simp] theorem coeff_mul_neg_left {d : ℕ} (a b : Coeff d) :
     mul (-a) b = -mul a b := by rw [mul_comm, mul_neg, mul_comm]
 
 theorem coeff_mul_sub_left {d : ℕ} (a b c : Coeff d) :
@@ -46,7 +46,7 @@ theorem Cube.neg {d : ℕ} {a : Coeff d} (h : Cube a) : Cube (-a) := by
 theorem cube_monomial_mul_iff {d : ℕ} (e : Fin d) (a : Coeff d) :
     Cube (mul (monomial e 1) a) ↔ Cube a := by
   have hd : 0 < d := by have := e.isLt; omega
-  letI : NeZero d := ⟨by omega⟩
+  let : NeZero d := ⟨by omega⟩
   have hinj : Function.Injective (fun j : Fin d => e + j) :=
     fun _ _ h => add_left_cancel h
   have heq : mul (monomial e 1) a = sparse (fun j : Fin d => e + j)
@@ -128,7 +128,7 @@ theorem parity_block_bound {d : ℕ} (hd : 0 < d) (F M v : Coeff d)
 theorem parity_block_forcing {d : ℕ} (hd : 0 < d) (F M v H : Coeff d)
     (hM : SignedMonomial M)
     (hF : mul (coeffOne hd - M) F = (2 : ℤ) • coeffOne hd)
-    (hE : Cube (mul F v)) (hp : EvenCoeffs (v-H)) :
+    (hE : Cube (mul F v)) (hp : EvenCoeffs (v - H)) :
     ∀ i, (Odd (H i) → v i = -1 ∨ v i = 1) ∧
       (Even (H i) → v i = 0) := by
   have hc := parity_block_bound hd F M v hM hF hE
@@ -142,7 +142,6 @@ theorem parity_block_forcing {d : ℕ} (hd : 0 < d) (F M v H : Coeff d)
     omega
   · rintro ⟨t, ht⟩
     omega
-
 
 /-- The full geometric word in the negacyclic coefficient model. -/
 def geometricWord (d : ℕ) : Coeff d := fun _ => 1
@@ -174,7 +173,7 @@ theorem parity_block_even {d : ℕ} (hd : 0 < d) (v : Coeff d)
 /-- Congruence to the constant polynomial one forces a signed constant. -/
 theorem parity_block_one {d : ℕ} (hd : 0 < d) (v : Coeff d)
     (hE : Cube (mul (geometricWord d) v))
-    (hp : EvenCoeffs (v-coeffOne hd)) : v = coeffOne hd ∨ v = -coeffOne hd := by
+    (hp : EvenCoeffs (v - coeffOne hd)) : v = coeffOne hd ∨ v = -coeffOne hd := by
   have hc := parity_block hd v hE
   have hb := abs_le.mp (hc ⟨0,hd⟩)
   obtain ⟨z,hz⟩ := hp ⟨0,hd⟩

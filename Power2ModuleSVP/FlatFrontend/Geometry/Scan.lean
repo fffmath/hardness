@@ -57,7 +57,8 @@ theorem scanCells_cells (f : ℕ → Bool) (bs : List Bool) (p : ℕ) (s : Optio
         simp only [scanCells, ↓reduceIte] at hI
         have hh := ih (p + 1) (some p) ht
           (by intro a ha; cases ha; exact htrue p le_rfl (by intro k hk hk'; omega) hb.symm) I hI
-        simpa only [List.length_cons, show p + (bs.length + 1) = p + 1 + bs.length by omega] using hh
+        simpa only [List.length_cons, show p + (bs.length + 1) = p + 1 + bs.length by omega]
+          using hh
     | some a =>
       have ha := hs a rfl
       cases b with
@@ -65,7 +66,8 @@ theorem scanCells_cells (f : ℕ → Bool) (bs : List Bool) (p : ℕ) (s : Optio
         simp only [scanCells, ↓reduceIte] at hI
         have hh := ih (p + 1) (some a) ht
           (by intro a' ha'; cases ha'; exact htrue a ha.1.le ha.2 hb.symm) I hI
-        simpa only [List.length_cons, show p + (bs.length + 1) = p + 1 + bs.length by omega] using hh
+        simpa only [List.length_cons, show p + (bs.length + 1) = p + 1 + bs.length by omega]
+          using hh
       | false =>
         simp only [scanCells, Bool.false_eq_true, ↓reduceIte, List.mem_cons] at hI
         rcases hI with hI | hI
@@ -177,7 +179,7 @@ theorem intervals_cover {N k : ℕ} (hk : k < N / 2) (hm : markedCell N k = true
         simp [List.getD_eq_getElem?_getD, hk]) (by simp) k (by omega) (by simpa) hm
 
 /-- Seven-cell exclusion transfers directly from the Boolean marking test
- to the widths of the actual merged runs. -/
+to the widths of the actual merged runs. -/
 theorem intervals_width {N : ℕ}
     (hseven : ∀ j, j + 7 ≤ N / 2 → ∃ k < 7, markedCell N (j + k) = false)
     {I : ℕ × ℕ} (hI : I ∈ intervals N) : I.2 ≤ I.1 + 6 := by

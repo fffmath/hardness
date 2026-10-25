@@ -10,9 +10,11 @@ Paper: `paper/power2svp.pdf`, Section 3.3 (proof of Theorem 1, NP membership).
 namespace Power2ModuleSVP
 open IdealCVP
 
+/-- Check that every stored coefficient lies between minus one and one. -/
 def listCube (l : List ℤ) : Bool :=
   l.all fun z => decide (-1 ≤ z) && decide (z ≤ 1)
 
+/-- Check that every stored coefficient is even. -/
 def listEven (l : List ℤ) : Bool := l.all fun z => decide (z.natAbs % 2 = 0)
 
 /-- Convert an exact-length list scan to the coefficient function. -/
@@ -43,10 +45,12 @@ theorem listEven_spec {d : ℕ} (l : List ℤ) (hl : l.length = d) :
   rw [list_all_iff l hl]
   simp only [EvenCoeffs, ← Nat.even_iff, Int.natAbs_even]
 
+/-- Check the dyadic degree, array lengths, and nonzero even coset generator. -/
 def cosetWellFormedCheck (x : CosetInput) : Bool :=
   cvpWellFormedCheck (x.1, x.2.1, x.2.2, 0) &&
     x.2.1.any (fun z => decide (z ≠ 0)) && listEven x.2.1
 
+/-- Check the dyadic degree, array lengths, and independence of the generators. -/
 def moduleWellFormedCheck (x : SVPInput) : Bool :=
   cvpWellFormedCheck (x.1, x.2.1.1, x.2.1.2, 0) &&
     decide (x.2.2.1.length = x.1) && decide (x.2.2.2.length = x.1) &&
@@ -68,9 +72,11 @@ theorem moduleWellFormedCheck_spec (x : SVPInput) :
   simp [moduleWellFormedCheck, cvpWellFormedCheck_eq, CVPInput.WellFormed,
     SVPInput.WellFormed, Dyadic, and_assoc]
 
+/-- Compute the translated coset vector from a stored multiplier. -/
 def cosetProduct (x : CosetInput) (u : List ℤ) : List ℤ :=
   listAdd x.1 x.2.2 (negacyclicMul x.1 x.2.1 u)
 
+/-- Compute both coefficient arrays of the module vector from stored multipliers. -/
 def moduleProduct (x : SVPInput) (uv : List ℤ × List ℤ) : List ℤ × List ℤ :=
   (listAdd x.1 (negacyclicMul x.1 x.2.1.1 uv.1) (negacyclicMul x.1 x.2.2.1 uv.2),
    listAdd x.1 (negacyclicMul x.1 x.2.1.2 uv.1) (negacyclicMul x.1 x.2.2.2 uv.2))
@@ -92,14 +98,17 @@ theorem ofList_moduleProduct (x : SVPInput) (uv : List ℤ × List ℤ) :
         (ofList x.2.2.1, ofList x.2.2.2) (ofList uv.1) (ofList uv.2) := by
   simp [moduleProduct, moduleVector, ofList_listAdd, ofList_negacyclicMul]
 
+/-- Verify the input shape and a multiplier witnessing coset membership in the unit cube. -/
 def cosetVerifier (p : CosetInput × List ℤ) : Bool :=
   cosetWellFormedCheck p.1 && decide (p.2.length = p.1.1) &&
     listCube (cosetProduct p.1 p.2)
 
+/-- Check that a stored pair is nonzero and lies in the coefficient unit cube. -/
 def moduleVectorCheck (z : List ℤ × List ℤ) : Bool :=
   (z.1.any (fun t => decide (t ≠ 0)) || z.2.any (fun t => decide (t ≠ 0))) &&
     listCube z.1 && listCube z.2
 
+/-- Verify the input shape and multipliers witnessing a nonzero unit-cube module vector. -/
 def moduleVerifier (p : SVPInput × (List ℤ × List ℤ)) : Bool :=
   moduleWellFormedCheck p.1 && decide (p.2.1.length = p.1.1) &&
     decide (p.2.2.length = p.1.1) && moduleVectorCheck (moduleProduct p.1 p.2)

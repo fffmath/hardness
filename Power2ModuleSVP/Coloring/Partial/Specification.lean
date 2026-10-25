@@ -27,17 +27,22 @@ open scoped BigOperators
 
 noncomputable section
 
+/-- Every coordinate of the rational vector has absolute value at most one. -/
 def RationalCube {r : ℕ} (x : Fin r → ℚ) : Prop := ∀ j, |(x j : ℝ)| ≤ 1
 
+/-- The number of coordinates already equal to one or minus one. -/
 def signCoordinateCount {r : ℕ} (x : Fin r → ℚ) : ℕ :=
   (Finset.univ.filter fun j => x j = -1 ∨ x j = 1).card
 
+/-- The Euclidean norm of a rational constraint row. -/
 def coloringRowNorm {r : ℕ} (v : Fin r → ℚ) : ℝ :=
   Real.sqrt (∑ j, (v j : ℝ) ^ 2)
 
+/-- The absolute change in a row evaluation between two coloring vectors. -/
 def coloringDiscrepancy {r : ℕ} (v x y : Fin r → ℚ) : ℝ :=
   |∑ j, (v j : ℝ) * ((y j : ℝ) - (x j : ℝ))|
 
+/-- The exponential entropy budget determined by the row thresholds. -/
 def coloringEntropy {m : ℕ} (threshold : Fin m → ℚ) : ℝ :=
   ∑ i, Real.exp (-((threshold i : ℝ) ^ 2) / 16)
 
@@ -62,6 +67,7 @@ def encColoringRational : ℚ ↪ List Bool :=
       Turing.MultiTapeTM.encNat).injective h
     exact Rat.ext (congrArg Prod.fst hp) (congrArg Prod.snd hp)⟩
 
+/-- The binary list encoding of a rational matrix, starting vector, and row thresholds. -/
 def encPartialColoring : PartialColoringInput ↪ List Bool :=
   Turing.MultiTapeTM.encPair
     (Turing.MultiTapeTM.encList (Turing.MultiTapeTM.encList encColoringRational))
@@ -69,11 +75,12 @@ def encPartialColoring : PartialColoringInput ↪ List Bool :=
       (Turing.MultiTapeTM.encList encColoringRational)
       (Turing.MultiTapeTM.encList encColoringRational))
 
+/-- Store a finite rational matrix, starting vector, and thresholds as input lists. -/
 def partialColoringInput {r m : ℕ} (V : Fin m → Fin r → ℚ)
     (x : Fin r → ℚ) (threshold : Fin m → ℚ) : PartialColoringInput :=
   (List.ofFn (fun i => List.ofFn (V i)), (List.ofFn x, List.ofFn threshold))
 
-/-- Unproved deterministic partial-coloring obligation, with the exact
+/-- Deterministic partial-coloring contract, with the exact
 constant 68 and the stated entropy budget. A single total algorithm works
 for every matrix size; malformed inputs may have arbitrary outputs. -/
 structure DeterministicPartialColoringHypothesis : Prop where

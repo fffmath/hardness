@@ -156,7 +156,6 @@ theorem polynomial_sublevel_section_finite (p : ℝ[X]) {τ : ℝ} (hτ : 0 ≤ 
   have hc := hfinset hfinite.toFinset (by simp)
   simpa [← Set.ncard_eq_toFinset_card] using hc
 
-
 /-- Closed polynomial sublevel sets have at most degree-many disjoint
 closed interval components. Singleton components are retained. -/
 theorem polynomialSublevelComponentsHypothesis_holds :

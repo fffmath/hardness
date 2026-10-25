@@ -12,6 +12,7 @@ Paper: `paper/power2svp.pdf`, Appendices A.1–A.3 (the executable sampling grid
 namespace Power2ModuleSVP
 namespace FlatFrontend
 
+/-- The two Rudin–Shapiro coefficient lists obtained by concatenation and sign changes. -/
 def rsWords : ℕ → List ℤ × List ℤ
   | 0 => ([1], [1])
   | k + 1 =>
@@ -47,6 +48,7 @@ theorem rsWords_coeff (k j : ℕ) :
         rw [hm]
         exact congrArg Neg.neg (ih _).2
 
+/-- The first `m` coefficients of the stable Rudin–Shapiro sequence. -/
 def stablePrefix (m : ℕ) : List ℤ :=
   ((rsWords (Nat.log2 m + 1)).1).take m
 
@@ -79,11 +81,13 @@ def cosineCoefficient (N j : ℕ) : ℤ :=
   else if 2 * T ≤ j ∧ j < 2 * T + 2 ^ t then (rsWords t).2.getD (j - 2 * T) 0
   else 0
 
+/-- Test whether an index belongs to either selected Rudin–Shapiro frequency block. -/
 def cosineSelected (N j : ℕ) : Bool :=
   let T := blockShift N
   let m := 2 ^ stage N
   (T ≤ j && j < T + m) || (2 * T ≤ j && j < 2 * T + m)
 
+/-- The deterministic background sign vector used to assemble the spectral seed. -/
 def background (d : ℕ) : List ℤ :=
   let N := seedN d
   let p := stablePrefix (N + 1)

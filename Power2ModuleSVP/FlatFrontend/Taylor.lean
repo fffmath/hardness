@@ -21,10 +21,12 @@ theorem list_sum_range {M : Type*} [AddCommMonoid M] (f : ℕ → M) (n : ℕ) :
   | zero => simp
   | succ n ih => simp [List.range_succ, Finset.sum_range_succ, ih]
 
+/-- The real and imaginary coefficients of successive powers of the imaginary unit. -/
 def phase : ℕ → ℚ × ℚ
   | 0 => (1, 0)
   | n + 1 => (-(phase n).2, (phase n).1)
 
+/-- The rational real and imaginary parts of the truncated exponential series at `q * I`. -/
 def expTaylor : ℕ → ℚ → ℚ × ℚ
   | 0, _ => (0, 0)
   | n + 1, q =>
@@ -32,9 +34,12 @@ def expTaylor : ℕ → ℚ → ℚ × ℚ
     let a := q ^ n / (n.factorial : ℚ)
     (p.1 + a * (phase n).1, p.2 + a * (phase n).2)
 
+/-- The rational cosine approximation extracted from the exponential Taylor sum. -/
 def cosTaylor (n : ℕ) (q : ℚ) : ℚ := (expTaylor n q).1
+/-- The rational sine approximation extracted from the exponential Taylor sum. -/
 def sinTaylor (n : ℕ) (q : ℚ) : ℚ := (expTaylor n q).2
 
+/-- The rational remainder allowance for the truncated exponential series. -/
 def taylorError (n : ℕ) (q : ℚ) : ℚ := 2 * |q| ^ n / (n.factorial : ℚ)
 
 theorem phase_cast (n : ℕ) :
@@ -100,13 +105,16 @@ theorem sin_cos_taylor_error {n : ℕ} {q : ℚ}
   · simpa [hc] using hr
   · simpa [hs] using hi
 
+/-- The rational alternating Taylor sum for arctangent. -/
 def arctanTaylor (n : ℕ) (q : ℚ) : ℚ :=
   ((List.range n).map fun k => (-1 : ℚ) ^ k * q ^ (2 * k + 1) /
     ((2 * k + 1 : ℕ) : ℚ)).sum
 
+/-- The rational approximation to pi obtained from the Machin arctangent identity. -/
 def piTaylor (n : ℕ) : ℚ :=
   16 * arctanTaylor n (1 / 5) - 4 * arctanTaylor n (1 / 239)
 
+/-- A rational geometric remainder allowance for the arctangent Taylor sum. -/
 def arctanError (n : ℕ) (q : ℚ) : ℚ := |q| ^ (2 * n + 1) / (1 - |q| ^ 2)
 
 theorem arctan_taylor_error {q : ℚ} (hq : |q| < 1) (n : ℕ) :
@@ -148,6 +156,7 @@ theorem arctan_taylor_error {q : ℚ} (hq : |q| < 1) (n : ℕ) :
   rw [hsum, htail]
   simpa [arctanError, x, div_eq_mul_inv] using hb
 
+/-- The combined rational remainder allowance for the Machin approximation to pi. -/
 def piError (n : ℕ) : ℚ :=
   16 * arctanError n (1 / 5) + 4 * arctanError n (1 / 239)
 

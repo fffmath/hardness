@@ -95,8 +95,10 @@ theorem kernelEntry_error {N J : ℕ} (I : SeedKernelIntervals N J)
   have hδ : 0 ≤ δ := by dsimp [δ]; exact_mod_cast mul_nonneg (by positivity) (fineError_pos N).le
   have hab : |(a - b) - (A - B)| ≤ 2 * δ := by
     have hh := abs_sub (a - A) (b - B)
-    have ha : |a - A| ≤ δ := by simpa only [A, a, SeedKernelIntervals.leftAngle, abs_sub_comm] using hl
-    have hb : |b - B| ≤ δ := by simpa only [B, b, SeedKernelIntervals.rightAngle, abs_sub_comm] using hr
+    have ha : |a - A| ≤ δ := by
+      simpa only [A, a, SeedKernelIntervals.leftAngle, abs_sub_comm] using hl
+    have hb : |b - B| ≤ δ := by
+      simpa only [B, b, SeedKernelIntervals.rightAngle, abs_sub_comm] using hr
     have he : (a - b) - (A - B) = (a - A) - (b - B) := by ring
     rw [he]
     linarith
@@ -116,7 +118,8 @@ theorem kernelEntry_error {N J : ℕ} (I : SeedKernelIntervals N J)
     rw [he]
     apply (abs_add_le _ _).trans
     rw [abs_mul, abs_mul, abs_of_nonneg hs0]
-    have h1 := mul_le_mul hab (hs.1.trans hsqrt) (by positivity : (0 : ℝ) ≤ s) (by positivity : (0 : ℝ) ≤ 2 * δ)
+    have h1 := mul_le_mul hab (hs.1.trans hsqrt)
+      (by positivity : (0 : ℝ) ≤ s) (by positivity : (0 : ℝ) ≤ 2 * δ)
     have h2 := mul_le_mul hst hAB (abs_nonneg _) (by exact_mod_cast (fineError_pos N).le)
     nlinarith
   have hm : (1 : ℝ) ≤ 2 * (j : ℝ) + 1 := by

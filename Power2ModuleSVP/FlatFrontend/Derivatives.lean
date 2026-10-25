@@ -23,6 +23,7 @@ theorem phase_cases (ell : ℕ) : phase ell = (1, 0) ∨ phase ell = (0, 1) ∨
   | succ ell ih =>
     rcases ih with h | h | h | h <;> simp [phase, h]
 
+/-- The derivative phase of sine, cycling through sine, cosine, and their negatives. -/
 def jetSin (ell : ℕ) (x : ℝ) : ℝ :=
   ((phase ell).1 : ℝ) * Real.sin x + ((phase ell).2 : ℝ) * Real.cos x
 
@@ -32,9 +33,11 @@ theorem jetSin_bound (ell : ℕ) (x : ℝ) : |jetSin ell x| ≤ 1 := by
     | simpa [jetSin, h] using Real.abs_sin_le_one x
     | simpa [jetSin, h] using Real.abs_cos_le_one x
 
+/-- A sine sum supported on the first `N` positive odd frequencies. -/
 def oddSineSum {N : ℕ} (a : Fin N → ℝ) (θ : ℝ) : ℝ :=
   ∑ j, a j * Real.sin ((2 * (j : ℝ) + 1) * θ)
 
+/-- The explicit derivative of order `ell` of the odd sine sum. -/
 def oddSineJet {N : ℕ} (a : Fin N → ℝ) (ell : ℕ) (θ : ℝ) : ℝ :=
   ∑ j, a j * (2 * (j : ℝ) + 1) ^ ell * jetSin ell ((2 * (j : ℝ) + 1) * θ)
 
@@ -82,6 +85,7 @@ theorem oddSineSum_sub {N : ℕ} (a b : Fin N → ℝ) :
   funext θ
   simp [oddSineSum, sub_mul, Finset.sum_sub_distrib]
 
+/-- A normalized row of odd sine derivatives at a seed sampling angle. -/
 def derivativeRow (N k ell : ℕ) (j : Fin N) : ℝ :=
   ((2 * (j : ℝ) + 1) / (2 * N : ℝ)) ^ ell *
     jetSin ell ((2 * (j : ℝ) + 1) * seedDerivativeAngle N k)

@@ -18,12 +18,15 @@ namespace FlatFrontend
 open scoped BigOperators
 noncomputable section
 
+/-- The number of marked-run intervals computed for the seed degree. -/
 def intervalCount (d : ℕ) : ℕ := (intervals (seedN d)).length
 
+/-- The real fractional coefficient obtained from the scaled interval sine transform. -/
 def fractional {d : ℕ} (I : SeedKernelIntervals (seedN d) (intervalCount d))
     (α : Fin (intervalCount d) → ℚ) (j : Fin (seedN d)) : ℝ :=
   9000 * Real.sqrt (seedN d) * I.sineCoefficient (fun i => (α i : ℝ)) j
 
+/-- Assemble the analytic seed data from the concrete frontend and certified intervals. -/
 def analyticData (d : ℕ) (I : SeedKernelIntervals (seedN d) (intervalCount d)) :
     FlatSeedAnalyticData d where
   J := intervalCount d

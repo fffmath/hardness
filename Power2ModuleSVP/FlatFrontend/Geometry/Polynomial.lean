@@ -18,6 +18,7 @@ theorem cosineCoefficient_abs (N j : ℕ) : |(cosineCoefficient N j : ℝ)| ≤ 
   | false => simp [cosineCoefficient_unselected h]
   | true => rcases cosineCoefficient_sign h with h | h <;> simp [h]
 
+/-- Sparse cosine data extracted from the concrete Rudin–Shapiro coefficient program. -/
 def implementedCosineData (N : ℕ) : SeedCosineData N where
   support := (Finset.range N).image (fun j => 2 * (j + 1))
   coeff := fun k => cosineCoefficient N (k / 2)

@@ -18,7 +18,8 @@ theorem cosine_eq_rudinShapiro {d : ℕ} (hd : d = 4 * seedN d + 4)
     cosine d θ = rudinShapiroCosinePart (stage (seedN d))
       (blockShift (seedN d)) (seedCircle θ) := by
   unfold rudinShapiroCosinePart
-  rw [← cosine_block_evaluation (N := seedN d) hfit, Finset.sum_range_succ', Complex.add_re, Complex.re_sum]
+  rw [← cosine_block_evaluation (N := seedN d) hfit, Finset.sum_range_succ',
+    Complex.add_re, Complex.re_sum]
   have hzero : cosineCoefficient (seedN d) 0 = 0 := by
     apply cosineCoefficient_unselected (N := seedN d)
     have := (block_parameters (seedN d)).1

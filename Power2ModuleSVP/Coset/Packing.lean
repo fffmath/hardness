@@ -10,7 +10,6 @@ data; root promises are used only in proofs. Runtime certification is separate.
 
 Paper: `paper/power2svp.pdf`, Sections 2–3.1 (coefficient arithmetic and Theorem 2).
 -/
-set_option maxHeartbeats 2000000
 
 namespace Power2ModuleSVP
 open Polynomial
@@ -28,7 +27,7 @@ theorem coefficientPolynomial_coeff {d : ℕ} (a : Coeff d) (n : ℕ) :
   simp only [coefficientPolynomial, IdealCVP.Cyclic.poly, finsetSum_coeff,
     coeff_C_mul, coeff_X_pow, mul_ite, _root_.mul_one, MulZeroClass.mul_zero]
   by_cases hn : n < d
-  · rw [dif_pos hn, Finset.sum_eq_single (⟨n, hn⟩ : Fin d)]
+  · rw [dite_eq_left hn, Finset.sum_eq_single (⟨n, hn⟩ : Fin d)]
     · simp
     · intro i _ hi
       have hne : n ≠ i.val := fun he => hi (Fin.ext he.symm)
@@ -57,6 +56,7 @@ theorem listPolynomial_coeff (a : List ℤ) (n : ℕ) :
 theorem listPolynomial_degree (a : List ℤ) : (listPolynomial a).degree < a.length :=
   coefficientPolynomial_degree _
 
+/-- The affine modulus obtained from the stored degree and polynomial. -/
 noncomputable def affineW (q : AffineInput) : ℤ[X] := X^q.1 + listPolynomial q.2.2.1
 
 /-- Internal source promises, never decided by the packing program. -/
@@ -103,11 +103,13 @@ theorem dyadicCeil_lt_twice {n : ℕ} (hn : 0 < n) : dyadicCeil n < 2*n := by
 
 /-- The small block degree and the cubic separation degree. -/
 def packingBlockSize (L : ℕ) : ℕ := dyadicCeil (2*L)
+/-- The dyadic degree used for cubic norm separation. -/
 def packingDegree (L : ℕ) : ℕ := dyadicCeil (16*L^3)
+/-- The packing degree enlarged to meet the module reduction cutoff. -/
 def modulePackingDegree (k0 L : ℕ) : ℕ := max (2^k0) (packingDegree L)
 
 theorem packing_degrees {L D : ℕ} (hL : 64 ≤ L) (hDy : Dyadic D)
-    (hD : 16*L^3 ≤ D) :
+    (hD : 16 * L ^ 3 ≤ D) :
     2*L ≤ packingBlockSize L ∧ packingBlockSize L < 4*L ∧
     packingBlockSize L ∣ D := by
   have hm := le_dyadicCeil (2*L)
@@ -160,7 +162,7 @@ theorem affineW_natDegree {q : AffineInput} (hq : q.WellFormed) :
 theorem affineW_unit {q : AffineInput} (hq : q.WellFormed) : HasUnitConstant (affineW q) := by
   left
   have hL : q.1 ≠ 0 := by have := hq.L_large; omega
-  simp [affineW, hL, Ne.symm hL, hq.P_zero]
+  simp [affineW, Ne.symm hL, hq.P_zero]
 
 /-- Convolution by a bit polynomial of degree at most `T` increases height
 by at most `T+1`. This estimate does not depend on the other factor's degree. -/
@@ -235,7 +237,7 @@ theorem affine_remainder_height {q : AffineInput} (hq : q.WellFormed)
       coeff_eq_zero_of_natDegree_lt (by omega)
     change _ = ((P*x) - (X^q.1+P)*a).coeff (q.1+n) at he
     rw [hr, add_mul, coeff_sub, coeff_add, coeff_X_pow_mul',
-      if_pos (by omega : q.1 ≤ q.1+n), Nat.add_sub_cancel_left, hp0, add_zero] at he
+      ite_eq_left (by omega : q.1 ≤ q.1+n), Nat.add_sub_cancel_left, hp0, add_zero] at he
     have hh := hprod (q.1+n)
     simp only [Nat.mul_one] at hh
     have he' : a.coeff n = (P*x).coeff (q.1+n) := by omega
@@ -247,7 +249,7 @@ theorem affine_remainder_height {q : AffineInput} (hq : q.WellFormed)
       (modByMonic_eq_sub_mul_div (P*x) w)
     change _ = ((P*x) - (X^q.1+P)*a).coeff n at he
     rw [add_mul, coeff_sub, coeff_add, coeff_X_pow_mul',
-      if_neg (by omega : ¬q.1 ≤ n), zero_add] at he
+      ite_eq_right (by omega : ¬q.1 ≤ n), zero_add] at he
     rw [he]
     calc
       _ ≤ |(P*x).coeff n| + |(P*a).coeff n| := abs_sub _ _
@@ -261,11 +263,10 @@ theorem affine_remainder_height {q : AffineInput} (hq : q.WellFormed)
     rw [hz, abs_zero]
     positivity
 
-
 /-- Initial run of ones, followed by implicit zero padding. -/
 noncomputable def signWord (n : ℕ) : ℤ[X] := SparseEncoding.vectorPolynomial n (fun _ => 1)
 
-@[simp]theorem signWord_coeff (n i : ℕ) :
+@[simp] theorem signWord_coeff (n i : ℕ) :
     (signWord n).coeff i = if i < n then 1 else 0 :=
   SparseEncoding.vectorPolynomial_coeff _ _ _
 
@@ -274,6 +275,7 @@ theorem signWord_degree (n : ℕ) : (signWord n).degree < n := by
   intro i hi
   simp [not_lt.mpr hi]
 
+/-- The sign-word translation encoding the affine offset. -/
 noncomputable def packingTranslation (q : AffineInput) : ℤ[X] :=
   signWord (2*q.1) - C 2 * listPolynomial q.2.2.2
 
@@ -325,7 +327,7 @@ theorem packCoset_alphabet (q : AffineInput) (hq : q.WellFormed) (D : ℕ) :
       simp [hi, hc]
 
 theorem packCoset_wellFormed (q : AffineInput) (hq : q.WellFormed)
-    (D : ℕ) (hDy : Dyadic D) (_hD : 16*q.1^3 ≤ D) :
+    (D : ℕ) (hDy : Dyadic D) (_hD : 16 * q.1 ^ 3 ≤ D) :
     (packCoset D q).WellFormed := by
   refine ⟨hDy, by simp [packCoset], by simp [packCoset], ?_, ?_⟩
   · change IdealCVP.ofList (d := D) (packCoset D q).2.1 ≠ 0
@@ -371,14 +373,14 @@ noncomputable def decodedWord (L offset : ℕ) (p : ℤ[X]) : ℤ[X] :=
   SparseEncoding.vectorPolynomial L (fun n => (1-p.coeff (offset+n))/2)
 
 theorem decodedWord_bit {L offset : ℕ} {p : ℤ[X]}
-    (hp : ∀ n < L, p.coeff (offset+n) = -1 ∨ p.coeff (offset+n) = 1) :
+    (hp : ∀ n < L, p.coeff (offset + n) = -1 ∨ p.coeff (offset + n) = 1) :
     SparseEncoding.BitPolynomial L (decodedWord L offset p) := by
   apply SparseEncoding.vectorPolynomial_bit
   intro n hn
   rcases hp n hn with h | h <;> simp [h]
 
-theorem decode_two_words {L : ℕ} {p : ℤ[X]} (hp : p.degree < ((2*L : ℕ) : WithBot ℕ))
-    (hs : ∀ n < 2*L, p.coeff n = -1 ∨ p.coeff n = 1) :
+theorem decode_two_words {L : ℕ} {p : ℤ[X]} (hp : p.degree < ((2 * L : ℕ) : WithBot ℕ))
+    (hs : ∀ n < 2 * L, p.coeff n = -1 ∨ p.coeff n = 1) :
     p = signWord (2*L) - C 2 * (decodedWord L 0 p + X^L * decodedWord L L p) := by
   ext n
   simp only [coeff_sub, signWord_coeff, coeff_C_mul, coeff_add, coeff_X_pow_mul',
@@ -399,7 +401,7 @@ theorem decode_two_words {L : ℕ} {p : ℤ[X]} (hp : p.degree < ((2*L : ℕ) : 
 pre-remainder equation holds in the negacyclic ring. -/
 theorem affine_error_congruence {q : AffineInput} {D : ℕ}
     (x y : ℤ[X]) (u : Coeff D)
-    (heq : AdjoinRoot.mk (modulus D) (listPolynomial q.2.2.2-y-X^q.1*x) =
+    (heq : AdjoinRoot.mk (modulus D) (listPolynomial q.2.2.2 - y - X ^ q.1 * x) =
       AdjoinRoot.mk (modulus D) (affineW q) * toQuot u) :
     SeparationCongruence (affineW q)
       ((listPolynomial q.2.2.1*x) %ₘ affineW q + listPolynomial q.2.2.2-y) D := by
@@ -416,8 +418,7 @@ theorem affine_error_congruence {q : AffineInput} {D : ℕ}
   dsimp [modulus, affineW] at hb ⊢
   linear_combination hb
 
-
-theorem packing_large_degree {L D : ℕ} (hL : 64 ≤ L) (hD : 16*L^3 ≤ D) :
+theorem packing_large_degree {L D : ℕ} (hL : 64 ≤ L) (hD : 16 * L ^ 3 ≤ D) :
     2*L < D := by nlinarith [sq_nonneg (L-1 : ℤ)]
 
 theorem affineRaw_degree {q : AffineInput} (hq : q.WellFormed)
@@ -440,7 +441,7 @@ theorem packingTranslation_degree {q : AffineInput} (hq : q.WellFormed) :
   simp [packingTranslation, not_lt.mpr hn, hc]
 
 theorem packingW_degree {q : AffineInput} (hq : q.WellFormed) {D : ℕ}
-    (hD : 2*q.1 < D) : (affineW q).degree < D := by
+    (hD : 2 * q.1 < D) : (affineW q).degree < D := by
   rw [degree_eq_natDegree (affineW_monic hq).ne_zero, affineW_natDegree hq]
   exact_mod_cast (show q.1 < D by omega)
 
@@ -457,7 +458,7 @@ theorem toQuot_two_polynomialCoeffs {d : ℕ} {p : ℤ[X]} (hp : p.degree < d) :
 
 /-- Completeness uses only integral monic division, not separation. -/
 theorem packCoset_complete (q : AffineInput) (hq : q.WellFormed)
-    (D : ℕ) (hDy : Dyadic D) (hD : 16*q.1^3 ≤ D) :
+    (D : ℕ) (hDy : Dyadic D) (hD : 16 * q.1 ^ 3 ≤ D) :
     AffineYes q → packCoset D q ∈ CosetLang := by
   intro hs
   refine ⟨packCoset_wellFormed q hq D hDy hD, ?_⟩
@@ -478,7 +479,7 @@ theorem packCoset_complete (q : AffineInput) (hq : q.WellFormed)
       coeff_add, coeff_X_pow_mul']
     by_cases hi : i.val < q.1
     · have hx0 : ¬q.1 ≤ i.val := by omega
-      rcases hy.2 i.val with h | h <;> simp [hi,hx0,show i.val < 2*q.1 by omega,h]
+      rcases hy.2 i.val with h | h <;> simp [hx0, show i.val < 2 * q.1 by omega, h]
     · by_cases hi2 : i.val < 2*q.1
       · have hy0 := (degree_lt_iff_coeff_zero _ q.1).mp hy.1 i.val (by omega)
         rcases hx.2 (i.val-q.1) with h | h <;>
@@ -514,7 +515,7 @@ theorem packCoset_complete (q : AffineInput) (hq : q.WellFormed)
 /-- Soundness exposes exactly the existing norm-separation hypothesis. -/
 theorem packCoset_sound (hSep : NormSeparationHypothesis)
     (q : AffineInput) (hq : q.WellFormed)
-    (D : ℕ) (hDy : Dyadic D) (hD : 16*q.1^3 ≤ D) :
+    (D : ℕ) (hDy : Dyadic D) (hD : 16 * q.1 ^ 3 ≤ D) :
     packCoset D q ∈ CosetLang → AffineYes q := by
   intro hmem
   change (packCoset D q).WellFormed ∧
@@ -541,7 +542,7 @@ theorem packCoset_sound (hSep : NormSeparationHypothesis)
     have hb := abs_le.mp (hE ⟨n,hnD⟩)
     have hc := hpcoeff n hnD
     have hpc : p.coeff n = E ⟨n,hnD⟩ := by simp [p,coefficientPolynomial_coeff,hnD]
-    rw [if_pos hn] at hc
+    rw [ite_eq_left hn] at hc
     omega
   have hpdeg : p.degree < ((2*q.1 : ℕ) : WithBot ℕ) := by
     apply (degree_lt_iff_coeff_zero _ _).mpr
@@ -552,7 +553,7 @@ theorem packCoset_sound (hSep : NormSeparationHypothesis)
       have hpc : p.coeff n = E ⟨n,hnD⟩ := by simp [p,coefficientPolynomial_coeff,hnD]
       have hc0 := (degree_lt_iff_coeff_zero _ q.1).mp
         (by simpa [hq.c_length] using listPolynomial_degree q.2.2.2) n (by omega)
-      rw [if_neg (by omega),hc0] at hc
+      rw [ite_eq_right (by omega),hc0] at hc
       omega
     · simp [p,coefficientPolynomial_coeff,hnD]
   let x := decodedWord q.1 q.1 p
@@ -605,10 +606,9 @@ theorem packCoset_sound (hSep : NormSeparationHypothesis)
 proved independently of separation. -/
 theorem packCoset_correct (hSep : NormSeparationHypothesis)
     (q : AffineInput) (hq : q.WellFormed)
-    (D : ℕ) (hDy : Dyadic D) (hD : 16*q.1^3 ≤ D) :
+    (D : ℕ) (hDy : Dyadic D) (hD : 16 * q.1 ^ 3 ≤ D) :
     AffineYes q ↔ packCoset D q ∈ CosetLang :=
   ⟨packCoset_complete q hq D hDy hD, packCoset_sound hSep q hq D hDy hD⟩
-
 
 /-- Finite-data adapter from the existing source. It reads the exponent set,
 not the noncomputable polynomial interpretation. -/
@@ -722,7 +722,7 @@ theorem sourceToAffine_correct {v r : ℕ} (C : SparseEncoding.Clauses v r) :
         (by simpa only [degree_eq_natDegree hmon.ne_zero,hwdeg] using
           degree_modByMonic_lt (SparseEncoding.P C (SparseEncoding.positionPrime v)*x) hmon)
           n (by omega : SparseEncoding.L (SparseEncoding.positionPrime v) v r ≤ n)
-      simp only [coeff_add,sourceToAffine_c_coeff,if_neg hn,add_zero]
+      simp only [coeff_add,sourceToAffine_c_coeff,ite_eq_right hn,add_zero]
       exact hy0.trans hr0.symm
   · rintro ⟨x,y,hx,hy,he⟩
     refine ⟨x,y,hx,hy,fun n hn => ?_⟩
@@ -754,8 +754,6 @@ theorem threeSATToCoset_correct (hSep : NormSeparationHypothesis)
     (packCoset_correct hSep _ (threeSATToAffine_wellFormed f) _
       (dyadicCeil_dyadic _) (le_dyadicCeil _))
 
-
-
 theorem packingDegree_lt {L : ℕ} (hL : 0 < L) : packingDegree L < 32*L^3 := by
   have h := dyadicCeil_lt_twice (by positivity : 0 < 16*L^3)
   dsimp [packingDegree]
@@ -782,8 +780,6 @@ theorem modulePackingDegree_lt {L : ℕ} (k0 : ℕ) (hL : 0 < L) :
   · have : 0 < 32*L^3 := by positivity
     omega
   · exact (packingDegree_lt hL).trans_le (Nat.le_add_left _ _)
-
-
 
 /-- Compatibility with the shared coefficient-vector bit predicate. -/
 theorem bits_coefficientPolynomial {L : ℕ} {x : Coeff L} (hx : Bits x) :

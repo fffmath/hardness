@@ -10,6 +10,7 @@ Paper: `paper/power2svp.pdf`, Appendix A.3 (rational enclosures and the two roun
 namespace Power2ModuleSVP
 namespace FlatFrontend
 
+/-- The natural-number threshold used for the first coloring call. -/
 def firstThresholdNat (N J : ℕ) : ℕ :=
   Nat.sqrt (56 * (Nat.log2 (64 * N / J) + 1) / 5) + 1
 

@@ -36,9 +36,11 @@ structure SeedCosineData (N : ℕ) where
 
 namespace SeedCosineData
 
+/-- The integer Chebyshev polynomial representing the sparse cosine data. -/
 def integerPolynomial {N : ℕ} (c : SeedCosineData N) : ℤ[X] :=
   ∑ j ∈ c.support, Polynomial.C (c.coeff j) * Chebyshev.T ℤ j
 
+/-- The real Chebyshev polynomial representing the sparse cosine data. -/
 def realPolynomial {N : ℕ} (c : SeedCosineData N) : ℝ[X] :=
   cosinePolynomial c.support (fun j => c.coeff j)
 
