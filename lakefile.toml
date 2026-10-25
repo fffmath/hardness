@@ -1,7 +1,7 @@
 name = "hardness"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["IdealCVP", "Rank2ModuleSVP"]
+defaultTargets = ["IdealCVP", "Rank2ModuleSVP", "Power2ModuleSVP"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
