@@ -6,23 +6,30 @@ import Complexity.Computability.Complexity.Problems.SubsetSum
 Column labels separate literals from clause-local auxiliary variables. Densifying
 these finite supports cannot merge repeated literal occurrences within a row.
 -/
+
 namespace IdealCVP
+
 open Cslib.Complexity Cslib.Logic.PL Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open scoped List
 
 namespace SatToMasked
 
+/-- A natural variable label and a tag separating literal and auxiliary columns. -/
 abbrev Column := ℕ × ℕ
 
+/-- Binary encoding of the variable label and its column tag. -/
 def encColumn : Column ↪ List Bool := encPair encNat encNat
 
+/-- Convert a finite row support into Boolean entries over the listed columns. -/
 def denseRow (cs r : List Column) : List Bool := cs.map fun c => decide (c ∈ r)
 
+/-- Convert finite row supports into a masked Boolean system. -/
 def denseSystem (cs : List Column) (rs : List (List Column)) : MaskedSys :=
   (cs.length, rs.map (denseRow cs), List.replicate rs.length true,
     List.replicate cs.length true)
 
+/-- Summing the dense row representation counts precisely its selected source columns. -/
 theorem denseRow_sum (cs r : List Column) (hcs : cs.Nodup) (hr : r.Nodup)
     (hsub : ∀ c ∈ r, c ∈ cs) (τ : Column → Bool) (ξ : Fin cs.length → Bool)
     (hξ : ∀ j, ξ j = τ cs[j.val]) :
@@ -39,7 +46,8 @@ theorem denseRow_sum (cs r : List Column) (hcs : cs.Nodup) (hr : r.Nodup)
       intro j _
       by_cases h : cs[j.val] ∈ r <;>
         simp [denseRow, List.getD_eq_getElem?_getD, hξ j, bit, h]
-    _ = (cs.map fun c => if c ∈ r then bit (τ c) else 0).sum := hsum (fun c => if c ∈ r then bit (τ c) else 0)
+    _ = (cs.map fun c => if c ∈ r then bit (τ c) else 0).sum :=
+      hsum (fun c => if c ∈ r then bit (τ c) else 0)
     _ = ∑ c ∈ cs.toFinset, if c ∈ r then bit (τ c) else 0 :=
       (List.sum_toFinset _ hcs).symm
     _ = ∑ c ∈ r.toFinset, bit (τ c) := by
@@ -71,15 +79,15 @@ theorem denseSystem_feasible_iff (cs : List Column) (rs : List (List Column))
       simp [τ, List.getD_eq_getElem?_getD, hcs.idxOf_getElem j.val j.isLt]
     refine ⟨τ, fun r hr => ?_⟩
     obtain ⟨i, hi⟩ := List.mem_iff_get.mp hr
-    have he := congrFun heq ⟨i.val, by simpa [MaskedSys.rows, denseSystem] using i.isLt⟩
+    have he := congrFun heq ⟨i.val, by simp [MaskedSys.rows, denseSystem]⟩
     change (∑ j : Fin cs.length,
       bit (((rs.map (denseRow cs)).getD i.val []).getD j.val false) * bit (v j)) -
       bit ((List.replicate rs.length true).getD i.val false) = 0 at he
     rw [hrow i] at he
     have hb : (List.replicate rs.length true).getD i.val false = true := by
-      simp [List.getD_eq_getElem?_getD, List.getElem?_replicate, i.isLt]
+      simp [List.getD_eq_getElem?_getD, i.isLt]
     rw [hb] at he
-    simp only [List.getElem_replicate, bit_true, sub_eq_zero] at he
+    simp only [bit_true, sub_eq_zero] at he
     rw [denseRow_sum cs rs[i.val] hcs (hrs _ (List.getElem_mem i.isLt)).1
       (hrs _ (List.getElem_mem i.isLt)).2 τ v hv] at he
     simpa only [← hi, List.get_eq_getElem] using he
@@ -96,11 +104,11 @@ theorem denseSystem_feasible_iff (cs : List Column) (rs : List (List Column))
         bit ((List.replicate rs.length true).getD i.val false) = 0
       rw [hrow ⟨i.val, hi⟩]
       have hb : (List.replicate rs.length true).getD i.val false = true := by
-        simp [List.getD_eq_getElem?_getD, List.getElem?_replicate, hi]
+        simp [List.getD_eq_getElem?_getD, hi]
       rw [hb]
-      simp only [List.getElem_replicate, bit_true, sub_eq_zero]
-      change (∑ j : Fin cs.length, bit ((denseRow cs rs[i.val]).getD j.val false) *
-        bit (τ cs[j.val])) = 1
+      simp only [bit_true, sub_eq_zero]
+      change (∑ j : Fin cs.length, bit ((denseRow cs rs[i.val]).getD j.val false) * bit (τ
+        cs[j.val])) = 1
       rw [denseRow_sum cs rs[i.val] hcs (hrs _ (List.getElem_mem hi)).1
         (hrs _ (List.getElem_mem hi)).2 τ _ (fun _ => rfl)]
       exact hτ _ (List.getElem_mem hi)
@@ -123,18 +131,24 @@ def columns (φ : CNF ℕ) : List Column :=
   [(0, 6)] ++ ((ThreeSAT.distinctVars φ) ×ˢ [0, 1]) ++
     ((List.range φ.length) ×ˢ [2, 3, 4, 5])
 
+/-- The column representing a literal being true. -/
 def literalColumn (l : Literal ℕ) : Column := (l.1, if l.2 then 0 else 1)
+
+/-- The column representing the negation of a literal. -/
 def negColumn (l : Literal ℕ) : Column := (l.1, if l.2 then 1 else 0)
 
+/-- The four finite row supports encoding one indexed SAT clause. -/
 def clauseRows (j : ℕ) (c : Clause ℕ) : List (List Column) :=
   [[negColumn (c.getD 0 (0, true)), (j, 2), (j, 3)],
    [(j, 3), literalColumn (c.getD 1 (0, true)), (j, 4)],
    [(j, 4), (j, 5), negColumn (c.getD 2 (0, true))]]
 
+/-- All complement rows and clause-gadget rows of a formula. -/
 def supports (φ : CNF ℕ) : List (List Column) :=
   [[(0, 6)]] ++ ((ThreeSAT.distinctVars φ).map fun v => [(v, 0), (v, 1)]) ++
     ((List.range φ.length).flatMap fun j => clauseRows j (φ.getD j []))
 
+/-- A fixed inconsistent Boolean system. -/
 def noSystem : MaskedSys := (1, [[false]], [true], [true])
 
 /-- Malformed clauses map to a fixed NO system. The dummy equation makes both
@@ -156,7 +170,7 @@ theorem nodup_columns (φ : CNF ℕ) : (columns φ).Nodup := by
     have ht : 6 = t := by simpa only [ha] using congrArg Prod.snd he
     omega
   · rintro ⟨v, t⟩ ha ⟨w, u⟩ hb he
-    simp only [List.mem_append, List.mem_singleton, List.mem_product,
+    simp only [List.mem_append, List.mem_product,
       List.mem_cons, List.not_mem_nil, or_false] at ha hb
     have ht : t = u := congrArg Prod.snd he
     rcases ha with ha | ha
@@ -264,7 +278,7 @@ theorem supports_equations (φ : CNF ℕ) (τ : Column → Bool) :
       bit (τ (j, 4)) + bit (τ (j, 5)) +
         bit (τ (negColumn ((φ.getD j []).getD 2 (0, true)))) = 1 := by
   simp only [supports, List.forall_mem_append, List.forall_mem_cons,
-    List.forall_mem_nil, List.forall_mem_map, List.forall_mem_flatMap]
+    List.forall_mem_map, List.forall_mem_flatMap]
   simp [clauseRows, add_assoc, and_assoc]
 
 theorem sparse_correct (φ : CNF ℕ) (hw : ∀ c ∈ φ, c.length = 3) :
@@ -328,10 +342,10 @@ theorem noSystem_not_feasible : ¬ noSystem.Feasible := by
 theorem correct (φ : CNF ℕ) : φ ∈ ExactThreeSAT ↔ (reduce φ).Feasible := by
   by_cases hw : (φ.all fun c => c.length == 3) = true
   · have hwidth : ∀ c ∈ φ, c.length = 3 := by simpa only [List.all_eq_true, beq_iff_eq] using hw
-    rw [reduce, if_pos hw, denseSystem_feasible_iff _ _ (nodup_columns φ)
+    rw [reduce, ite_eq_left hw, denseSystem_feasible_iff _ _ (nodup_columns φ)
       (supports_valid φ hwidth), sparse_correct φ hwidth]
     exact ⟨And.right, fun h => ⟨hwidth, h⟩⟩
-  · rw [reduce, if_neg hw]
+  · rw [reduce, ite_eq_right hw]
     constructor
     · intro h
       exact (hw (by simpa only [List.all_eq_true, beq_iff_eq] using h.1)).elim
@@ -354,9 +368,9 @@ theorem positive_sizes (φ : CNF ℕ) :
     ComputableTidilyInPolyTime negColumn (encPair encNat encBool) encColumn := by
   unfold negColumn encColumn
   fun_prop
-
 /- Keep total lookup opaque during certificate composition: unfolding its
 recursive implementation makes definitional equality expand exponentially. -/
+
 attribute [local irreducible] List.getD
 
 @[fun_prop] theorem poly_clauseRows :
@@ -452,13 +466,16 @@ end SatToMasked
 /-- The total list reduction, including malformed and empty formulas. -/
 abbrev satToMasked := SatToMasked.reduce
 
+/-- The total masked-system reduction preserves ExactThreeSAT satisfiability. -/
 theorem satToMasked_correct (φ : CNF ℕ) :
     φ ∈ ExactThreeSAT ↔ (satToMasked φ).Feasible := SatToMasked.correct φ
 
+/-- The SAT gadget gives a native polynomial-time reduction to masked Boolean feasibility. -/
 theorem polyTimeReducible_ExactThreeSAT_Masked :
     PolyTimeReducible encCNF encMasked ExactThreeSAT {S | S.Feasible} :=
   ⟨satToMasked, SatToMasked.poly_reduce, satToMasked_correct⟩
 
+/-- Masked Boolean feasibility is NP-hard through the ExactThreeSAT gadget. -/
 theorem maskedSys_npHard : NPHard encMasked {S | S.Feasible} :=
   ExactThreeSAT_npHard.trans polyTimeReducible_ExactThreeSAT_Masked
 

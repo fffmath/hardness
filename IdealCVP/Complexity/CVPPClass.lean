@@ -6,7 +6,9 @@ import IdealCVP.Complexity.PPolyReduction
 The preprocessing advice is indexed by the universe size. A length-n circuit
 hardwires advice for every universe size at most n, since m is encoded in unary.
 -/
+
 namespace IdealCVP
+
 open Cslib Cslib.Complexity Cslib.Circuits.Boolean Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 
@@ -31,29 +33,30 @@ theorem exists_ppoly_of_encoded_advice {α : Type} (enc : α ↪ List Bool) (A :
     (hV : ComputableTidilyInPolyTime V (encPair encBits enc) encBool)
     (h : ∀ x, x ∈ A ↔ V (a (enc x).length, x) = true) :
     ∃ L ∈ PPoly, ∀ x, x ∈ A ↔ enc x ∈ L := by
-  obtain ⟨M,hM,hVM⟩ := PPoly.exists_of_polyTime hV
+  obtain ⟨M, hM, hVM⟩ := PPoly.exists_of_polyTime hV
   let L : Language Bool := {w | frame (a w.length) ++ w ∈ M}
   refine ⟨L, PPoly.of_advice hM a ha (fun _ => Iff.rfl), fun x => ?_⟩
-  exact (h x).trans ((hVM (a (enc x).length,x)).trans (by
+  exact (h x).trans ((hVM (a (enc x).length, x)).trans (by
     simp only [encPair_apply, encBits_apply]
     rfl))
 
 /-- A table contains all universe-indexed advice that a length-n input can use. -/
 def cvppAdviceTable (a : ℕ → List Bool) (n : ℕ) : List Bool :=
-  encList encBits ((List.range (n+1)).map a)
+  encList encBits ((List.range (n + 1)).map a)
 
+/-- Framing all advice words up to the query length preserves a polynomial size bound. -/
 theorem cvppAdviceTable_polyBounded (a : ℕ → List Bool)
     (ha : PolynomiallyBounded fun m => (a m).length) :
     PolynomiallyBounded fun n => (cvppAdviceTable a n).length := by
-  obtain ⟨c,d,hcd⟩ := polynomiallyBounded_iff_le.mp ha
+  obtain ⟨c, d, hcd⟩ := polynomiallyBounded_iff_le.mp ha
   apply PolynomiallyBounded.mono_of_le
-    (g := fun n => (n+1) * (2 * (c * (n+1)^d) + 1)) (by fun_prop)
+    (g := fun n => (n + 1) * (2 * (c * (n + 1) ^ d) + 1)) (by fun_prop)
   intro n
   unfold cvppAdviceTable
-  have he := length_encList_le encBits ((List.range (n+1)).map a)
-    (b := c * (n+1)^d) (by
+  have he := length_encList_le encBits ((List.range (n + 1)).map a)
+    (b := c * (n + 1) ^ d) (by
       intro w hw
-      obtain ⟨m,hm,rfl⟩ := List.mem_map.mp hw
+      obtain ⟨m, hm, rfl⟩ := List.mem_map.mp hw
       have hm' := List.mem_range.mp hm
       exact (hcd m).trans
         (Nat.mul_le_mul_left c (Nat.pow_le_pow_left (by omega) d)))
@@ -68,10 +71,10 @@ theorem fixedCVPP_ppoly_of_preprocessing
     (D : List Bool × (List ℤ × ℤ) → Bool)
     (hD : ComputableTidilyInPolyTime D
       (encPair encBits (encPair (encList encIntBin) encIntBin)) encBool)
-    (hspec : ∀ m t Δ, D (a m,t,Δ) = true ↔ (m,t,Δ) ∈ FixedCVPP) :
+    (hspec : ∀ m t Δ, D (a m, t, Δ) = true ↔ (m, t, Δ) ∈ FixedCVPP) :
     ∃ L ∈ PPoly, ∀ x, x ∈ FixedCVPP ↔ encFixedCVPP x ∈ L := by
   let V : List Bool × FixedCVPPInput → Bool := fun p =>
-    D (((Decoder.bits.list).decode p.1).getD p.2.1 [],p.2.2)
+    D (((Decoder.bits.list).decode p.1).getD p.2.1 [], p.2.2)
   have hV : ComputableTidilyInPolyTime V (encPair encBits encFixedCVPP) encBool := by
     have hdec : ComputableTidilyInPolyTime (Decoder.bits.list).decode encBits
         (encList encBits) := (Decoder.bits.list).computableTidilyInPolyTime
@@ -87,7 +90,7 @@ theorem fixedCVPP_ppoly_of_preprocessing
   have hm : x.1 < (encFixedCVPP x).length + 1 := by
     simp only [encFixedCVPP, length_encPair, encUnary_apply, List.length_replicate]
     omega
-  have he : V (cvppAdviceTable a (encFixedCVPP x).length,x) = D (a x.1,x.2) := by
+  have he : V (cvppAdviceTable a (encFixedCVPP x).length, x) = D (a x.1, x.2) := by
     simp [V, cvppAdviceTable, Decoder.decode_enc, List.getD_eq_getElem?_getD, hm]
   rw [he]
   exact (hspec x.1 x.2.1 x.2.2).symm
@@ -98,7 +101,7 @@ theorem PH_eq_SigmaP_two_of_polyCVPP {α : Type} (enc : α ↪ List Bool)
     (D : List Bool × (List ℤ × ℤ) → Bool)
     (hD : ComputableTidilyInPolyTime D
       (encPair encBits (encPair (encList encIntBin) encIntBin)) encBool)
-    (hspec : ∀ m t Δ, D (a m,t,Δ) = true ↔ (m,t,Δ) ∈ FixedCVPP) :
+    (hspec : ∀ m t Δ, D (a m, t, Δ) = true ↔ (m, t, Δ) ∈ FixedCVPP) :
     PH enc = SigmaP 2 enc :=
   PH_eq_SigmaP_two_of_fixedCVPP enc (fixedCVPP_ppoly_of_preprocessing a ha D hD hspec)
 

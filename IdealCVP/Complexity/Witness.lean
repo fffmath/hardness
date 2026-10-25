@@ -8,7 +8,9 @@ The mathematical certificate theorem includes the zero-generator case. The NP
 bridge separates the resource certificates discharged in `CertificateBits` and
 `Verifier`.
 -/
+
 namespace IdealCVP
+
 open Cslib.Complexity Turing.MultiTapeTM
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 
@@ -64,7 +66,7 @@ theorem intList_encoding_length_le (q : List ℤ) (B : ℤ) (hB : 0 ≤ B)
 
 /-- Total signed-binary decoder, including malformed words. -/
 def decodeIntBin (w : List Bool) : ℤ :=
-  if w.headD false then -(Decoder.nat.decode w.tail : ℤ)
+  if w.headD false then - (Decoder.nat.decode w.tail : ℤ)
   else (Decoder.nat.decode w.tail : ℤ)
 
 @[fun_prop] theorem poly_decodeIntBin :
@@ -73,6 +75,7 @@ def decodeIntBin (w : List Bool) : ℤ :=
   have hn := Decoder.nat.computableTidilyInPolyTime
   fun_prop
 
+/-- The signed-binary integer decoder with its correctness and runtime certificates. -/
 def intBinDecoder : Decoder encIntBin where
   decode := decodeIntBin
   decode_enc z := by
@@ -89,10 +92,11 @@ def intBinDecoder : Decoder encIntBin where
 
 /-- Target bit bound, proved in `CertificateBits.lean`. All integer-list
 framing and sign bits are then absorbed by `witnessPolynomial`. -/
-def certificateBitBound (N : ℕ) : ℕ := 7 * (N + 1)^2
+def certificateBitBound (N : ℕ) : ℕ := 7 * (N + 1) ^ 2
 
+/-- A polynomial bound on the framed encoding of a bounded CVP certificate. -/
 noncomputable def witnessPolynomial : Polynomial ℕ :=
-  Polynomial.X * (2 * (7 * (Polynomial.X + 1)^2 + 1) + 1)
+  Polynomial.X * (2 * (7 * (Polynomial.X + 1) ^ 2 + 1) + 1)
 
 /-- NP membership from checker and bit-size certificates.
 No complexity-class membership is itself assumed. -/

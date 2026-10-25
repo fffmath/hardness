@@ -7,25 +7,30 @@ import Complexity.Computability.Machines.Turing.MultiTape.Complexity.PolyTime.Na
 The block multiplication formula is valid for arbitrary targets. Injectivity
 uses the proved power-of-two cyclotomic domain theorem, without an unproved CRT premise.
 -/
+
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace IdealCVP
+
 open Turing.MultiTapeTM Cslib.Complexity
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 
 namespace Cyclic
 
+/-- Integer matrix of multiplication by a separated cyclic generator. -/
 noncomputable def multiplicationMatrix {d : ℕ} (hd : 0 < d) (g : Coeff d) (B : ℤ) :
-    Matrix (Fin (2*d)) (Fin (2*d)) ℤ :=
+    Matrix (Fin (2 * d)) (Fin (2 * d)) ℤ :=
   LinearMap.toMatrix' (mulHom hd g B).toIntLinearMap
 
+/-- The separated cyclic multiplication matrix acts by multiplication by the lifted generator. -/
 @[simp] theorem multiplicationMatrix_mulVec {d : ℕ} (hd : 0 < d)
-    (g : Coeff d) (B : ℤ) (q : Coeff (2*d)) :
+    (g : Coeff d) (B : ℤ) (q : Coeff (2 * d)) :
     (multiplicationMatrix hd g B).mulVec q = mulHom hd g B q :=
   LinearMap.toMatrix'_mulVec _ _
 
-theorem multiplicationMatrix_det_ne_zero {d : ℕ} (hd : ∃ k, d = 2^k)
+/-- A nonzero cyclotomic generator and nonzero separator give a nonsingular cyclic matrix. -/
+theorem multiplicationMatrix_det_ne_zero {d : ℕ} (hd : ∃ k, d = 2 ^ k)
     (g : Coeff d) (hg : g ≠ 0) (B : ℤ) (hB : B ≠ 0) :
     (multiplicationMatrix (Cyclotomic.power_two_pos hd) g B).det ≠ 0 := by
   intro hz
@@ -36,14 +41,14 @@ theorem multiplicationMatrix_det_ne_zero {d : ℕ} (hd : ∃ k, d = 2^k)
 
 theorem mul_bound {d : ℕ} (g q : Coeff d) (A C : ℤ)
     (hA : 0 ≤ A) (hC : 0 ≤ C) (hg : ∀ i, |g i| ≤ A) (hq : ∀ i, |q i| ≤ C)
-    (r : Fin d) : |Cyclotomic.mul g q r| ≤ (d : ℤ)^2 * A * C := by
+    (r : Fin d) : |Cyclotomic.mul g q r| ≤ (d : ℤ) ^ 2 * A * C := by
   unfold Cyclotomic.mul
   calc
-    _ ≤ ∑ i : Fin d, ∑ j : Fin d, |if (i.val+j.val)%d = r.val then
-        (if i.val+j.val < d then 1 else -1)*g i*q j else 0| :=
+    _ ≤ ∑ i : Fin d, ∑ j : Fin d, |if (i.val + j.val) % d = r.val then
+        (if i.val + j.val < d then 1 else - 1) * g i * q j else 0| :=
       (Finset.abs_sum_le_sum_abs _ _).trans
         (Finset.sum_le_sum fun i _ => Finset.abs_sum_le_sum_abs _ _)
-    _ ≤ ∑ _i : Fin d, ∑ _j : Fin d, A*C := by
+    _ ≤ ∑ _i : Fin d, ∑ _j : Fin d, A * C := by
       apply Finset.sum_le_sum
       intro i _
       apply Finset.sum_le_sum
@@ -56,62 +61,67 @@ theorem mul_bound {d : ℕ} (g q : Coeff d) (A C : ℤ)
 
 theorem mulHom_bound {d : ℕ} (hd : 0 < d) (g : Coeff d) (B A : ℤ)
     (hA : 0 ≤ A) (hg : ∀ i, |g i| ≤ A) (hB : |B| ≤ A)
-    (v : Coeff (2*d)) (hv : ∀ i, |v i| ≤ 1) (r : Fin (2*d)) :
-    |mulHom hd g B v r| ≤ 2*A + 2*(d : ℤ)^2*A := by
+    (v : Coeff (2 * d)) (hv : ∀ i, |v i| ≤ 1) (r : Fin (2 * d)) :
+    |mulHom hd g B v r| ≤ 2 * A + 2 * (d : ℤ) ^ 2 * A := by
   obtain ⟨p, q, rfl⟩ := exists_concat v
   have hp (i : Fin d) : |p i| ≤ 1 := by simpa using hv (blockEquiv d (.inl i))
   have hq (i : Fin d) : |q i| ≤ 1 := by simpa using hv (blockEquiv d (.inr i))
-  have ha (i : Fin d) : |(p+q) i| ≤ 2 :=
+  have ha (i : Fin d) : |(p + q) i| ≤ 2 :=
     (abs_add_le _ _).trans (by have := hp i; have := hq i; omega)
-  have hb (i : Fin d) : |(p-q) i| ≤ 2 :=
+  have hb (i : Fin d) : |(p - q) i| ≤ 2 :=
     (abs_sub _ _).trans (by have := hp i; have := hq i; omega)
-  have hm := mul_bound g (p-q) A 2 hA (by norm_num) hg hb
+  have hm := mul_bound g (p - q) A 2 hA (by norm_num) hg hb
   rw [mulHom_concat]
   obtain ⟨i, rfl⟩ := (blockEquiv d).surjective r
   cases i with
   | inl i =>
     simp only [product, concat_left, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
     calc
-      _ ≤ |B| * |(p+q) i| + |Cyclotomic.mul g (p-q) i| := by
-        simpa only [abs_mul, Pi.add_apply] using abs_add_le (B*(p+q) i) (Cyclotomic.mul g (p-q) i)
-      _ ≤ A*2 + (d : ℤ)^2*A*2 := add_le_add
+      _ ≤ |B| * |(p + q) i| + |Cyclotomic.mul g (p - q) i| := by
+        simpa only [abs_mul,
+          Pi.add_apply] using abs_add_le (B * (p + q) i) (Cyclotomic.mul g (p - q) i)
+      _ ≤ A * 2 + (d : ℤ) ^ 2 * A * 2 := add_le_add
         (mul_le_mul hB (ha i) (abs_nonneg _) hA) (hm i)
       _ = _ := by ring
   | inr i =>
     simp only [product, concat_right, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
     calc
-      _ ≤ |B| * |(p+q) i| + |Cyclotomic.mul g (p-q) i| := by
-        simpa only [abs_mul, Pi.add_apply] using abs_sub (B*(p+q) i) (Cyclotomic.mul g (p-q) i)
-      _ ≤ A*2 + (d : ℤ)^2*A*2 := add_le_add
+      _ ≤ |B| * |(p + q) i| + |Cyclotomic.mul g (p - q) i| := by
+        simpa only [abs_mul,
+          Pi.add_apply] using abs_sub (B * (p + q) i) (Cyclotomic.mul g (p - q) i)
+      _ ≤ A * 2 + (d : ℤ) ^ 2 * A * 2 := add_le_add
         (mul_le_mul hB (ha i) (abs_nonneg _) hA) (hm i)
       _ = _ := by ring
 
 theorem multiplicationMatrix_entry_bound {d : ℕ} (hd : 0 < d)
     (g : Coeff d) (B A : ℤ) (hA : 0 ≤ A)
-    (hg : ∀ i, |g i| ≤ A) (hB : |B| ≤ A) (i j : Fin (2*d)) :
-    |multiplicationMatrix hd g B i j| ≤ 2*A + 2*(d : ℤ)^2*A := by
+    (hg : ∀ i, |g i| ≤ A) (hB : |B| ≤ A) (i j : Fin (2 * d)) :
+    |multiplicationMatrix hd g B i j| ≤ 2 * A + 2 * (d : ℤ) ^ 2 * A := by
   rw [multiplicationMatrix, LinearMap.toMatrix'_apply]
   apply mulHom_bound hd g B A hA hg hB
   intro k
   by_cases h : k = j <;> simp [h]
 
 end Cyclic
+
 end IdealCVP
 
 namespace IdealCVP
+
 open Turing.MultiTapeTM Cslib.Complexity
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 
 /-- Explicit integral separated generator, with contiguous coefficient blocks. -/
 def separatedGenerator (d : ℕ) (g : List ℤ) (B : ℤ) : List ℤ :=
-  (List.range (2*d)).map fun r =>
+  (List.range (2 * d)).map fun r =>
     if r < d then g.getD r 0 + (if r = 0 then B else 0)
-    else -g.getD (r-d) 0 + (if r-d = 0 then B else 0)
+    else - g.getD (r - d) 0 + (if r - d = 0 then B else 0)
 
 /-- Floor division by two, implemented with binary natural arithmetic. -/
 def binaryHalf (z : ℤ) : ℤ :=
-  if z < 0 then -(((z.natAbs+1)/2 : ℕ) : ℤ) else ((z.natAbs/2 : ℕ) : ℤ)
+  if z < 0 then - (((z.natAbs + 1)/2 : ℕ) : ℤ) else ((z.natAbs/2 : ℕ) : ℤ)
 
+/-- The executable signed-binary halving routine equals integer division by two. -/
 theorem binaryHalf_eq (z : ℤ) : binaryHalf z = z/2 := by
   have ha := Int.natCast_natAbs z
   unfold binaryHalf
@@ -121,10 +131,11 @@ theorem binaryHalf_eq (z : ℤ) : binaryHalf z = z/2 := by
   · rw [abs_of_nonneg (by omega)] at ha
     omega
 
-@[fun_prop] theorem poly_binaryHalf : ComputableTidilyInPolyTime binaryHalf encIntBin encIntBin := by
+@[fun_prop] theorem poly_binaryHalf : ComputableTidilyInPolyTime
+    binaryHalf encIntBin encIntBin := by
   have h0 : ComputableTidilyInPolyTime (fun z : ℤ => z.natAbs/2) encIntBin encNat :=
     binary_div' intBin_natAbs (const 2)
-  have h1 : ComputableTidilyInPolyTime (fun z : ℤ => (z.natAbs+1)/2) encIntBin encNat :=
+  have h1 : ComputableTidilyInPolyTime (fun z : ℤ => (z.natAbs + 1)/2) encIntBin encNat :=
     binary_div' (binary_add.comp (intBin_natAbs.prod (const 1))) (const 2)
   have hs : ComputableTidilyInPolyTime (fun z : ℤ => decide (z < 0)) encIntBin encBool := by
     fun_prop
@@ -132,8 +143,10 @@ theorem binaryHalf_eq (z : ℤ) : binaryHalf z = z/2 := by
   simpa only [Function.comp_def, decide_eq_true_eq] using
     hs.ite' (intBin_neg.comp (intBin_natCast.comp h1)) (intBin_natCast.comp h0)
 
+/-- Recover the separating constant from the two constant coefficients. -/
 def separatedB (x : CVPInput) : ℤ := binaryHalf (x.2.1.getD 0 0 + x.2.1.getD x.1 0)
 
+/-- Recover the cyclotomic generator from a cyclic coefficient list. -/
 def separatedG (x : CVPInput) : List ℤ :=
   (List.range x.1).map fun i => x.2.1.getD i 0 - (if i = 0 then separatedB x else 0)
 
@@ -142,10 +155,11 @@ with power-of-two half-dimension and both `g` and `B` nonzero.
 The target is an arbitrary coefficient list of length `2d`. -/
 def separatedCyclicCheck (x : CVPInput) : Bool :=
   cvpWellFormedCheck (x.1, separatedG x, (List.range x.1).map (fun _ => (0 : ℤ)), 0) &&
-    decide (x.2.2.1.length = 2*x.1) &&
+    decide (x.2.2.1.length = 2 * x.1) &&
     decide (x.2.1 = separatedGenerator x.1 (separatedG x) (separatedB x)) &&
     decide (separatedB x ≠ 0) && (separatedG x).any (fun z => decide (z ≠ 0))
 
+/-- The cyclic CVP language restricted to recognized separated generators. -/
 def SeparatedPrincipalCyclicCVP : Set CVPInput :=
   {x | separatedCyclicCheck x = true ∧ x ∈ PrincipalCyclicCVP}
 
@@ -160,7 +174,7 @@ def SeparatedPrincipalCyclicCVP : Set CVPInput :=
   split_ifs <;> rfl
 
 theorem separatedCyclicCheck_spec (x : CVPInput) : separatedCyclicCheck x = true ↔
-    (∃ k, x.1 = 2^k) ∧ x.2.2.1.length = 2*x.1 ∧
+    (∃ k, x.1 = 2 ^ k) ∧ x.2.2.1.length = 2 * x.1 ∧
       x.2.1 = separatedGenerator x.1 (separatedG x) (separatedB x) ∧
       separatedB x ≠ 0 ∧ ofList (d := x.1) (separatedG x) ≠ 0 := by
   have hlen : (separatedG x).length = x.1 := by simp [separatedG]
@@ -174,7 +188,8 @@ theorem separatedCyclicCheck_spec (x : CVPInput) : separatedCyclicCheck x = true
     · contrapose!
       intro h
       funext i
-      simp only [ofList, List.getD_eq_getElem _ _ (by omega : i.val < (separatedG x).length), Pi.zero_apply]
+      simp only [ofList, List.getD_eq_getElem _ _ (by omega : i.val < (separatedG x).length),
+        Pi.zero_apply]
       exact h _ (List.getElem_mem _)
   simp only [separatedCyclicCheck, Bool.and_eq_true, cvpWellFormedCheck_eq,
     CVPInput.WellFormed, hlen, List.length_map, List.length_range, and_true,
@@ -182,63 +197,71 @@ theorem separatedCyclicCheck_spec (x : CVPInput) : separatedCyclicCheck x = true
 
 /-- Coefficientwise difference of the two contiguous blocks of a multiplier. -/
 def cyclicDifference (d : ℕ) (q : List ℤ) : List ℤ :=
-  (List.range d).map fun i => q.getD i 0 - q.getD (d+i) 0
+  (List.range d).map fun i => q.getD i 0 - q.getD (d + i) 0
 
+/-- One coefficient of the separated block product. -/
 def cyclicAssembleCoeff (d : ℕ) (B : ℤ) (q v : List ℤ) (r : ℕ) : ℤ :=
-  let i := if r < d then r else r-d
-  B * (q.getD i 0 + q.getD (d+i) 0) +
-    (if r < d then v.getD i 0 else -v.getD i 0)
+  let i := if r < d then r else r - d
+  B * (q.getD i 0 + q.getD (d + i) 0) +
+    (if r < d then v.getD i 0 else - v.getD i 0)
 
+/-- Assemble the two blocks of a separated cyclic product. -/
 def cyclicAssemble (d : ℕ) (B : ℤ) (q v : List ℤ) : List ℤ :=
-  (List.range (2*d)).map (cyclicAssembleCoeff d B q v)
+  (List.range (2 * d)).map (cyclicAssembleCoeff d B q v)
 
+/-- Multiply a separated cyclic generator by a list multiplier. -/
 def separatedProduct (d : ℕ) (g : List ℤ) (B : ℤ) (q : List ℤ) : List ℤ :=
   cyclicAssemble d B q (negacyclicMul d g (cyclicDifference d q))
 
+/-- The separated list product represents multiplication by the separated cyclic generator. -/
 theorem ofList_separatedProduct {d : ℕ} (hd : 0 < d) (g : List ℤ) (B : ℤ) (q : List ℤ) :
-    ofList (d := 2*d) (separatedProduct d g B q) = Cyclic.mulHom hd (ofList g) B (ofList q) := by
+    ofList (d := 2 * d) (separatedProduct d g B q) = Cyclic.mulHom hd (ofList g) B (ofList q) := by
   let p : Coeff d := fun i => q.getD i.val 0
-  let s : Coeff d := fun i => q.getD (d+i.val) 0
-  have he : ofList (d := 2*d) q = Cyclic.concat p s := by
+  let s : Coeff d := fun i => q.getD (d + i.val) 0
+  have he : ofList (d := 2 * d) q = Cyclic.concat p s := by
     funext r
     rw [CyclicFast.concat_apply]
     dsimp [ofList, p, s]
     split_ifs <;> congr 1; omega
-  have hdiff : ofList (d := d) (cyclicDifference d q) = p-s := by
+  have hdiff : ofList (d := d) (cyclicDifference d q) = p - s := by
     funext i
     simp [ofList, cyclicDifference, List.getD_eq_getElem?_getD, i.isLt, p, s]
   have hv := ofList_negacyclicMul d g (cyclicDifference d q)
   rw [hdiff] at hv
   rw [he, Cyclic.mulHom_concat]
   funext r
-  simp only [ofList, separatedProduct, cyclicAssemble, cyclicAssembleCoeff, List.getD_eq_getElem?_getD, List.getElem?_map,
+  simp only [ofList, separatedProduct, cyclicAssemble, cyclicAssembleCoeff,
+    List.getD_eq_getElem?_getD, List.getElem?_map,
     List.getElem?_range, r.isLt, Option.map_some, Option.getD_some]
   rw [Cyclic.product, CyclicFast.concat_apply]
   have hvi (i : Fin d) : (negacyclicMul d g (cyclicDifference d q)).getD i.val 0 =
-      Cyclotomic.mul (ofList g) (p-s) i := congrFun hv i
+      Cyclotomic.mul (ofList g) (p - s) i := congrFun hv i
   split_ifs with h
   · simpa only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, p, s, List.getD_eq_getElem?_getD] using
-      congrArg (fun z => B*(q.getD r.val 0 + q.getD (d+r.val) 0)+z) (hvi ⟨r.val, h⟩)
-  · have hi : r.val-d < d := by have := r.isLt; omega
-    simpa only [Pi.add_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul, p, s, sub_eq_add_neg, List.getD_eq_getElem?_getD] using
-      congrArg (fun z => B*(q.getD (r.val-d) 0 + q.getD (d+(r.val-d)) 0)-z) (hvi ⟨r.val-d, hi⟩)
+      congrArg (fun z => B * (q.getD r.val 0 + q.getD (d + r.val) 0) + z) (hvi ⟨r.val, h⟩)
+  · have hi : r.val - d < d := by have := r.isLt; omega
+    simpa only [Pi.add_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul, p, s, sub_eq_add_neg,
+      List.getD_eq_getElem?_getD] using
+      congrArg (fun z => B * (q.getD (r.val - d) 0 + q.getD (d + (r.val - d)) 0) - z) (hvi
+        ⟨r.val - d, hi⟩)
 
 /-- A certificate is the unique integral cyclic multiplier, of length `2d`. -/
 def separatedCyclicVerifier (p : CVPInput × List ℤ) : Bool :=
-  separatedCyclicCheck p.1 && decide (p.2.length = 2*p.1.1) &&
-    decide (listSqDistance (2*p.1.1)
+  separatedCyclicCheck p.1 && decide (p.2.length = 2 * p.1.1) &&
+    decide (listSqDistance (2 * p.1.1)
       (separatedProduct p.1.1 (separatedG p.1) (separatedB p.1) p.2)
         p.1.2.2.1 ≤ p.1.2.2.2)
 
 end IdealCVP
 
 namespace IdealCVP
+
 open Turing.MultiTapeTM Cslib.Complexity
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 
 theorem separatedCyclicVerifier_spec (x : CVPInput) (q : List ℤ)
     (hw : separatedCyclicCheck x = true) :
-    separatedCyclicVerifier (x, q) = true ↔ q.length = 2*x.1 ∧
+    separatedCyclicVerifier (x, q) = true ↔ q.length = 2 * x.1 ∧
       sqNorm (Cyclic.mulHom (Cyclotomic.power_two_pos ((separatedCyclicCheck_spec x).mp hw).1)
         (ofList (separatedG x)) (separatedB x) (ofList q) - ofList x.2.2.1) ≤ x.2.2.2 := by
   simp only [separatedCyclicVerifier, Bool.and_eq_true, hw, true_and,
@@ -250,7 +273,7 @@ theorem separatedCyclic_iff_exists_check (x : CVPInput) :
   constructor
   · rintro ⟨hw, hx⟩
     obtain ⟨hd, ht, hg, hB, hne⟩ := (separatedCyclicCheck_spec x).mp hw
-    have he : ofList (d := 2*x.1) x.2.1 =
+    have he : ofList (d := 2 * x.1) x.2.1 =
         Cyclic.generator (Cyclotomic.power_two_pos hd) (ofList (separatedG x)) (separatedB x) := by
       rw [hg, separatedGenerator_eq (Cyclotomic.power_two_pos hd), ofList_toList]
     obtain ⟨_, _, _, w, hw', hnorm⟩ := hx
@@ -282,13 +305,15 @@ theorem separatedCyclic_iff_exists_check (x : CVPInput) :
 
 /-- A polynomial-time computable diagonal comparison basis for Cramer's bound. -/
 def cyclicMagnitude (x : CVPInput) : ℤ :=
-  1 + listSqDistance x.1 (separatedG x) [] + (separatedB x)^2
+  1 + listSqDistance x.1 (separatedG x) [] + (separatedB x) ^ 2
 
+/-- A bound for entries of the separated cyclic multiplication matrix. -/
 def cyclicEntryBound (x : CVPInput) : ℤ :=
-  2*cyclicMagnitude x + 2*(x.1 : ℤ)^2*cyclicMagnitude x
+  2 * cyclicMagnitude x + 2 * (x.1 : ℤ) ^ 2 * cyclicMagnitude x
 
+/-- Auxiliary diagonal CVP data dominating the cyclic certificate bound. -/
 def cyclicBoundInput (x : CVPInput) : CVPInput :=
-  (2*x.1, constantList (2*x.1) ((2*x.1 : ℕ)*cyclicEntryBound x), x.2.2.1, x.2.2.2)
+  (2 * x.1, constantList (2 * x.1) ((2 * x.1 : ℕ) * cyclicEntryBound x), x.2.2.1, x.2.2.2)
 
 theorem multiplicationMatrix_constantList {n : ℕ} (hn : 0 < n) (M : ℤ) (i j : Fin n) :
     multiplicationMatrix (ofList (d := n) (constantList n M)) i j = if i = j then M else 0 := by
@@ -310,6 +335,7 @@ theorem cyclicMagnitude_bounds (x : CVPInput) :
   intro i
   exact (residual_coordinate_le _ i).trans (by omega)
 
+/-- The auxiliary CVP certificate bound dominates the separated cyclic matrix certificate bound. -/
 theorem cyclicBoundInput_dominates (x : CVPInput) (hw : separatedCyclicCheck x = true) :
     certificateBound (Cyclic.multiplicationMatrix
       (Cyclotomic.power_two_pos ((separatedCyclicCheck_spec x).mp hw).1)
@@ -318,12 +344,12 @@ theorem cyclicBoundInput_dominates (x : CVPInput) (hw : separatedCyclicCheck x =
   have hd := Cyclotomic.power_two_pos ((separatedCyclicCheck_spec x).mp hw).1
   obtain ⟨hA, hB, hg⟩ := cyclicMagnitude_bounds x
   have hE : 0 ≤ cyclicEntryBound x := by unfold cyclicEntryBound; positivity
-  have hM : 0 ≤ ((2*x.1 : ℕ) : ℤ)*cyclicEntryBound x := mul_nonneg (by positivity) hE
+  have hM : 0 ≤ ((2 * x.1 : ℕ) : ℤ) * cyclicEntryBound x := mul_nonneg (by positivity) hE
   have hbase : basisMagnitude (Cyclic.multiplicationMatrix hd (ofList (separatedG x))
       (separatedB x)) ≤ basisMagnitude (multiplicationMatrix
-        (ofList (d := 2*x.1) (cyclicBoundInput x).2.1)) := by
+        (ofList (d := 2 * x.1) (cyclicBoundInput x).2.1)) := by
     calc
-      _ ≤ ∑ _i : Fin (2*x.1), ∑ _j : Fin (2*x.1), cyclicEntryBound x := by
+      _ ≤ ∑ _i : Fin (2 * x.1), ∑ _j : Fin (2 * x.1), cyclicEntryBound x := by
         apply Finset.sum_le_sum
         intro i _
         apply Finset.sum_le_sum
@@ -331,7 +357,7 @@ theorem cyclicBoundInput_dominates (x : CVPInput) (hw : separatedCyclicCheck x =
         exact Cyclic.multiplicationMatrix_entry_bound hd _ _ _ hA hg hB i j
       _ = _ := by
         unfold basisMagnitude cyclicBoundInput
-        simp only [multiplicationMatrix_constantList (by omega : 0 < 2*x.1),
+        simp only [multiplicationMatrix_constantList (by omega : 0 < 2 * x.1),
           apply_ite abs, abs_zero, abs_of_nonneg hM]
         simp
   unfold certificateBound cvpCertificateBound cyclicBoundInput
@@ -339,7 +365,7 @@ theorem cyclicBoundInput_dominates (x : CVPInput) (hw : separatedCyclicCheck x =
   apply pow_le_pow_left₀
   · have := basisMagnitude_nonneg (Cyclic.multiplicationMatrix hd
         (ofList (separatedG x)) (separatedB x))
-    have := targetMagnitude_nonneg (ofList (d := 2*x.1) x.2.2.1)
+    have := targetMagnitude_nonneg (ofList (d := 2 * x.1) x.2.2.1)
     have := abs_nonneg x.2.2.2
     omega
   · dsimp only [cyclicBoundInput] at hbase
@@ -364,10 +390,12 @@ attribute [local irreducible] List.getD
     (((listGetD (encA := encIntBin) 0).comp (hl.prod (const 0))).prod
       ((listGetD (encA := encIntBin) 0).comp (hl.prod hd)))
 
-@[fun_prop] theorem poly_separatedG : ComputableTidilyInPolyTime separatedG encCVP (encList encIntBin) := by
+@[fun_prop] theorem poly_separatedG : ComputableTidilyInPolyTime
+    separatedG encCVP (encList encIntBin) := by
   unfold separatedG
   fun_prop
 
+/-- Recognizing separated cyclic generators takes native polynomial time. -/
 @[fun_prop] theorem poly_separatedCyclicCheck : ComputableTidilyInPolyTime
     separatedCyclicCheck encCVP encBool := by
   unfold separatedCyclicCheck
@@ -386,18 +414,23 @@ attribute [local irreducible] List.getD
   unfold cyclicDifference
   fun_prop
 
+/-- Dimension, separating constant, and the two block-product lists. -/
 abbrev CyclicAssembleArgs := ℕ × (ℤ × (List ℤ × List ℤ))
+
+/-- Unary dimension and signed binary encoding for cyclic block assembly. -/
 def encCyclicAssemble : CyclicAssembleArgs ↪ List Bool :=
   encPair encUnary (encPair encIntBin (encPair (encList encIntBin) (encList encIntBin)))
 
+/-- Assembling a coefficient from the cyclic sum and difference blocks takes native polynomial
+time. -/
 @[fun_prop] theorem poly_cyclicAssembleCoeff : ComputableTidilyInPolyTime
     (fun p : CyclicAssembleArgs × ℕ => cyclicAssembleCoeff p.1.1 p.1.2.1 p.1.2.2.1 p.1.2.2.2 p.2)
       (encPair encCyclicAssemble encUnary) encIntBin := by
   have hi : ComputableTidilyInPolyTime
-      (fun p : CyclicAssembleArgs × ℕ => if p.2 < p.1.1 then p.2 else p.2-p.1.1)
+      (fun p : CyclicAssembleArgs × ℕ => if p.2 < p.1.1 then p.2 else p.2 - p.1.1)
         (encPair encCyclicAssemble encUnary) encUnary := by unfold encCyclicAssemble; fun_prop
   have hdi : ComputableTidilyInPolyTime
-      (fun p : CyclicAssembleArgs × ℕ => p.1.1 + (if p.2 < p.1.1 then p.2 else p.2-p.1.1))
+      (fun p : CyclicAssembleArgs × ℕ => p.1.1 + (if p.2 < p.1.1 then p.2 else p.2 - p.1.1))
         (encPair encCyclicAssemble encUnary) encUnary := by
     unfold encCyclicAssemble at hi ⊢; fun_prop
   have hq : ComputableTidilyInPolyTime (fun p : CyclicAssembleArgs × ℕ => p.1.2.2.1)
@@ -425,6 +458,7 @@ def encCyclicAssemble : CyclicAssembleArgs ↪ List Bool :=
   · unfold encCyclicAssemble; fun_prop
   · exact poly_cyclicAssembleCoeff
 
+/-- Multiplication by a separated cyclic generator takes native polynomial time on encoded lists. -/
 @[fun_prop] theorem poly_separatedProduct : ComputableTidilyInPolyTime
     (fun p : RingArgs × ℤ => separatedProduct p.1.1 p.1.2.1 p.2 p.1.2.2)
       (encPair encRingArgs encIntBin) (encList encIntBin) := by
@@ -443,6 +477,7 @@ def encCyclicAssemble : CyclicAssembleArgs ↪ List Bool :=
         unfold encCyclicAssemble
         fun_prop)
 
+/-- The separated cyclic multiplier verifier runs in native polynomial time. -/
 @[fun_prop] theorem poly_separatedCyclicVerifier : ComputableTidilyInPolyTime
     separatedCyclicVerifier (encPair encCVP (encList encIntBin)) encBool := by
   have hp : ComputableTidilyInPolyTime
@@ -455,21 +490,26 @@ def encCyclicAssemble : CyclicAssembleArgs ↪ List Bool :=
   unfold separatedCyclicVerifier
   fun_prop
 
-@[fun_prop] theorem poly_cyclicMagnitude : ComputableTidilyInPolyTime cyclicMagnitude encCVP encIntBin := by
+@[fun_prop] theorem poly_cyclicMagnitude : ComputableTidilyInPolyTime
+    cyclicMagnitude encCVP encIntBin := by
   unfold cyclicMagnitude
   fun_prop
 
-@[fun_prop] theorem poly_cyclicEntryBound : ComputableTidilyInPolyTime cyclicEntryBound encCVP encIntBin := by
+@[fun_prop] theorem poly_cyclicEntryBound : ComputableTidilyInPolyTime
+    cyclicEntryBound encCVP encIntBin := by
   unfold cyclicEntryBound encCVP
   fun_prop
 
-@[fun_prop] theorem poly_cyclicBoundInput : ComputableTidilyInPolyTime cyclicBoundInput encCVP encCVP := by
+/-- Constructing the auxiliary cyclic certificate-bound instance takes native polynomial time. -/
+@[fun_prop] theorem poly_cyclicBoundInput : ComputableTidilyInPolyTime
+    cyclicBoundInput encCVP encCVP := by
   unfold cyclicBoundInput encCVP
   fun_prop
 
 end IdealCVP
 
 namespace IdealCVP
+
 open Turing.MultiTapeTM Cslib.Complexity
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 
@@ -477,7 +517,8 @@ open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 theorem separatedCyclic_bounded_certificate (x : CVPInput) (hx : x ∈ SeparatedPrincipalCyclicCVP) :
     ∃ q : List ℤ, separatedCyclicVerifier (x, q) = true ∧
       (∀ z ∈ q, |z| ≤ cvpCertificateBound (cyclicBoundInput x)) ∧
-      (encList encIntBin q).length ≤ witnessPolynomial.eval (encCVP (cyclicBoundInput x)).length := by
+      (encList encIntBin q).length ≤ witnessPolynomial.eval (encCVP (cyclicBoundInput x)).length :=
+        by
   obtain ⟨q, hq⟩ := (separatedCyclic_iff_exists_check x).mp hx
   have hw := hx.1
   obtain ⟨hd, _, _, hB, hg⟩ := (separatedCyclicCheck_spec x).mp hw
@@ -485,17 +526,18 @@ theorem separatedCyclic_bounded_certificate (x : CVPInput) (hx : x ∈ Separated
   let M := Cyclic.multiplicationMatrix (Cyclotomic.power_two_pos hd)
     (ofList (separatedG x)) (separatedB x)
   have hdet : M.det ≠ 0 := Cyclic.multiplicationMatrix_det_ne_zero hd _ hg _ hB
-  have hbound (i : Fin (2*x.1)) : |ofList q i| ≤ cvpCertificateBound (cyclicBoundInput x) := by
+  have hbound (i : Fin (2 * x.1)) : |ofList q i| ≤ cvpCertificateBound (cyclicBoundInput x) := by
     apply (certificate_coeff_le M hdet (ofList x.2.2.1) x.2.2.2 (ofList q)
       (by simpa [M] using hnorm) i).trans
     exact cyclicBoundInput_dominates x hw
-  refine ⟨toList (ofList (d := 2*x.1) q), ?_, ?_, ?_⟩
+  refine ⟨toList (ofList (d := 2 * x.1) q), ?_, ?_, ?_⟩
   · apply (separatedCyclicVerifier_spec x _ hw).mpr
     exact ⟨length_toList _, by simpa using hnorm⟩
   · intro z hz
     obtain ⟨i, rfl⟩ := List.mem_ofFn.mp hz
     exact hbound i
-  · have hb : ∀ z ∈ toList (ofList (d := 2*x.1) q), |z| ≤ cvpCertificateBound (cyclicBoundInput x) := by
+  · have hb : ∀ z ∈ toList (ofList (d :=
+    2 * x.1) q), |z| ≤ cvpCertificateBound (cyclicBoundInput x) := by
       intro z hz
       obtain ⟨i, rfl⟩ := List.mem_ofFn.mp hz
       exact hbound i
@@ -526,7 +568,7 @@ theorem separatedB_generator {d : ℕ} (hd : 0 < d) (g : Coeff d) (B : ℤ)
     (T : List ℤ) (Δ : ℤ) :
     separatedB (d, toList (Cyclic.generator hd g B), T, Δ) = B := by
   simp only [separatedB, binaryHalf_eq, toList, List.getD_eq_getElem?_getD, List.getElem?_ofFn,
-    show 0 < 2*d by omega, show d < 2*d by omega, ↓reduceDIte, Option.getD_some]
+    show 0 < 2 * d by omega, show d < 2 * d by omega, ↓reduceDIte, Option.getD_some]
   rw [Cyclic.generator, CyclicFast.concat_apply, CyclicFast.concat_apply]
   simp only [hd, Nat.lt_irrefl, ↓reduceDIte, Nat.sub_self, Pi.add_apply, Pi.neg_apply,
     Pi.smul_apply, smul_eq_mul, Cyclic.one, Cyclotomic.monomial, ↓reduceIte, mul_one]
@@ -540,7 +582,7 @@ theorem separatedG_generator {d : ℕ} (hd : 0 < d) (g : Coeff d) (B : ℤ)
   apply Fast.map_range_eq_toList
   intro i
   simp only [toList, List.getD_eq_getElem?_getD, List.getElem?_ofFn,
-    show i.val < 2*d by omega, ↓reduceDIte, Option.getD_some]
+    show i.val < 2 * d by omega, ↓reduceDIte, Option.getD_some]
   rw [Cyclic.generator, CyclicFast.concat_apply, dite_eq_left i.isLt]
   simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, Cyclic.one, Cyclotomic.monomial]
   by_cases h : i.val = 0
@@ -549,10 +591,12 @@ theorem separatedG_generator {d : ℕ} (hd : 0 < d) (g : Coeff d) (B : ℤ)
   · have he : i ≠ ⟨0, hd⟩ := fun hh => h (congrArg Fin.val hh)
     simp [h, he]
 
-theorem separatedCyclicCheck_generator {d : ℕ} (hd : ∃ k, d = 2^k)
+theorem separatedCyclicCheck_generator {d : ℕ} (hd : ∃ k, d = 2 ^ k)
     (g : Coeff d) (hg : g ≠ 0) (B : ℤ) (hB : B ≠ 0) (T : List ℤ)
-    (ht : T.length = 2*d) (Δ : ℤ) :
-    separatedCyclicCheck (d, toList (Cyclic.generator (Cyclotomic.power_two_pos hd) g B), T, Δ) = true := by
+    (ht : T.length = 2 * d) (Δ : ℤ) :
+    separatedCyclicCheck
+      (d, toList (Cyclic.generator (Cyclotomic.power_two_pos hd) g B), T, Δ) = true :=
+      by
   apply (separatedCyclicCheck_spec _).mpr
   simp only [separatedB_generator, separatedG_generator, ofList_toList]
   exact ⟨hd, ht, by rw [separatedGenerator_eq (Cyclotomic.power_two_pos hd), ofList_toList], hB, hg⟩
@@ -560,10 +604,10 @@ theorem separatedCyclicCheck_generator {d : ℕ} (hd : ∃ k, d = 2^k)
 /-- Exact mathematical scope of the polynomial-time recognizer. -/
 theorem separatedCyclicCheck_iff (x : CVPInput) :
     separatedCyclicCheck x = true ↔
-      ∃ hd : ∃ k, x.1 = 2^k, ∃ g : Coeff x.1, ∃ B : ℤ,
+      ∃ hd : ∃ k, x.1 = 2 ^ k, ∃ g : Coeff x.1, ∃ B : ℤ,
         g ≠ 0 ∧ B ≠ 0 ∧
           x.2.1 = toList (Cyclic.generator (Cyclotomic.power_two_pos hd) g B) ∧
-          x.2.2.1.length = 2*x.1 := by
+          x.2.2.1.length = 2 * x.1 := by
   constructor
   · intro hw
     obtain ⟨hd, ht, he, hB, hg⟩ := (separatedCyclicCheck_spec x).mp hw
@@ -577,7 +621,7 @@ theorem separatedCyclicCheck_iff (x : CVPInput) :
 
 /-- The recognized multiplication matrix has a unique integral preimage. -/
 theorem separatedCyclic_multiplier_unique (x : CVPInput)
-    (hw : separatedCyclicCheck x = true) (q r : Coeff (2*x.1))
+    (hw : separatedCyclicCheck x = true) (q r : Coeff (2 * x.1))
     (he : Cyclic.mulHom (Cyclotomic.power_two_pos ((separatedCyclicCheck_spec x).mp hw).1)
       (ofList (separatedG x)) (separatedB x) q =
         Cyclic.mulHom (Cyclotomic.power_two_pos ((separatedCyclicCheck_spec x).mp hw).1)
@@ -585,6 +629,7 @@ theorem separatedCyclic_multiplier_unique (x : CVPInput)
   obtain ⟨hd, _, _, hB, hg⟩ := (separatedCyclicCheck_spec x).mp hw
   exact Cyclic.mulHom_injective _ _ _ (Cyclotomic.mul_injective hd hg) hB he
 
+/-- Every output of the well-formed cyclic compiler passes the separated-generator recognizer. -/
 theorem CyclicFast.compile_separated (S : MaskedSys) :
     separatedCyclicCheck (CyclicFast.compile S) = true := by
   rw [CyclicFast.compile_eq]
@@ -602,10 +647,12 @@ theorem compileCyclicFast_separated_correct (S : MaskedSys) :
     exact CyclicFast.compile_separated S
   · exact fun h => (compileCyclicFast_correct S).mpr h.2
 
+/-- The cyclic compiler reduces masked feasibility to the recognized separated cyclic subclass. -/
 theorem polyTimeReducible_Masked_SeparatedCyclicCVP :
     PolyTimeReducible encMasked encCVP {S | S.Feasible} SeparatedPrincipalCyclicCVP :=
   ⟨compileCyclicFast, poly_compileCyclicFast, compileCyclicFast_separated_correct⟩
 
+/-- The recognized separated principal cyclic CVP subclass is NP-hard. -/
 theorem separatedPrincipalCyclicCVP_npHard : NPHard encCVP SeparatedPrincipalCyclicCVP :=
   maskedSys_npHard.trans polyTimeReducible_Masked_SeparatedCyclicCVP
 

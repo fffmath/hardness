@@ -3,15 +3,18 @@ import Complexity.Computability.Machines.Turing.MultiTape.Complexity.PolyTime.In
 import Complexity.Computability.Machines.Turing.MultiTape.Complexity.PolyTime.Nat.Binary
 
 /-! # List-level negacyclic multiplication and certificate checking -/
+
 namespace IdealCVP
+
 open Turing.MultiTapeTM
 
 /-- The coefficient at `r`, computed by two finite list loops. -/
 def negacyclicCoeff (d : ℕ) (g q : List ℤ) (r : ℕ) : ℤ :=
   ((List.range d).map fun i => ((List.range d).map fun j =>
     if (i + j) % d = r then
-      (if i + j < d then 1 else -1) * g.getD i 0 * q.getD j 0 else 0).sum).sum
+      (if i + j < d then 1 else - 1) * g.getD i 0 * q.getD j 0 else 0).sum).sum
 
+/-- List negacyclic multiplication modulo `X ^ d + 1`. -/
 def negacyclicMul (d : ℕ) (g q : List ℤ) : List ℤ :=
   (List.range d).map (negacyclicCoeff d g q)
 
@@ -32,11 +35,12 @@ theorem ofList_negacyclicMul (d : ℕ) (g q : List ℤ) :
     ofList (d := d) (negacyclicMul d g q) = Cyclotomic.mul (ofList g) (ofList q) := by
   funext r
   simp only [ofList, negacyclicMul, List.getD_eq_getElem?_getD, List.getElem?_map,
-    List.getElem?_range, r.isLt, ↓reduceIte, Option.map_some, Option.getD_some]
+    List.getElem?_range, r.isLt, Option.map_some, Option.getD_some]
   exact negacyclicCoeff_eq d g q r
 
+/-- Squared coefficient distance in dimension `d`, padding missing entries with zero. -/
 def listSqDistance (d : ℕ) (v t : List ℤ) : ℤ :=
-  ((List.range d).map fun i => (v.getD i 0 - t.getD i 0)^2).sum
+  ((List.range d).map fun i => (v.getD i 0 - t.getD i 0) ^ 2).sum
 
 theorem listSqDistance_eq (d : ℕ) (v t : List ℤ) :
     listSqDistance d v t = sqNorm (ofList (d := d) v - ofList t) := by
@@ -45,7 +49,7 @@ theorem listSqDistance_eq (d : ℕ) (v t : List ℤ) :
 
 /-- A bounded unary search tests whether the dimension is a power of two. -/
 def cvpWellFormedCheck (x : CVPInput) : Bool :=
-  ((List.range (x.1 + 1)).any fun k => decide (x.1 = 2^k)) &&
+  ((List.range (x.1 + 1)).any fun k => decide (x.1 = 2 ^ k)) &&
     decide (x.2.1.length = x.1) && decide (x.2.2.1.length = x.1)
 
 theorem cvpWellFormedCheck_eq (x : CVPInput) :
@@ -65,12 +69,15 @@ def cvpCheck (p : CVPInput × List ℤ) : Bool :=
   cvpWellFormedCheck p.1 && decide (p.2.length = p.1.1) &&
     decide (listSqDistance p.1.1 (negacyclicMul p.1.1 p.1.2.1 p.2) p.1.2.2.1 ≤ p.1.2.2.2)
 
+/-- The list checker accepts exactly the well-formed multipliers whose squared distance meets the
+threshold. -/
 theorem cvpCheck_eq (x : CVPInput) (q : List ℤ) : cvpCheck (x, q) = true ↔
     x.WellFormed ∧ q.length = x.1 ∧
       sqNorm (Cyclotomic.mul (ofList (d := x.1) x.2.1) (ofList q) - ofList x.2.2.1) ≤ x.2.2.2 := by
   simp only [cvpCheck, Bool.and_eq_true, cvpWellFormedCheck_eq, decide_eq_true_eq,
     listSqDistance_eq, ofList_negacyclicMul, and_assoc]
 
+/-- Principal cyclotomic CVP is equivalent to acceptance of some finite integer-list multiplier. -/
 theorem principalCVP_iff_exists_check (x : CVPInput) :
     x ∈ PrincipalCVP ↔ ∃ q : List ℤ, cvpCheck (x, q) = true := by
   constructor

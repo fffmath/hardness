@@ -6,20 +6,25 @@ import IdealCVP.Complexity.SatToMasked
 This reference uses finite-type equivalences. Its correctness is proved, but
 no native runtime certificate for this enumeration is asserted.
 -/
+
 namespace IdealCVP
+
 open Cslib.Complexity Cslib.Logic.PL Turing.MultiTapeTM
 
 namespace X3COccurrences
 
+/-- Enumerate the equation positions containing a source column. -/
 def positions (S : MaskedSys) (j : Fin S.cols) : List ℕ :=
   (List.range S.rows.length).filter fun i => (S.rows.getD i []).getD j.val false
 
+/-- The number of equation occurrences of a source column. -/
 def sizes (S : MaskedSys) (j : Fin S.cols) : ℕ := (positions S j).length
 
 theorem positions_bound (S : MaskedSys) (j : Fin S.cols) {i : ℕ}
     (hi : i ∈ positions S j) : i < S.rows.length := by
   exact List.mem_range.mp (List.mem_filter.mp hi).1
 
+/-- The source equation attached to a finite gadget occurrence. -/
 def row (S : MaskedSys) (e : ExactCoverGadget.Edge (sizes S)) : Fin S.rows.length :=
   ⟨(positions S e.1)[e.2.val], positions_bound S e.1 (List.getElem_mem e.2.isLt)⟩
 
@@ -54,13 +59,12 @@ theorem solvable_iff (S : MaskedSys)
     ExactCoverGadget.Solvable (sizes S) (row S) ↔ S.toSystem.HasSolution := by
   apply exists_congr
   intro v
-  change (∀ i, (∑ e : ExactCoverGadget.Edge (sizes S),
-    if row S e = i then bit (v e.1) else 0) = 1) ↔ _
   simp only [source_sum]
   change _ ↔ ((∀ j, v j = true → S.toSystem.μ j = true) ∧
     (fun i => (∑ j, bit (S.toSystem.A i j) * bit (v j)) - bit (S.toSystem.b i)) = 0)
   simp [hμ, hb, funext_iff, sub_eq_zero]
 
+/-- The finite-type semantic reduction from a masked system to list X3C. -/
 noncomputable def reduce (S : MaskedSys) : X3CList :=
   ExactCoverGadget.semanticList (sizes S) (row S)
 
@@ -92,18 +96,18 @@ theorem denseSystem_mask_true (cs : List Column) (rs : List (List Column))
 
 theorem reduce_rhs_true (φ : CNF ℕ) : ∀ i, (reduce φ).toSystem.b i = true := by
   by_cases h : (φ.all fun c => c.length == 3) = true
-  · rw [show reduce φ = denseSystem (columns φ) (supports φ) from if_pos h]
+  · rw [show reduce φ = denseSystem (columns φ) (supports φ) from ite_eq_left h]
     exact denseSystem_rhs_true _ _
-  · rw [show reduce φ = noSystem from if_neg h]
+  · rw [show reduce φ = noSystem from ite_eq_right h]
     intro i
     have hi : i.val = 0 := by have := i.isLt; change i.val < 1 at this; omega
     simp [MaskedSys.toSystem, MaskedSys.rhs, noSystem, hi]
 
 theorem reduce_mask_true (φ : CNF ℕ) : ∀ j, (reduce φ).toSystem.μ j = true := by
   by_cases h : (φ.all fun c => c.length == 3) = true
-  · rw [show reduce φ = denseSystem (columns φ) (supports φ) from if_pos h]
+  · rw [show reduce φ = denseSystem (columns φ) (supports φ) from ite_eq_left h]
     exact denseSystem_mask_true _ _
-  · rw [show reduce φ = noSystem from if_neg h]
+  · rw [show reduce φ = noSystem from ite_eq_right h]
     intro j
     have hj : j.val = 0 := by have := j.isLt; change j.val < 1 at this; omega
     simp [MaskedSys.toSystem, MaskedSys.mask, noSystem, hj]
@@ -114,6 +118,8 @@ end SatToMasked
 noncomputable def satToX3CSemantic (φ : CNF ℕ) : X3CList :=
   X3COccurrences.reduce (satToMasked φ)
 
+/-- The finite semantic gadget preserves ExactThreeSAT satisfiability as list exact-cover
+membership. -/
 theorem satToX3CSemantic_correct (φ : CNF ℕ) :
     φ ∈ ExactThreeSAT ↔ satToX3CSemantic φ ∈ X3CLang :=
   (satToMasked_correct φ).trans

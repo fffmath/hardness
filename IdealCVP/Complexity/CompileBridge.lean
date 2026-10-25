@@ -1,10 +1,12 @@
 import IdealCVP.Complexity.CompileList
 
 /-! # Correctness of the total list-interface reference compiler -/
+
 namespace IdealCVP
 
 namespace MaskedSys
 
+/-- Adding a forced true variable and a tautological equation preserves feasibility. -/
 theorem paddedSystem_hasSolution_iff (S : MaskedSys) :
     S.paddedSystem.HasSolution ↔ S.toSystem.HasSolution := by
   constructor

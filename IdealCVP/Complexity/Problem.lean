@@ -8,7 +8,9 @@ import Mathlib.Data.List.OfFn
 Dimensions and column counts are unary. Coefficients and thresholds are signed
 binary integers. Ill-formed inputs are NO instances; zero generators are allowed.
 -/
+
 namespace IdealCVP
+
 open Turing.MultiTapeTM
 
 /-- Total coefficient lookup, padded by zero. -/
@@ -38,11 +40,13 @@ def toList {α : Type} {d : ℕ} (v : Fin d → α) : List α := List.ofFn v
 /-- `(d,g,T,Δ)`, without proof fields. -/
 abbrev CVPInput := ℕ × (List ℤ × (List ℤ × ℤ))
 
+/-- Encode the dimension in unary and the generator, target, and threshold in signed binary. -/
 def encCVP : CVPInput ↪ List Bool :=
   encPair encUnary (encPair (encList encIntBin) (encPair (encList encIntBin) encIntBin))
 
 namespace CVPInput
 
+/-- The dimension is a power of two and both coefficient lists have that length. -/
 def WellFormed (x : CVPInput) : Prop :=
   (∃ k : ℕ, x.1 = 2 ^ k) ∧ x.2.1.length = x.1 ∧ x.2.2.1.length = x.1
 
@@ -53,6 +57,7 @@ def PrincipalCVP : Set CVPInput := {x | x.WellFormed ∧
   ∃ q : Coeff x.1,
     sqNorm (Cyclotomic.mul (ofList x.2.1) q - ofList x.2.2.1) ≤ x.2.2.2}
 
+/-- List-language membership agrees with exact CVP in the principal coefficient lattice. -/
 theorem principalCVP_iff (x : CVPInput) : x ∈ PrincipalCVP ↔
     x.WellFormed ∧ CVPYes (Cyclotomic.principalIdealLattice (ofList (d := x.1) x.2.1))
       (ofList x.2.2.1) x.2.2.2 := by
@@ -66,6 +71,7 @@ theorem principalCVP_iff (x : CVPInput) : x ∈ PrincipalCVP ↔
 def toCVPInput (J : PrincipalCVPInstance) : CVPInput :=
   (J.d, toList J.g, toList J.T, J.Δ)
 
+/-- Forgetting proof fields preserves the answer of a principal CVP instance. -/
 @[simp] theorem toCVPInput_mem_iff (J : PrincipalCVPInstance) :
     toCVPInput J ∈ PrincipalCVP ↔
       CVPYes (Cyclotomic.principalIdealLattice J.g) J.T J.Δ := by
@@ -75,17 +81,26 @@ def toCVPInput (J : PrincipalCVPInstance) : CVPInput :=
 /-- `(columns, rows, rhs, mask)`. Counts are explicit even for zero rows. -/
 abbrev MaskedSys := ℕ × (List (List Bool) × (List Bool × List Bool))
 
+/-- Encode the column count in unary and the Boolean rows, right-hand side, and mask as lists. -/
 def encMasked : MaskedSys ↪ List Bool :=
   encPair encUnary (encPair (encList (encList encBool))
     (encPair (encList encBool) (encList encBool)))
 
 namespace MaskedSys
 
+/-- The declared number of columns, including when the row list is empty. -/
 def cols (S : MaskedSys) : ℕ := S.1
+
+/-- The Boolean incidence rows. -/
 def rows (S : MaskedSys) : List (List Bool) := S.2.1
+
+/-- The Boolean right-hand side of the equations. -/
 def rhs (S : MaskedSys) : List Bool := S.2.2.1
+
+/-- The Boolean mask specifying which columns may be selected. -/
 def mask (S : MaskedSys) : List Bool := S.2.2.2
 
+/-- Every row, right-hand side, and mask has the declared length. -/
 def WellFormed (S : MaskedSys) : Prop :=
   (∀ r ∈ S.rows, r.length = S.cols) ∧
     S.rhs.length = S.rows.length ∧ S.mask.length = S.cols
@@ -103,6 +118,7 @@ def toSystem (S : MaskedSys) : MaskedSystem S.rows.length S.cols where
 /-- Well-formed 0/1 linear equations with a selection mask. -/
 def Feasible (S : MaskedSys) : Prop := S.WellFormed ∧ S.toSystem.HasSolution
 
+/-- The list-system feasibility predicate includes both validity and mathematical feasibility. -/
 theorem feasible_iff (S : MaskedSys) :
     S.Feasible ↔ S.WellFormed ∧ S.toSystem.HasSolution := Iff.rfl
 
@@ -127,4 +143,5 @@ theorem feasible_iff_list (S : MaskedSys) : S.Feasible ↔ S.WellFormed ∧
     exact sub_eq_zero.mpr (heq i)
 
 end MaskedSys
+
 end IdealCVP

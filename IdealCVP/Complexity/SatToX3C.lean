@@ -2,74 +2,107 @@ import IdealCVP.Complexity.X3CEnumerate
 import IdealCVP.Complexity.SatToX3CSemantic
 import IdealCVP.Complexity.X3CToCVP
 
-/-! # An explicit list implementation of the exact-cover gadget -/
+/-! # An explicit list implementation of the exact-cover gadget
+
+Natural-number labels make the degree-three gadget executable. Correctness and
+native polynomial-time certificates establish X3C NP-completeness and discharge
+the X3C hardness premise of `principal-ideal.tex`, Theorem `thm:cyclotomic-cvp`.
+-/
+
 namespace IdealCVP
+
 open Turing.MultiTapeTM Cslib.Complexity Cslib.Logic.PL
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open scoped List
 
 namespace X3CFast
 
+/-- Four unary indices identifying a gadget node or column. -/
 abbrev Label := ℕ × ℕ × ℕ × ℕ
+
+/-- A source column index paired with an occurrence index. -/
 abbrev Pair := ℕ × ℕ
+
+/-- Unary encoding of the four gadget label indices. -/
 def encLabel : Label ↪ List Bool := encPair encUnary
   (encPair encUnary (encPair encUnary encUnary))
+
+/-- Unary encoding of an occurrence label. -/
 def encEdge : Pair ↪ List Bool := encPair encUnary encUnary
+
+/-- Unary encoding of an occurrence and its port index. -/
 def encPort : (Pair × ℕ) ↪ List Bool := encPair encEdge encUnary
 
+/-- List the equation indices incident to a source column. -/
 def positions (S : MaskedSys) (j : ℕ) : List ℕ :=
   (List.range S.rows.length).filter fun i => (S.rows.getD i []).getD j false
 
+/-- Enumerate equation occurrences of all source columns. -/
 def edges (S : MaskedSys) : List Pair :=
   (List.range S.cols).flatMap fun j =>
-    (List.range (positions S j).length).map fun k => (j,k)
+    (List.range (positions S j).length).map fun k => (j, k)
 
+/-- Enumerate the three ports at each occurrence. -/
 def ports (S : MaskedSys) : List (Pair × ℕ) := (edges S) ×ˢ (List.range 3)
 
+/-- Enumerate the original and internal gadget node labels. -/
 def nodes (S : MaskedSys) : List Label :=
-  (((List.range S.rows.length) ×ˢ (List.range 3)).map fun p => (0,p.1,p.2,0)) ++
-  (((ports S) ×ˢ (List.range 3)).map fun p => (p.2+1,p.1.1.1,p.1.1.2,p.1.2))
+  (((List.range S.rows.length) ×ˢ (List.range 3)).map fun p => (0, p.1, p.2, 0)) ++
+  (((ports S) ×ˢ (List.range 3)).map fun p => (p.2 + 1, p.1.1.1, p.1.1.2, p.1.2))
 
+/-- Enumerate all selected, unselected, and shared gadget column labels. -/
 def columns (S : MaskedSys) : List Label :=
-  ((ports S).map fun p => (0,p.1.1,p.1.2,p.2)) ++
-  ((ports S).map fun p => (1,p.1.1,p.1.2,p.2)) ++
-  ((edges S).map fun p => (2,p.1,p.2,0))
+  ((ports S).map fun p => (0, p.1.1, p.1.2, p.2)) ++
+  ((ports S).map fun p => (1, p.1.1, p.1.2, p.2)) ++
+  ((edges S).map fun p => (2, p.1, p.2, 0))
 
+/-- The preceding occurrence index, wrapping around within a source column. -/
 def previous (S : MaskedSys) (j k : ℕ) : ℕ :=
-  if k = 0 then (positions S j).length - 1 else k-1
+  if k = 0 then (positions S j).length - 1 else k - 1
 
+/-- Look up the source equation of an occurrence, using zero outside its range. -/
 def row (S : MaskedSys) (j k : ℕ) : ℕ := (positions S j).getD k 0
 
+/-- The three node labels incident to a gadget column label. -/
 def triple (S : MaskedSys) (c : Label) : Label × Label × Label :=
   let j := c.2.1
   let k := c.2.2.1
   let r := c.2.2.2
-  if c.1 = 0 then ((0,row S j k,r,0),(1,j,k,r),(2,j,previous S j k,r))
-  else if c.1 = 1 then ((1,j,k,r),(2,j,k,r),(3,j,k,r))
-  else ((3,j,k,0),(3,j,k,1),(3,j,k,2))
+  if c.1 = 0 then ((0, row S j k, r, 0), (1, j, k, r), (2, j, previous S j k, r))
+  else if c.1 = 1 then ((1, j, k, r), (2, j, k, r), (3, j, k, r))
+  else ((3, j, k, 0), (3, j, k, 1), (3, j, k, 2))
 
+/-- Encode a gadget triple by positions in the explicit node enumeration. -/
 def encodeTriple (S : MaskedSys) (c : Label) : X3CTriple :=
   let t := triple S c
   ((nodes S).idxOf t.1, (nodes S).idxOf t.2.1, (nodes S).idxOf t.2.2)
 
+/-- Compile a masked Boolean system into a list X3C instance. -/
 def reduce (S : MaskedSys) : X3CList :=
-  (S.rows.length + 3*(edges S).length, (columns S).map (encodeTriple S))
+  (S.rows.length + 3 * (edges S).length, (columns S).map (encodeTriple S))
 
 open ExactCoverGadget
 
-def edgeLabel {n : ℕ} {K : Fin n → ℕ} (e : Edge K) : Pair := (e.1.val,e.2.val)
-def portLabel {n : ℕ} {K : Fin n → ℕ} (p : Port K) : Pair × ℕ := (edgeLabel p.1,p.2.val)
+/-- Explicit natural-number label of a finite gadget occurrence. -/
+def edgeLabel {n : ℕ} {K : Fin n → ℕ} (e : Edge K) : Pair := (e.1.val, e.2.val)
+
+/-- Explicit natural-number label of a finite gadget port. -/
+def portLabel {n : ℕ} {K : Fin n → ℕ} (p : Port K) : Pair × ℕ := (edgeLabel p.1, p.2.val)
+
+/-- Explicit four-index label of a finite gadget node. -/
 def nodeLabel {M n : ℕ} {K : Fin n → ℕ} : Node (M := M) K → Label
-  | .inl (i,r) => (0,i.val,r.val,0)
-  | .inr ((e,r),t) => (t.val+1,e.1.val,e.2.val,r.val)
+  | .inl (i, r) => (0, i.val, r.val, 0)
+  | .inr ((e, r), t) => (t.val + 1, e.1.val, e.2.val, r.val)
+
+/-- Explicit four-index label of a finite gadget column. -/
 def columnLabel {n : ℕ} {K : Fin n → ℕ} : Column K → Label
-  | .inl (e,r) => (0,e.1.val,e.2.val,r.val)
-  | .inr (.inl (e,r)) => (1,e.1.val,e.2.val,r.val)
-  | .inr (.inr e) => (2,e.1.val,e.2.val,0)
+  | .inl (e, r) => (0, e.1.val, e.2.val, r.val)
+  | .inr (.inl (e, r)) => (1, e.1.val, e.2.val, r.val)
+  | .inr (.inr e) => (2, e.1.val, e.2.val, 0)
 
 theorem edgeLabel_injective {n : ℕ} {K : Fin n → ℕ} :
     Function.Injective (edgeLabel (K := K)) := by
-  rintro ⟨j,k⟩ ⟨j',k'⟩ h
+  rintro ⟨j, k⟩ ⟨j', k'⟩ h
   have hj : j = j' := Fin.ext (congrArg Prod.fst h)
   cases hj
   have hk : k = k' := Fin.ext (congrArg Prod.snd h)
@@ -79,15 +112,15 @@ theorem edgeLabel_injective {n : ℕ} {K : Fin n → ℕ} :
 theorem nodeLabel_injective {M n : ℕ} {K : Fin n → ℕ} :
     Function.Injective (nodeLabel (M := M) (K := K)) := by
   intro a b h
-  rcases a with ⟨i,r⟩ | ⟨⟨e,r⟩,t⟩ <;> rcases b with ⟨i',r'⟩ | ⟨⟨e',r'⟩,t'⟩
+  rcases a with ⟨i, r⟩ | ⟨⟨e, r⟩, t⟩ <;> rcases b with ⟨i', r'⟩ | ⟨⟨e', r'⟩, t'⟩
   · have hi : i = i' := Fin.ext (congrArg (fun a : Label => a.2.1) h)
     have hr : r = r' := Fin.ext (congrArg (fun a : Label => a.2.2.1) h)
     cases hi; cases hr; rfl
   · have he := congrArg Prod.fst h
-    change 0 = t'.val+1 at he
+    change 0 = t'.val + 1 at he
     omega
   · have he := congrArg Prod.fst h
-    change t.val+1 = 0 at he
+    change t.val + 1 = 0 at he
     omega
   · have ht : t = t' := Fin.ext (by have he := congrArg Prod.fst h; dsimp [nodeLabel] at he; omega)
     have he : e = e' := edgeLabel_injective
@@ -102,13 +135,14 @@ theorem finRange_val_map (d : ℕ) : (List.finRange d).map Fin.val = List.range 
   simp
 
 theorem map_product {A B C D : Type*} (f : A → C) (g : B → D) (l : List A) (k : List B) :
-    (l ×ˢ k).map (fun p => (f p.1,g p.2)) = (l.map f) ×ˢ (k.map g) := by
+    (l ×ˢ k).map (fun p => (f p.1, g p.2)) = (l.map f) ×ˢ (k.map g) := by
   induction l with
   | nil => rfl
   | cons a l ih =>
     simpa [List.product, List.map_map, Function.comp_def] using
-      (congrArg (fun xs => ((k.map fun b => (f a,g b)) ++ xs)) ih)
+      (congrArg (fun xs => ((k.map fun b => (f a, g b)) ++ xs)) ih)
 
+/-- The executable edge labels enumerate exactly the finite occurrence edges. -/
 theorem edges_eq (S : MaskedSys) :
     (edgeEnum (X3COccurrences.sizes S)).map edgeLabel = edges S := by
   unfold edgeEnum edges
@@ -120,13 +154,15 @@ theorem edges_eq (S : MaskedSys) :
   simp only [List.map_map]
   rfl
 
+/-- The executable port labels enumerate the three ports of every occurrence. -/
 theorem ports_eq (S : MaskedSys) :
     (portEnum (X3COccurrences.sizes S)).map portLabel = ports S := by
   change ((edgeEnum (X3COccurrences.sizes S)) ×ˢ List.finRange 3).map
-    (fun p => (edgeLabel p.1,p.2.val)) = _
+    (fun p => (edgeLabel p.1, p.2.val)) = _
   rw [map_product, edges_eq, finRange_val_map]
   rfl
 
+/-- The executable node labels agree with the finite gadget node enumeration. -/
 theorem nodes_eq (S : MaskedSys) :
     (nodeEnum (M := S.rows.length) (X3COccurrences.sizes S)).map nodeLabel = nodes S := by
   unfold nodeEnum nodes
@@ -134,6 +170,7 @@ theorem nodes_eq (S : MaskedSys) :
   simp only [List.map_append, List.map_map, ← map_product]
   rfl
 
+/-- The executable column labels agree with the finite selected, unselected, and shared columns. -/
 theorem columns_eq (S : MaskedSys) :
     (columnEnum (X3COccurrences.sizes S)).map columnLabel = columns S := by
   unfold columnEnum columns
@@ -142,45 +179,48 @@ theorem columns_eq (S : MaskedSys) :
   rfl
 
 theorem previous_eq {k : ℕ} (i : Fin k) :
-    ((finRotate k).symm i).val = if i.val = 0 then k-1 else i.val-1 := by
-  obtain ⟨m,rfl⟩ := Nat.exists_eq_succ_of_ne_zero i.pos.ne'
-  letI : NeZero (m+1) := ⟨by omega⟩
+    ((finRotate k).symm i).val = if i.val = 0 then k - 1 else i.val - 1 := by
+  obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero i.pos.ne'
+  let : NeZero (m + 1) := ⟨by omega⟩
   by_cases hi : i = 0
   · subst i
-    have he : (finRotate (m+1)).symm 0 = Fin.last m :=
-      (finRotate (m+1)).symm_apply_eq.mpr (finRotate_last (n := m)).symm
+    have he : (finRotate (m + 1)).symm 0 = Fin.last m :=
+      (finRotate (m + 1)).symm_apply_eq.mpr (finRotate_last (n := m)).symm
     simp [he]
   · have hv : i.val ≠ 0 := fun h => hi (Fin.ext h)
     simp only [hv, ↓reduceIte]
     exact coe_finRotate_symm_of_ne_zero hi
 
+/-- The executable labelled triple agrees with the semantic gadget triple at each column. -/
 theorem triple_eq (S : MaskedSys) (c : Column (X3COccurrences.sizes S)) :
     triple S (columnLabel c) =
       let t := tripleTuple (X3COccurrences.sizes S) (X3COccurrences.row S) c
-      (nodeLabel t.1,nodeLabel t.2.1,nodeLabel t.2.2) := by
-  rcases c with ⟨⟨j,k⟩,r⟩ | ⟨⟨j,k⟩,r⟩ | ⟨j,k⟩
+      (nodeLabel t.1, nodeLabel t.2.1, nodeLabel t.2.2) := by
+  rcases c with ⟨⟨j, k⟩, r⟩ | ⟨⟨j, k⟩, r⟩ | ⟨j, k⟩
   · simp only [triple, columnLabel, tripleTuple, original, internal, nodeLabel,
       ↓reduceIte, row, previous]
-    change ((0,(positions S j.val).getD k.val 0,r.val,0),(1,j.val,k.val,r.val),
-      (2,j.val,(if k.val = 0 then (positions S j.val).length-1 else k.val-1),r.val)) =
-      ((0,(positions S j.val)[k.val],r.val,0),(1,j.val,k.val,r.val),
-        (2,j.val,((finRotate (X3COccurrences.sizes S j)).symm k).val,r.val))
+    change ((0, (positions S j.val).getD k.val 0, r.val, 0), (1, j.val, k.val, r.val),
+      (2, j.val, (if k.val = 0 then (positions S j.val).length - 1 else k.val - 1), r.val)) =
+      ((0, (positions S j.val)[k.val], r.val, 0), (1, j.val, k.val, r.val),
+        (2, j.val, ((finRotate (X3COccurrences.sizes S j)).symm k).val, r.val))
     have hk : k.val < (positions S j.val).length := k.isLt
     rw [previous_eq, List.getD_eq_getElem (positions S j.val) 0 hk]
     rfl
   · rfl
   · rfl
 
+/-- The executable gadget turns all-true masked exact-one equations into an equivalent X3C
+instance. -/
 theorem reduce_correct (S : MaskedSys) (hw : S.WellFormed)
     (hb : ∀ i, S.toSystem.b i = true) (hμ : ∀ j, S.toSystem.μ j = true) :
     reduce S ∈ X3CLang ↔ S.Feasible := by
   let K := X3COccurrences.sizes S
-  letI : BEq (Node (M := S.rows.length) K) := instBEqOfDecidableEq
+  let : BEq (Node (M := S.rows.length) K) := instBEqOfDecidableEq
   let t := tripleTuple K (X3COccurrences.row S)
   let us := nodeEnum (M := S.rows.length) K
   let cs := columnEnum K
-  have he : reduce S = (S.rows.length + 3*(edgeEnum K).length,
-      cs.map fun c => (us.idxOf (t c).1,us.idxOf (t c).2.1,us.idxOf (t c).2.2)) := by
+  have he : reduce S = (S.rows.length + 3 * (edgeEnum K).length,
+      cs.map fun c => (us.idxOf (t c).1, us.idxOf (t c).2.1, us.idxOf (t c).2.2)) := by
     unfold reduce
     rw [← edges_eq S, List.length_map, ← columns_eq S, List.map_map]
     congr 1
@@ -236,18 +276,19 @@ attribute [local irreducible] List.getD
       encMasked (encList (encPair encPort encUnary)) := by
     unfold List.product
     fun_prop
-  have hf : ComputableTidilyInPolyTime (fun p : Pair => (0,p.1,p.2,0)) encEdge encLabel := by
+  have hf : ComputableTidilyInPolyTime (fun p : Pair => (0, p.1, p.2, 0)) encEdge encLabel := by
     unfold encEdge encLabel
     fun_prop
   have hh : ComputableTidilyInPolyTime
-      (fun p : (Pair × ℕ) × ℕ => (p.2+1,p.1.1.1,p.1.1.2,p.1.2))
+      (fun p : (Pair × ℕ) × ℕ => (p.2 + 1, p.1.1.1, p.1.1.2, p.1.2))
       (encPair encPort encUnary) encLabel := by
     unfold encPort encEdge encLabel
     fun_prop
   exact listAppend' ((ComputableTidilyInPolyTime.map hf).comp hg)
     ((ComputableTidilyInPolyTime.map hh).comp hi)
 
-@[fun_prop] theorem poly_columns : ComputableTidilyInPolyTime columns encMasked (encList encLabel) := by
+@[fun_prop] theorem poly_columns : ComputableTidilyInPolyTime
+    columns encMasked (encList encLabel) := by
   unfold columns encLabel
   fun_prop
 
@@ -264,6 +305,8 @@ attribute [local irreducible] List.getD
   fun_prop
 
 set_option maxHeartbeats 2000000 in
+-- The explicit triple compiler composes many nested encoded projections.
+
 @[fun_prop] theorem poly_triple : ComputableTidilyInPolyTime
     (fun p : MaskedSys × Label => triple p.1 p.2)
     (encPair encMasked encLabel) (encPair encLabel (encPair encLabel encLabel)) := by
@@ -275,23 +318,24 @@ set_option maxHeartbeats 2000000 in
   have hi : ComputableTidilyInPolyTime (fun p : MaskedSys × Label => p.2.2.2.2) ein encUnary :=
     (snd _ _).snd'.snd'.snd'
   have hp : ComputableTidilyInPolyTime
-      (fun p : MaskedSys × Label => (p.1,(p.2.2.1,p.2.2.2.1))) ein (encPair encMasked encEdge) :=
+      (fun p : MaskedSys × Label => (p.1, (p.2.2.1, p.2.2.2.1))) ein (encPair encMasked encEdge) :=
     (fst _ _).prod (hj.prod hk)
   have hr : ComputableTidilyInPolyTime
       (fun p : MaskedSys × Label => row p.1 p.2.2.1 p.2.2.2.1) ein encUnary := poly_row.comp hp
   have hv : ComputableTidilyInPolyTime
-      (fun p : MaskedSys × Label => previous p.1 p.2.2.1 p.2.2.2.1) ein encUnary := poly_previous.comp hp
+      (fun p : MaskedSys × Label => previous p.1 p.2.2.1 p.2.2.2.1) ein encUnary :=
+        poly_previous.comp hp
   have hl (t : ℕ) : ComputableTidilyInPolyTime
-      (fun p : MaskedSys × Label => (t,p.2.2.1,p.2.2.2.1,p.2.2.2.2)) ein encLabel :=
+      (fun p : MaskedSys × Label => (t, p.2.2.1, p.2.2.2.1, p.2.2.2.2)) ein encLabel :=
     (const t).prod (hj.prod (hk.prod hi))
   have hs (r : ℕ) : ComputableTidilyInPolyTime
-      (fun p : MaskedSys × Label => (3,p.2.2.1,p.2.2.2.1,r)) ein encLabel :=
+      (fun p : MaskedSys × Label => (3, p.2.2.1, p.2.2.2.1, r)) ein encLabel :=
     (const 3).prod (hj.prod (hk.prod (const r)))
   have ho : ComputableTidilyInPolyTime
-      (fun p : MaskedSys × Label => (0,row p.1 p.2.2.1 p.2.2.2.1,p.2.2.2.2,0)) ein encLabel :=
+      (fun p : MaskedSys × Label => (0, row p.1 p.2.2.1 p.2.2.2.1, p.2.2.2.2, 0)) ein encLabel :=
     (const 0).prod (hr.prod (hi.prod (const 0)))
   have hv' : ComputableTidilyInPolyTime
-      (fun p : MaskedSys × Label => (2,p.2.2.1,previous p.1 p.2.2.1 p.2.2.2.1,p.2.2.2.2))
+      (fun p : MaskedSys × Label => (2, p.2.2.1, previous p.1 p.2.2.1 p.2.2.2.1, p.2.2.2.2))
       ein encLabel := (const 2).prod (hj.prod (hv.prod hi))
   have htag (t : ℕ) : ComputableTidilyInPolyTime
       (fun p : MaskedSys × Label => decide (p.2.1 = t)) ein encBool :=
@@ -316,31 +360,40 @@ set_option maxHeartbeats 2000000 in
       ((unary_to_binary.comp (snd _ _).fst').prod (unary_to_binary.comp (snd _ _).snd'))
   exact hc.comp ht
 
+/-- The explicit list implementation of the degree-three exact-cover gadget runs in native
+polynomial time. -/
 @[fun_prop] theorem poly_reduce : ComputableTidilyInPolyTime reduce encMasked encX3C := by
   unfold reduce encX3C
   fun_prop
 
 end X3CFast
 
+/-- The total ExactThreeSAT reduction through masked equations and the explicit X3C gadget. -/
 def satToX3C (φ : CNF ℕ) : X3CList := X3CFast.reduce (satToMasked φ)
 
+/-- The executable X3C gadget preserves satisfiability, including malformed SAT inputs. -/
 theorem satToX3C_correct (φ : CNF ℕ) : φ ∈ ExactThreeSAT ↔ satToX3C φ ∈ X3CLang :=
   (satToMasked_correct φ).trans
     (X3CFast.reduce_correct _ (SatToMasked.reduce_wellFormed φ)
       (SatToMasked.reduce_rhs_true φ) (SatToMasked.reduce_mask_true φ)).symm
 
+/-- The explicit ExactThreeSAT-to-X3C reduction runs in native polynomial time. -/
 @[fun_prop] theorem poly_satToX3C : ComputableTidilyInPolyTime satToX3C encCNF encX3C :=
   X3CFast.poly_reduce.comp SatToMasked.poly_reduce
 
+/-- The certified exact-cover gadget gives a polynomial-time reduction from ExactThreeSAT. -/
 theorem polyTimeReducible_ExactThreeSAT_X3C :
     PolyTimeReducible encCNF encX3C ExactThreeSAT X3CLang :=
   ⟨satToX3C, poly_satToX3C, satToX3C_correct⟩
 
+/-- List X3C is NP-hard through the direct ExactThreeSAT gadget. -/
 theorem x3c_npHard : NPHard encX3C X3CLang :=
   ExactThreeSAT_npHard.trans polyTimeReducible_ExactThreeSAT_X3C
 
-theorem x3c_npComplete : NPComplete encX3C X3CLang := ⟨x3c_mem_NP,x3c_npHard⟩
+/-- List X3C is NP-complete through the direct ExactThreeSAT exact-cover gadget. -/
+theorem x3c_npComplete : NPComplete encX3C X3CLang := ⟨x3c_mem_NP, x3c_npHard⟩
 
+/-- Principal cyclotomic CVP is NP-hard via the paper’s X3C-to-CVP reduction. -/
 theorem principalCVP_npHard_via_X3C : NPHard encCVP PrincipalCVP :=
   principalCVP_npHard_of_X3CList x3c_npComplete.2
 

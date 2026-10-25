@@ -5,10 +5,12 @@ import IdealCVP.Complexity.SatToX3C
 All ordered triples are columns. The incidence matrix and right-hand side
 depend only on the universe size; a collection changes only the Boolean mask.
 -/
+
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace IdealCVP
+
 open Turing.MultiTapeTM Cslib.Complexity
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 
@@ -25,71 +27,71 @@ theorem masked_hasSolution_iff_cover {M n : ℕ} (S : MaskedSystem M n)
     rw [← Finset.sum_filter]
     simp
   constructor
-  · rintro ⟨ξ,hμ,he⟩
+  · rintro ⟨ξ, hμ, he⟩
     let s := Finset.univ.filter fun j => ξ j = true
     have hs (j : Fin n) : decide (j ∈ s) = ξ j := by
-      simp only [s, Finset.mem_filter, Finset.mem_univ, true_and, decide_eq_true_eq]
+      simp only [s, Finset.mem_filter, Finset.mem_univ, true_and]
       cases ξ j <;> rfl
     refine ⟨s, fun j hj => hμ j (by simpa [s] using hj), fun i => ?_⟩
     have hi := congrFun he i
     change (∑ j, bit (S.A i j) * bit (ξ j)) - bit (S.b i) = 0 at hi
     simp only [← hs, hsum, hb, bit_true] at hi
     omega
-  · rintro ⟨s,hμ,he⟩
+  · rintro ⟨s, hμ, he⟩
     refine ⟨(fun j => decide (j ∈ s)), ?_, ?_⟩
     · intro j hj; exact hμ j (of_decide_eq_true hj)
     · funext i
       simp [MaskedSystem.residual, hb, hsum, he]
 
 /-- Identifying repeated nonempty columns preserves exact covers. -/
-theorem cover_image_iff {U C D : Type*} [Fintype C] [DecidableEq C]
+theorem cover_image_iff {U C D : Type*}
     [DecidableEq D] (r : U → D → Prop) [∀ u d, Decidable (r u d)]
     (f : C → D) (allowed : Finset C) (hne : ∀ c ∈ allowed, ∃ u, r u (f c)) :
     (∃ s : Finset C, s ⊆ allowed ∧ ∀ u, (s.filter fun c => r u (f c)).card = 1) ↔
     ∃ s : Finset D, s ⊆ allowed.image f ∧ ∀ u, (s.filter (r u)).card = 1 := by
   classical
   constructor
-  · rintro ⟨s,hsub,hs⟩
+  · rintro ⟨s, hsub, hs⟩
     have hinj : Set.InjOn f s := by
       intro c hc e he hce
-      obtain ⟨u,hu⟩ := hne c (hsub hc)
-      obtain ⟨a,ha⟩ := Finset.card_eq_one.mp (hs u)
-      have hc' : c = a := Finset.mem_singleton.mp (ha ▸ Finset.mem_filter.mpr ⟨hc,hu⟩)
+      obtain ⟨u, hu⟩ := hne c (hsub hc)
+      obtain ⟨a, ha⟩ := Finset.card_eq_one.mp (hs u)
+      have hc' : c = a := Finset.mem_singleton.mp (ha ▸ Finset.mem_filter.mpr ⟨hc, hu⟩)
       have he' : e = a := Finset.mem_singleton.mp
-        (ha ▸ Finset.mem_filter.mpr ⟨he,by rwa [← hce]⟩)
+        (ha ▸ Finset.mem_filter.mpr ⟨he, by rwa [← hce]⟩)
       exact hc'.trans he'.symm
     refine ⟨s.image f, Finset.image_subset_image hsub, fun u => ?_⟩
     have hf : (s.image f).filter (r u) = (s.filter fun c => r u (f c)).image f := by
       ext d
       simp only [Finset.mem_filter, Finset.mem_image]
       constructor
-      · rintro ⟨⟨c,hc,rfl⟩,hu⟩; exact ⟨c,⟨hc,hu⟩,rfl⟩
-      · rintro ⟨c,⟨hc,hu⟩,rfl⟩; exact ⟨⟨c,hc,rfl⟩,hu⟩
+      · rintro ⟨⟨c, hc, rfl⟩, hu⟩; exact ⟨c, ⟨hc, hu⟩, rfl⟩
+      · rintro ⟨c, ⟨hc, hu⟩, rfl⟩; exact ⟨⟨c, hc, rfl⟩, hu⟩
     rw [hf, Finset.card_image_of_injOn (hinj.mono (Finset.filter_subset _ _))]
     exact hs u
-  · rintro ⟨s,hsub,hs⟩
+  · rintro ⟨s, hsub, hs⟩
     have hex (d : ↥s) : ∃ c ∈ allowed, f c = d.val := Finset.mem_image.mp (hsub d.property)
     choose g hg hf using hex
     refine ⟨Finset.univ.image g, ?_, fun u => ?_⟩
     · rintro c hc
-      obtain ⟨d,_,rfl⟩ := Finset.mem_image.mp hc
+      obtain ⟨d, _, rfl⟩ := Finset.mem_image.mp hc
       exact hg d
-    · obtain ⟨d,hd⟩ := Finset.card_eq_one.mp (hs u)
+    · obtain ⟨d, hd⟩ := Finset.card_eq_one.mp (hs u)
       have hdm : d ∈ s ∧ r u d :=
         Finset.mem_filter.mp (hd.symm ▸ Finset.mem_singleton_self d)
       apply Finset.card_eq_one.mpr
-      refine ⟨g ⟨d,hdm.1⟩, ?_⟩
+      refine ⟨g ⟨d, hdm.1⟩, ?_⟩
       ext c
       simp only [Finset.mem_filter, Finset.mem_image, Finset.mem_univ, true_and,
         Finset.mem_singleton]
       constructor
-      · rintro ⟨⟨a,rfl⟩,hu⟩
+      · rintro ⟨⟨a, rfl⟩, hu⟩
         have hau : r u a.val := by rwa [hf a] at hu
         have had : a.val = d := Finset.mem_singleton.mp
-          (hd ▸ Finset.mem_filter.mpr ⟨a.property,hau⟩)
+          (hd ▸ Finset.mem_filter.mpr ⟨a.property, hau⟩)
         exact congrArg g (Subtype.ext had)
       · rintro rfl
-        exact ⟨⟨⟨d,hdm.1⟩,rfl⟩,by simpa [hf] using hdm.2⟩
+        exact ⟨⟨⟨d, hdm.1⟩, rfl⟩, by simpa [hf] using hdm.2⟩
 
 /-- The image formulation for a masked family of nonempty columns. -/
 theorem masked_image_cover_iff {M n : ℕ} {D : Type*} [DecidableEq D]
@@ -106,7 +108,7 @@ theorem masked_image_cover_iff {M n : ℕ} {D : Type*} [DecidableEq D]
   have hsub (s : Finset (Fin n)) :
       (∀ j ∈ s, S.μ j = true) ↔ s ⊆ Finset.univ.filter (fun j => S.μ j = true) := by
     constructor
-    · intro h j hj; exact Finset.mem_filter.mpr ⟨Finset.mem_univ j,h j hj⟩
+    · intro h j hj; exact Finset.mem_filter.mpr ⟨Finset.mem_univ j, h j hj⟩
     · intro h j hj; exact (Finset.mem_filter.mp (h hj)).2
   simp_rw [hsub]
   exact cover_image_iff r f _ (fun j hj => hne j (Finset.mem_filter.mp hj).2)
@@ -117,6 +119,8 @@ def tripleSystem (m : ℕ) (l cs : List X3CTriple) : MaskedSystem m l.length whe
   b _ := true
   μ j := decide (l[j.val] ∈ cs)
 
+/-- The universal incidence system with a presence mask represents covers using the allowed
+triples. -/
 theorem tripleSystem_correct (m : ℕ) (l cs : List X3CTriple)
     (hcs : ∀ t ∈ cs, t ∈ l) (hne : ∀ t ∈ cs, ∃ u : Fin m, X3CList.incident u.val t = true) :
     (tripleSystem m l cs).HasSolution ↔ ∃ s : Finset X3CTriple, s ⊆ cs.toFinset ∧
@@ -128,25 +132,27 @@ theorem tripleSystem_correct (m : ℕ) (l cs : List X3CTriple)
     simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and,
       tripleSystem, decide_eq_true_eq, List.mem_toFinset]
     constructor
-    · rintro ⟨j,hj,rfl⟩; exact hj
+    · rintro ⟨j, hj, rfl⟩; exact hj
     · intro ht
-      obtain ⟨i,hi,he⟩ := List.mem_iff_getElem.mp (hcs t ht)
-      exact ⟨⟨i,hi⟩, by simpa [he] using ht, he⟩
+      obtain ⟨i, hi, he⟩ := List.mem_iff_getElem.mp (hcs t ht)
+      exact ⟨⟨i, hi⟩, by simpa [he] using ht, he⟩
   rw [masked_image_cover_iff (tripleSystem m l cs) (by intro i; rfl)
     (fun j => l[j.val]) (fun u t => X3CList.incident u.val t = true)
     (by intro i j; rfl) (by intro j hj; exact hne _ (of_decide_eq_true hj)), he]
 
 namespace FixedFast
 
+/-- Enumerate all ordered triples with labels below the universe size. -/
 def triples (m : ℕ) : List X3CTriple :=
   (List.range m).flatMap fun a =>
-    (List.range m).flatMap fun b => (List.range m).map fun c => (a,b,c)
+    (List.range m).flatMap fun b => (List.range m).map fun c => (a, b, c)
 
 @[simp] theorem mem_triples (m : ℕ) (t : X3CTriple) : t ∈ triples m ↔
     t.1 < m ∧ t.2.1 < m ∧ t.2.2 < m := by
-  rcases t with ⟨a,b,c⟩
+  rcases t with ⟨a, b, c⟩
   simp [triples, List.mem_flatMap, List.mem_map, Prod.mk.injEq]
 
+/-- Use all ordered triples as columns and the input collection as their presence mask. -/
 def system (m : ℕ) (ts : List X3CTriple) : MaskedSys :=
   ((triples m).length,
     (List.range m).map (fun u => (triples m).map (X3CList.incident u)),
@@ -174,14 +180,14 @@ theorem system_hasSolution_iff (m : ℕ) (ts : List X3CTriple) :
       (system m ts).toSystem.μ j = decide ((triples m)[j.val] ∈ ts) := by
     simp [MaskedSys.toSystem, system, MaskedSys.mask, List.getD_eq_getElem?_getD, j.isLt]
   constructor
-  · rintro ⟨ξ,hμ,he⟩
+  · rintro ⟨ξ, hμ, he⟩
     refine ⟨ξ, ?_, ?_⟩
     · intro j hj; simpa only [hmu, tripleSystem] using hμ j hj
     · funext i
       have hh := congrFun he ⟨i.val, by exact i.isLt.trans_eq hlen.symm⟩
       simp only [MaskedSystem.residual, tripleSystem, hA, hb, bit_true, Pi.zero_apply] at hh ⊢
       simpa only [MaskedSys.cols, system] using hh
-  · rintro ⟨ξ,hμ,he⟩
+  · rintro ⟨ξ, hμ, he⟩
     refine ⟨ξ, ?_, ?_⟩
     · intro j hj; rw [hmu]; exact hμ j hj
     · funext i
@@ -189,37 +195,44 @@ theorem system_hasSolution_iff (m : ℕ) (ts : List X3CTriple) :
       simp only [MaskedSystem.residual, tripleSystem, hA, hb, bit_true, Pi.zero_apply] at hh ⊢
       simpa only [MaskedSys.cols, system] using hh
 
+/-- The masked universal triple system is feasible exactly when the well-formed input has a cover.
+-/
 theorem system_correct (x : X3CList) (hw : x.WellFormed) :
-    (system (3*x.1) x.2).Feasible ↔ x.HasExactCover := by
+    (system (3 * x.1) x.2).Feasible ↔ x.HasExactCover := by
   classical
-  have hcs : ∀ t ∈ x.2, t ∈ triples (3*x.1) := by
+  have hcs : ∀ t ∈ x.2, t ∈ triples (3 * x.1) := by
     intro t ht
     have hv := hw t ht
-    exact (mem_triples _ _).mpr ⟨hv.1,hv.2.1,hv.2.2.1⟩
-  have hne : ∀ t ∈ x.2, ∃ u : Fin (3*x.1), X3CList.incident u.val t = true := by
+    exact (mem_triples _ _).mpr ⟨hv.1, hv.2.1, hv.2.2.1⟩
+  have hne : ∀ t ∈ x.2, ∃ u : Fin (3 * x.1), X3CList.incident u.val t = true := by
     intro t ht
-    exact ⟨⟨t.1,(hw t ht).1⟩,by simp [X3CList.incident]⟩
-  have hs := tripleSystem_correct (3*x.1) x.2 x.2 (fun _ h => h) hne
-  have ht := tripleSystem_correct (3*x.1) (triples (3*x.1)) x.2 hcs hne
+    exact ⟨⟨t.1, (hw t ht).1⟩, by simp [X3CList.incident]⟩
+  have hs := tripleSystem_correct (3 * x.1) x.2 x.2 (fun _ h => h) hne
+  have ht := tripleSystem_correct (3 * x.1) (triples (3 * x.1)) x.2 hcs hne
   rw [MaskedSys.Feasible, and_iff_right (system_wellFormed _ _), system_hasSolution_iff, ht,
     ← hs]
   unfold tripleSystem MaskedSystem.HasSolution MaskedSystem.Feasible
     MaskedSystem.Allowed MaskedSystem.residual
-  simp only [List.getElem_mem, decide_true, implies_true, forall_const, true_and,
+  simp only [List.getElem_mem, decide_true, implies_true, true_and,
     bit_true, funext_iff, Pi.zero_apply, sub_eq_zero]
   rfl
 
 /-- This base system, hence its generator, has no collection argument. -/
 def base (m : ℕ) : MaskedSys := system m []
 
+/-- The principal ideal generator determined solely by the universe size. -/
 def gen (m : ℕ) : List ℤ := (Fast.compile (base m)).2.1
 
+/-- The cyclotomic coefficient dimension determined solely by the universe size. -/
 def dimension (m : ℕ) : ℕ := (Fast.compile (base m)).1
 
+/-- Changing the input collection changes only the universal system's presence mask. -/
 theorem data_withMask (m : ℕ) (ts : List X3CTriple) :
     (system m ts).reductionDataCubic = (base m).reductionDataCubic.withMask
       (system m ts).paddedSystem.μ := rfl
 
+/-- The cubic compiler dimension depends only on the universe size, independently of the input
+triples. -/
 theorem dimension_independent (m : ℕ) (ts : List X3CTriple) :
     (Fast.compile (system m ts)).1 = dimension m := rfl
 
@@ -234,6 +247,7 @@ theorem generator_independent (m : ℕ) (ts : List X3CTriple) :
   exact congrArg toList ((base m).reductionDataCubic.generator_mask_independent _)
 
 section Runtime
+
 attribute [local irreducible] List.getD system Fast.compile
 
 @[fun_prop] theorem poly_triples : ComputableTidilyInPolyTime triples encUnary
@@ -257,6 +271,7 @@ attribute [local irreducible] List.getD system Fast.compile
   apply anyWithInput (encA := encX3CTriple) (by fun_prop)
   exact decide_eq' (snd _ _) (fst _ _).snd'
 
+/-- Constructing the universal triple system and its presence mask takes native polynomial time. -/
 @[fun_prop] theorem poly_system : ComputableTidilyInPolyTime
     (fun p : ℕ × List X3CTriple => system p.1 p.2)
     (encPair encUnary (encList encX3CTriple)) encMasked := by
@@ -286,19 +301,25 @@ attribute [local irreducible] List.getD system Fast.compile
   exact hn.prod (hr.prod (hb.prod hmask))
 
 end Runtime
+
 end FixedFast
 
+/-- A unary universe size, an integral target list, and a squared threshold. -/
 abbrev FixedCVPPInput := ℕ × (List ℤ × ℤ)
 
+/-- Unary universe size and signed binary target and threshold encoding. -/
 def encFixedCVPP : FixedCVPPInput ↪ List Bool :=
   encPair encUnary (encPair (encList encIntBin) encIntBin)
 
+/-- The generator of the fixed ideal indexed by the universe size. -/
 abbrev fixedGen := FixedFast.gen
 
+/-- Every universe-indexed fixed ideal has power-of-two cyclotomic dimension. -/
 theorem fixed_dimension_power_two (m : ℕ) : ∃ k, FixedFast.dimension m = 2 ^ k := by
   change ∃ k, (FixedFast.base m).reductionDataCubic.d = 2 ^ k
   exact (FixedFast.base m).reductionDataCubic.d_power_two
 
+/-- The fixed-family generator is nonzero for every universe size. -/
 theorem fixedGen_ne_zero (m : ℕ) :
     ofList (d := FixedFast.dimension m) (fixedGen m) ≠ 0 := by
   unfold fixedGen FixedFast.gen
@@ -313,18 +334,20 @@ def FixedCVPP : Set FixedCVPPInput := {x | x.2.1.length = FixedFast.dimension x.
   CVPYes (Cyclotomic.principalIdealLattice
     (ofList (d := FixedFast.dimension x.1) (fixedGen x.1))) (ofList x.2.1) x.2.2}
 
-def fixedNoInput : FixedCVPPInput := (0, [], -1)
+/-- A malformed fixed-family instance used as a fixed NO output. -/
+def fixedNoInput : FixedCVPPInput := (0, [], - 1)
 
 theorem fixedNoInput_not_mem : fixedNoInput ∉ FixedCVPP := by
-  rintro ⟨_,v,_,hv⟩
+  rintro ⟨_, v, _, hv⟩
   have := sqNorm_nonneg (v - ofList fixedNoInput.2.1)
   change _ ≤ (-1 : ℤ) at hv
   omega
 
+/-- Reduce list X3C to a query for the universe-indexed fixed ideal; malformed inputs map to NO. -/
 def x3cToFixedCVPP (x : X3CList) : FixedCVPPInput :=
   if X3CList.wellFormedCheck x then
-    let C := Fast.compile (FixedFast.system (3*x.1) x.2)
-    (3*x.1, C.2.2.1, C.2.2.2)
+    let C := Fast.compile (FixedFast.system (3 * x.1) x.2)
+    (3 * x.1, C.2.2.1, C.2.2.2)
   else fixedNoInput
 
 theorem fixed_compile_correct (m : ℕ) (ts : List X3CTriple) :
@@ -362,21 +385,23 @@ attribute [local irreducible] FixedFast.system Fast.compile
 
 theorem poly_x3cToFixedCVPP : ComputableTidilyInPolyTime
     x3cToFixedCVPP encX3C encFixedCVPP := by
-  have hm : ComputableTidilyInPolyTime (fun x : X3CList => 3*x.1) encX3C encUnary :=
+  have hm : ComputableTidilyInPolyTime (fun x : X3CList => 3 * x.1) encX3C encUnary :=
     unary_mul.comp ((const 3).prod (fst encUnary (encList encX3CTriple)))
-  have hs : ComputableTidilyInPolyTime (fun x : X3CList => FixedFast.system (3*x.1) x.2)
+  have hs : ComputableTidilyInPolyTime (fun x : X3CList => FixedFast.system (3 * x.1) x.2)
       encX3C encMasked := FixedFast.poly_system.comp
         (hm.prod (snd encUnary (encList encX3CTriple)))
   have hc : ComputableTidilyInPolyTime
-      (fun x : X3CList => Fast.compile (FixedFast.system (3*x.1) x.2)) encX3C encCVP :=
+      (fun x : X3CList => Fast.compile (FixedFast.system (3 * x.1) x.2)) encX3C encCVP :=
     Fast.poly_compile.comp hs
   unfold x3cToFixedCVPP
   exact X3CList.poly_wellFormedCheck.ite' (hm.prod hc.snd'.snd') (const fixedNoInput)
 
+/-- The fixed-family query compiler is a polynomial-time reduction from list X3C. -/
 theorem polyTimeReducible_X3C_FixedCVPP :
     PolyTimeReducible encX3C encFixedCVPP X3CLang FixedCVPP :=
   ⟨x3cToFixedCVPP, poly_x3cToFixedCVPP, x3cToFixedCVPP_correct⟩
 
+/-- Exact CVP for the universe-indexed fixed ideal family is NP-hard. -/
 theorem fixedCVPP_npHard : NPHard encFixedCVPP FixedCVPP :=
   x3c_npHard.trans polyTimeReducible_X3C_FixedCVPP
 

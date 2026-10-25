@@ -5,38 +5,50 @@ import IdealCVP.Complexity.Problem
 Repeated triples keep their indices. Out-of-range labels and triples with
 repeated elements are rejected. The empty universe has the empty exact cover.
 -/
+
 namespace IdealCVP
+
 open Turing.MultiTapeTM
 
+/-- Three natural-number universe labels, stored in order. -/
 abbrev X3CTriple := ℕ × ℕ × ℕ
+
+/-- An X3C instance: a universe of size `3 * q` and an indexed list of triples. -/
 abbrev X3CList := ℕ × List X3CTriple
 
+/-- Binary encoding of the three universe labels. -/
 def encX3CTriple : X3CTriple ↪ List Bool := encPair encNat (encPair encNat encNat)
+
+/-- Encode the universe parameter in unary and the triple labels in binary. -/
 def encX3C : X3CList ↪ List Bool := encPair encUnary (encList encX3CTriple)
 
 namespace X3CList
 
+/-- The labels are in range and pairwise distinct. -/
 def ValidTriple (q : ℕ) (t : X3CTriple) : Prop :=
-  t.1 < 3*q ∧ t.2.1 < 3*q ∧ t.2.2 < 3*q ∧
+  t.1 < 3 * q ∧ t.2.1 < 3 * q ∧ t.2.2 < 3 * q ∧
     t.1 ≠ t.2.1 ∧ t.1 ≠ t.2.2 ∧ t.2.1 ≠ t.2.2
 
 instance (q : ℕ) (t : X3CTriple) : Decidable (ValidTriple q t) :=
   inferInstanceAs (Decidable (_ ∧ _ ∧ _ ∧ _ ∧ _ ∧ _))
 
+/-- Every stored triple has three distinct labels in the universe. -/
 def WellFormed (x : X3CList) : Prop := ∀ t ∈ x.2, ValidTriple x.1 t
 
 instance (x : X3CList) : Decidable x.WellFormed :=
   inferInstanceAs (Decidable (∀ t ∈ x.2, ValidTriple x.1 t))
 
+/-- Test whether a universe label occurs in a stored triple. -/
 def incident (u : ℕ) (t : X3CTriple) : Bool :=
   decide (u = t.1 ∨ u = t.2.1 ∨ u = t.2.2)
 
 /-- Every element is incident to exactly one selected index. -/
 def HasExactCover (x : X3CList) : Prop :=
-  ∃ ξ : Fin x.2.length → Bool, ∀ u : Fin (3*x.1),
+  ∃ ξ : Fin x.2.length → Bool, ∀ u : Fin (3 * x.1),
     (∑ j : Fin x.2.length, bit (incident u.val x.2[j.val]) * bit (ξ j)) = 1
 
-def tripleFinset (q : ℕ) (t : X3CTriple) (h : ValidTriple q t) : Finset (Fin (3*q)) :=
+/-- Interpret a valid stored triple as a three-element subset of the finite universe. -/
+def tripleFinset (q : ℕ) (t : X3CTriple) (h : ValidTriple q t) : Finset (Fin (3 * q)) :=
   {⟨t.1, h.1⟩, ⟨t.2.1, h.2.1⟩, ⟨t.2.2, h.2.2.1⟩}
 
 theorem tripleFinset_card (q : ℕ) (t : X3CTriple) (h : ValidTriple q t) :
@@ -58,12 +70,15 @@ def toInstance (x : X3CList) (hw : x.WellFormed)
   triple_card j := tripleFinset_card _ _ _
 
 @[simp] theorem toInstance_system (x : X3CList) (hw : x.WellFormed)
-    (hq : 0 < x.1) (hn : 0 < x.2.length) (u : Fin (3*x.1)) (j : Fin x.2.length) :
+    (hq : 0 < x.1) (hn : 0 < x.2.length) (u : Fin (3 * x.1)) (j : Fin x.2.length) :
     (toInstance x hw hq hn).system.A u j = incident u.val x.2[j.val] := by
-  change decide (u ∈ tripleFinset x.1 x.2[j.val] (hw _ (List.getElem_mem j.isLt))) = incident u.val x.2[j.val]
+  change decide (u ∈ tripleFinset x.1 x.2[j.val] (hw _ (List.getElem_mem j.isLt))) = incident
+    u.val x.2[j.val]
   apply Bool.eq_iff_iff.mpr
   simp [tripleFinset, incident, Fin.ext_iff]
 
+/-- For positive universe and collection sizes, list exact covers agree with the indexed finite
+instance. -/
 theorem hasExactCover_iff_toInstance (x : X3CList) (hw : x.WellFormed)
     (hq : 0 < x.1) (hn : 0 < x.2.length) :
     x.HasExactCover ↔ (toInstance x hw hq hn).HasExactCover := by
@@ -74,7 +89,7 @@ theorem hasExactCover_iff_toInstance (x : X3CList) (hw : x.WellFormed)
   change _ ↔ ((∀ j, ξ j = true → true = true) ∧
     (fun u => (∑ j, bit ((toInstance x hw hq hn).system.A u j) * bit (ξ j)) - 1) = 0)
   simp only [implies_true, true_and, funext_iff, Pi.zero_apply, sub_eq_zero]
-  change _ ↔ ∀ u : Fin (3*x.1),
+  change _ ↔ ∀ u : Fin (3 * x.1),
     (∑ j : Fin x.2.length, bit ((toInstance x hw hq hn).system.A u j) * bit (ξ j)) = 1
   simp only [toInstance_system]
 
@@ -102,13 +117,17 @@ theorem hasExactCover_iff_toInstance (x : X3CList) (hw : x.WellFormed)
 
 end X3CList
 
+/-- The language of well-formed list instances admitting an exact cover. -/
 def X3CLang : Set X3CList := {x | x.WellFormed ∧ x.HasExactCover}
 
+/-- A well-formed positive list input belongs to X3C exactly when its finite instance has a cover.
+-/
 theorem x3cList_mem_iff (x : X3CList) (hw : x.WellFormed)
     (hq : 0 < x.1) (hn : 0 < x.2.length) :
     x ∈ X3CLang ↔ (x.toInstance hw hq hn).HasExactCover := by
   exact (and_iff_right hw).trans (x.hasExactCover_iff_toInstance hw hq hn)
 
+/-- An empty triple collection covers the universe exactly when the universe is empty. -/
 @[simp] theorem x3cList_empty_mem (q : ℕ) : (q, []) ∈ X3CLang ↔ q = 0 := by
   simp [X3CLang, X3CList.WellFormed]
 

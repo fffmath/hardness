@@ -7,6 +7,7 @@ its coefficients. It is not yet the independent bounded-search / `countP`
 implementation proposed in the research plan. Its runtime certificate is an
 explicit hypothesis in `CompilePolyTime.lean`; correctness is unconditional.
 -/
+
 namespace IdealCVP
 
 namespace MaskedSys
@@ -39,7 +40,7 @@ def ReductionData.toPrincipalCVPInstance {M n : ℕ} (D : ReductionData M n) :
   Δ_nonneg := by unfold ReductionData.Δ; positivity
 
 /-- A fixed well-formed NO instance, with a negative squared threshold. -/
-def cvpNoInput : CVPInput := (1, [0], [0], -1)
+def cvpNoInput : CVPInput := (1, [0], [0], - 1)
 
 /-- Total computable reference compiler. Malformed systems are rejected; all
 well-formed systems, including zero rows/columns, use the padded compiler. -/

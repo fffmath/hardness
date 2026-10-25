@@ -8,7 +8,9 @@ All intermediate natural values have unary certificates. Closure under fixed
 polynomial arithmetic, bounded logarithmic powers, and list counting supplies
 both time and intermediate-size bounds, including on malformed inputs.
 -/
+
 namespace IdealCVP
+
 open Turing.MultiTapeTM Cslib.Complexity
 open Turing.MultiTapeTM.ComputableTidilyInPolyTime
 
@@ -16,8 +18,13 @@ attribute [local irreducible] List.getD
 
 namespace Fast
 
+/-- Unary encoding for the polynomially bounded compiler indices. -/
 abbrev encIndex := encUnary
+
+/-- Encoding of a row-column pair. -/
 abbrev encEntry := encPair encIndex encIndex
+
+/-- Encoding of a row-column pair together with a second column. -/
 abbrev encCross := encPair encEntry encIndex
 
 @[fun_prop] theorem poly_cols : ComputableTidilyInPolyTime MaskedSys.cols encMasked encUnary := by
@@ -51,12 +58,12 @@ abbrev encCross := encPair encEntry encIndex
     (fun p : MaskedSys × (ℕ × ℕ) => A p.1 p.2.1 p.2.2)
     (encPair encMasked encEntry) encBool := by
   have hrow : ComputableTidilyInPolyTime
-      (fun p : MaskedSys × (ℕ × ℕ) => p.1.rows.getD (p.2.1-1) [])
+      (fun p : MaskedSys × (ℕ × ℕ) => p.1.rows.getD (p.2.1 - 1) [])
       (encPair encMasked encEntry) (encList encBool) :=
     (listGetD (encA := encList encBool) (encL := encList (encList encBool)) []).comp
       ((poly_rows.comp (fst _ _)).prod (by fun_prop))
   have hentry : ComputableTidilyInPolyTime
-      (fun p : MaskedSys × (ℕ × ℕ) => (p.1.rows.getD (p.2.1-1) []).getD (p.2.2-1) false)
+      (fun p : MaskedSys × (ℕ × ℕ) => (p.1.rows.getD (p.2.1 - 1) []).getD (p.2.2 - 1) false)
       (encPair encMasked encEntry) encBool :=
     (listGetD (encA := encBool) (encL := encList encBool) false).comp
       (hrow.prod (by fun_prop))
@@ -212,12 +219,12 @@ abbrev encCross := encPair encEntry encIndex
   fun_prop
 
 /-- The explicit cubic position bound, in the program's counters. -/
-theorem c_le (S : MaskedSys) : c S ≤ 3 * (n S)^3 + n S :=
+theorem c_le (S : MaskedSys) : c S ≤ 3 * (n S) ^ 3 + n S :=
   SidonPositions.cubic_size (n S)
 
 /-- A numerical polynomial dimension bound in the padded row/column counts. -/
 theorem dimension_le (S : MaskedSys) :
-    2 * N S ≤ 4 * M S * (6 * (n S)^3 + 2 * n S + 1) := by
+    2 * N S ≤ 4 * M S * (6 * (n S) ^ 3 + 2 * n S + 1) := by
   change S.reductionDataCubic.d ≤ _
   calc
     _ ≤ 4 * M S * (2 * c S + 1) := S.reductionDataCubic.dimension_le

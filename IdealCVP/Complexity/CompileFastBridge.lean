@@ -4,9 +4,10 @@ import IdealCVP.Complexity.ListRing
 import Mathlib.Data.Nat.Count
 
 /-! # The list compiler agrees coefficient by coefficient with the cubic reduction -/
-namespace IdealCVP
-namespace Fast
 
+namespace IdealCVP
+
+namespace Fast
 
 @[simp] theorem A_eq (S : MaskedSys) (i : Fin (M S)) (j : Fin (n S)) :
     A S i.val j.val = S.paddedSystem.A i j := by
@@ -32,7 +33,7 @@ theorem count_int {α : Type} (l : List α) (p : α → Bool) :
   | cons a l ih => cases hp : p a <;> simp [hp, ih, bit, add_comm]
 
 theorem sum_product {α β : Type} (l : List α) (k : List β) (f : α × β → ℤ) :
-    ((l.product k).map f).sum = (l.map fun a => (k.map fun b => f (a,b)).sum).sum := by
+    ((l.product k).map f).sum = (l.map fun a => (k.map fun b => f (a, b)).sum).sum := by
   induction l with
   | nil => simp [List.product]
   | cons a l ih =>
@@ -46,26 +47,27 @@ theorem count_range (d : ℕ) (p : ℕ → Bool) :
 
 theorem count_entries (S : MaskedSys) (p : ℕ × ℕ → Bool) :
     ((entries S).countP p : ℤ) =
-      ∑ i : Fin (M S), ∑ j : Fin (n S), bit (p (i.val,j.val)) := by
+      ∑ i : Fin (M S), ∑ j : Fin (n S), bit (p (i.val, j.val)) := by
   simp only [count_int, entries, sum_product, list_sum_range, Finset.sum_range]
 
 theorem count_crosses (S : MaskedSys) (p : (ℕ × ℕ) × ℕ → Bool) :
     ((crosses S).countP p : ℤ) =
       ∑ i : Fin (M S), ∑ j : Fin (n S), ∑ k : Fin (n S),
-        bit (p ((i.val,j.val),k.val)) := by
+        bit (p ((i.val, j.val), k.val)) := by
   simp only [count_int, crosses, entries, sum_product, list_sum_range, Finset.sum_range]
 
+/-- The bounded counting implementation equals the mathematical ceiling square root. -/
 @[simp] theorem sqrtCeil_eq (r : ℕ) : sqrtCeil r = ReductionData.ceilSqrt r := by
   have hb : ReductionData.ceilSqrt r ≤ r := by
     rw [ReductionData.ceilSqrt_le_iff]
     nlinarith
-  have he : {k ∈ Finset.range r | k^2 < r} = Finset.range (ReductionData.ceilSqrt r) := by
+  have he : {k ∈ Finset.range r | k ^ 2 < r} = Finset.range (ReductionData.ceilSqrt r) := by
     ext k
     simp only [Finset.mem_filter, Finset.mem_range]
     have hk := ReductionData.ceilSqrt_le_iff r k
     omega
   unfold sqrtCeil
-  change Nat.count (fun k => k^2 < r) r = _
+  change Nat.count (fun k => k ^ 2 < r) r = _
   rw [Nat.count_eq_card_filter_range, he, Finset.card_range]
 
 @[simp] theorem N_eq (S : MaskedSys) : N S = S.reductionDataCubic.N := rfl
@@ -190,12 +192,14 @@ theorem count_crosses (S : MaskedSys) (p : (ℕ × ℕ) × ℕ → Bool) :
     ReductionData.s, ReductionData.t_norm]
   norm_cast
 
+/-- Each executable generator coefficient agrees with the mathematical reduction. -/
 @[simp] theorem gCoeff_eq (S : MaskedSys) (r : Fin S.reductionDataCubic.d) :
     gCoeff S r.val = S.reductionDataCubic.g r := by
   unfold gCoeff ReductionData.g Cyclotomic.interleave
   split_ifs <;>
     simp_all [Cyclotomic.monomial, Fin.ext_iff, ← h_eq, P_eq]
 
+/-- Each executable target coefficient agrees with the mathematical reduction. -/
 @[simp] theorem TCoeff_eq (S : MaskedSys) (r : Fin S.reductionDataCubic.d) :
     TCoeff S r.val = S.reductionDataCubic.T r := by
   unfold TCoeff ReductionData.T Cyclotomic.interleave
@@ -210,6 +214,7 @@ theorem map_range_eq_toList {d : ℕ} (f : ℕ → ℤ) (v : Coeff d)
 @[simp] theorem wellFormed_eq (S : MaskedSys) : wellFormed S = true ↔ S.WellFormed := by
   simp [wellFormed, MaskedSys.WellFormed, List.all_eq_true, and_assoc]
 
+/-- The executable cubic compiler lists exactly the mathematical instance data. -/
 theorem compile_eq (S : MaskedSys) :
     compile S = toCVPInput S.reductionDataCubic.toPrincipalCVPInstance := by
   unfold compile toCVPInput ReductionData.toPrincipalCVPInstance

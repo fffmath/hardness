@@ -7,7 +7,9 @@ import IdealCVP.Complexity.CompilePolyTime
 The native complexitylib chain is ExactThreeSAT → masked Boolean equations →
 principal CVP. Both reductions and NP membership have proved runtime certificates.
 -/
+
 namespace IdealCVP
+
 open Cslib.Complexity Turing.MultiTapeTM
 
 /-- NP-hardness from Cook–Levin, the SAT gadget, and the cubic list compiler. -/

@@ -5,7 +5,9 @@ import IdealCVP.Complexity.CompileFastPolyTime
 The cubic list compiler has unconditional correctness and runtime certificates.
 The original reference compiler's conditional interface is retained separately.
 -/
+
 namespace IdealCVP
+
 open Turing.MultiTapeTM Cslib.Complexity
 
 /-- The former reference-compiler interface, retained for compatibility. -/
