@@ -1,3 +1,11 @@
+> Historical document: Lean file names and line numbers below refer to the pre-restructure
+> layout. See [RENAMES.md](RENAMES.md) for the complete path map. For example,
+> `MainFinal.lean` → `Main.lean`, `AnchorRepairPoly2.lean` → `Anchor/FromSeed.lean`,
+> `FlatFrontend3Main.lean` → `FlatFrontend/Geometry/Certificate.lean`, and
+> `ColoringNative3.lean` → `Runtime/Coloring/Certificate.lean`. Intermediate
+> “remaining/open” findings describe the reviewed revision; current results and removed
+> interfaces are recorded in [STATUS.md](STATUS.md) and [RENAMES.md](RENAMES.md).
+
 # Anchor and flat-seed adversarial audit — p2s-audit2
 
 Audited revision: `aae03f3dde5e43a08ecfc6ead6280af9a8b5464b`, 2026-10-25.
