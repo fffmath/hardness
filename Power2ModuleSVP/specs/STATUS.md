@@ -1,39 +1,18 @@
 # Power2ModuleSVP status
 
-**Current state (2026-10-25 08:35 UTC+8, local commits only, nothing pushed).**
-Working copy: /workspace/shared/projects/hardness. Build: `lake build Power2ModuleSVP`.
+**Current state (2026-10-25 08:25 UTC+8, local commits only, nothing pushed). COMPLETE.**
+Working copy: /workspace/shared/projects/hardness. Build: `lake build Power2ModuleSVP` (passes, 8574 jobs).
 
-Proved, 0 sorry, axioms only propext/Classical.choice/Quot.sound:
-- `coset_mem_NP`, `moduleSVP_mem_NP` (Membership.lean)
-- `coset_npHard`, `coset_npComplete : NPComplete encCoset CosetLang` (Main.lean), UNCONDITIONAL
-  (3SAT -> Sidon sparse source -> principal coset; separation fully proved in Norm*.lean).
-- `moduleSVP_npComplete_of (hJ : RigidAnchorFamilyHypothesis)` (Main.lean), `moduleReduction_gap`.
-- `rigidAnchorFamily_of_seed`, `moduleSVP_npComplete_of_seed (h : SpectralSeedFamilyHypothesis)`
-  (AnchorRepairPoly2.lean): repair semantics + native runtime done.
-- `spectralSeedFamily_of A hA hAt hK hP hT` (FlatSeedMain.lean): seed assembly conditional.
-  hK (sine kernel) proved (`sineKernelDecompositionHypothesis_holds`);
-  partial-coloring semantics proved (`partialColor_correct`, ColoringTrajectory.lean).
-
-ASSEMBLED (MainAssembly.lean): `moduleSVP_npComplete_of_remaining
-  (hG : FlatFrontend.MarkedRunGeometryHypothesis) (hN : FullColoringNativeHypothesis partialColor) :
-  NPComplete encSVP ModuleSVPLang` -- standard axioms only. These two are the ONLY remaining inputs
-  (PartialColoringNativeHypothesis is not needed on the AUDIT2 route, though useful for hN).
-
-NOW: `flatFrontend_preparation` and `markedRunGeometryHypothesis_holds` proved (FlatFrontend3*.lean),
-so `moduleSVP_npComplete_of_fullColoringNative (hN : FullColoringNativeHypothesis partialColor)`
-(MainAssembly.lean) -- the ONLY remaining hypothesis is the native runtime of fullColor partialColor
-(job p2s-colornative3).
-
-Remaining for the unconditional `moduleSVP_npComplete` (history):
-1. Native TM certificates for partialColor / fullColor (`PartialColoringNativeHypothesis`,
-   `FullColoringNativeHypothesis partialColor`; per AUDIT2 the old `FullColoringRuntimeHypothesis`
-   is unsatisfiable and must NOT be used). p2s-colornative delivered primitives + denominator
-   bounds (ColoringNative*.lean, commit 4294034); p2s-colornative2 (e1184e0) reduced projector part to
-   `CanonicalProjectorDenominatorHypothesis`; remainder -- job p2s-colornative3.
-2. Concrete frontend `flatFrontend` (100a3e7); all rational enclosures proved (29b9df8);
-   `flatFrontend_preparation_of_geometry (hG : MarkedRunGeometryHypothesis)` -- remaining
-   six marked-run geometry estimates -- job p2s-frontend3.
-3. DONE: `flatFrontend_runtime : FlatSeedFrontendRuntimeHypothesis flatFrontend` (FlatFrontendRuntime.lean), unconditional.
+FINAL, UNCONDITIONAL, 0 sorry, 0 axiom declarations, `#print axioms` = propext/Classical.choice/Quot.sound:
+- `Power2ModuleSVP.moduleSVP_npComplete : NPComplete encSVP ModuleSVPLang` (MainFinal.lean)
+- `Power2ModuleSVP.coset_npComplete : NPComplete encCoset CosetLang` (Main.lean)
+Chain: 3SAT -> Sidon sparse source -> principal coset (Main) -> rigid anchor
+(`rigidAnchorFamily_of_seed`, AnchorRepairPoly2) <- `SpectralSeedFamilyHypothesis` via
+`spectralSeedFamily_of_fullColor flatFrontend` (AUDIT2 route) with
+`flatFrontend_preparation` (FlatFrontend3Main), `flatFrontend_runtime` (FlatFrontendRuntime),
+`sineKernelDecompositionHypothesis_holds`, `partialColor_correct` (ColoringTrajectory),
+`fullColoringNative_partialColor` (ColoringNative3). Assembly in MainAssembly.lean.
+Audits: AUDIT.md, AUDIT2.md (H1 fixed by route choice), AUDIT3.md, AUDIT4.md -- no open high defects.
 
 Resume protocol: check `cx-status p2s-*`, `git status`, this file; prompts in /workspace/shared/jobs/_p2s.
 Historical sections below (per job) are kept for detail; the Phase-1 text further down is superseded.
@@ -1663,3 +1642,84 @@ new files. `git diff --check` passed. Build messages for the new files are
 limited to long-line style warnings; dependency compatibility warnings are
 inherited. Job-local scratch was removed after the audit. Root integration
 remains with the dispatcher.
+
+## Coloring native runtime 3 (p2s-colornative3)
+
+**Complete: both concrete native hypotheses are proved unconditionally.**
+The aggregate `ColoringNative3.lean` exports, in namespace
+`Power2ModuleSVP.ColoringRuntime`:
+
+```lean
+canonicalProjectorDenominator : CanonicalProjectorDenominatorHypothesis
+partialColoringNative_holds : PartialColoringAlg.PartialColoringNativeHypothesis
+fullColoringNative_partialColor :
+  FullColoringNativeHypothesis PartialColoringAlg.partialColor
+```
+
+All four requested obligations are closed; none of the intermediate Gram,
+sorting, walk-size, or recursive-size hypothesis structures is an assumption
+of these three exports. The original programs and all committed Lean files,
+the root file, and Lake configuration were preserved. This job adds thirty
+`ColoringNative3*.lean` modules and this status section.
+
+1. **Canonical projector denominators.** `Gram`, `GramAlgebra`,
+   `GramInduction`, `GramProjection`, `GramKernel`, and `GramComplete` clear
+   rational row denominators exactly, identify the integer Gram matrix,
+   prove the inverse/adjugate common-denominator formula, and select a
+   spanning nonsingular row sublist by residual induction. Zero residuals
+   are omitted. A nonzero residual makes the enlarged Gram matrix
+   nonsingular by a rational dot-product/kernel argument. These facts
+   discharge `gramSchurUpdate`, then the original denominator hypothesis.
+   The polynomial determinant bit bound reuses complexitylib's certified
+   division-free determinant and its output-length bound; it is not an
+   additional Hadamard or arithmetic premise. Padding, dependent rows,
+   empty row lists, and dimension zero are included.
+2. **Uniform direction data.** `Data`, `ConstraintData`, `Constraints`,
+   `Reify`, and `Box` prove `walkDirectionInput_uniform_encoding` throughout
+   the whole proved `WeightBox`. Frozen coordinates are represented by
+   signs and zero. Weight encodings are bounded uniformly over the box.
+   Supplying the heavy indices as explicit data separates this size proof
+   from sorting runtime; their membership and length suffice for the bound.
+3. **The complete partial program.** `Program`, `SortCore`, `Sort`, `Step`,
+   `Loop`, `Bounds`, `StateBounds`, and `Partial` certify preparation,
+   initialization, stable heavy-row sorting, orientation, capacity/minimum
+   evaluation, state updates, and the stopped iteration. The insertion
+   evaluator agrees with the original merge sort, including index order at
+   equal weights. `partialList_spec` preserves every raw-input branch.
+   `walk_initial_state_encoding_uniform` bounds both state lists at every
+   prefix; `stoppedWalkEncoding_of_projector` transfers it to the actual
+   captured list iteration. The unconditional projector bound finishes the
+   original partial native contract.
+4. **The complete selected full recursion.** The eight `Recursion*.lean`
+   modules certify canonical input conversion, exact active-index order,
+   restriction/scatter, the descent stack, and unwinding.
+   `fullColorListEvaluator_eq` holds for arbitrary supplied partial programs
+   and all raw inputs. Static orbit invariants bound inherited matrix
+   coefficients, dimensions, and thresholds shifted by four per level.
+   `PartialDenominators` and `Growth` prove the actual partial program's
+   additive common-denominator increment independently of starting-point
+   encoding. At most the original dimension many descents then give one
+   polynomial encoding bound for every recursive input. This proves the
+   selected-program native contract, without the universal closure premise
+   identified in AUDIT2 and without substituting final-output size for an
+   intermediate invariant.
+
+Validation: all thirty new modules passed individual sequential Lean checks
+without warnings, and the aggregate passed. Eleven principal-export axiom
+checks, including both final native contracts, reported exactly `propext`,
+`Classical.choice`, and `Quot.sound`. Eight exact kernel checks cover stable
+sorting ties, integral row scaling, nonsingular/singular Gram determinants,
+dependent projector rows, malformed partial input, and full fallback signs.
+The forbidden-token scan of all new Lean sources returned no matches.
+
+Nineteen previously missing complexitylib determinant dependency artifacts
+were compiled into this repository's local build tree; existing dependency
+artifacts were linked there. No package source or package build directory
+was modified. To use that local artifact overlay when checking the aggregate:
+
+```sh
+lake env bash -c 'export LEAN_PATH="$PWD/.lake/build/lib/lean:$LEAN_PATH"; lean Power2ModuleSVP/ColoringNative3.lean'
+```
+
+Audit scratch under `/tmp/p2s-scratch-p2s-colornative3` was removed after
+validation. No manuscript text was copied into the repository.

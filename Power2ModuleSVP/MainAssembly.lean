@@ -11,10 +11,10 @@ import Power2ModuleSVP.SineKernelProofDecomposition
 
 Composes the proved pieces along the AUDIT2 route
 `spectralSeedFamily_of_fullColor` with `F := fullColor partialColor`.
-The two remaining inputs are exactly
-* `FlatFrontend.MarkedRunGeometryHypothesis` (marked-run geometry of the concrete frontend), and
-* `FullColoringNativeHypothesis partialColor` (native polynomial time of the concrete
-  full coloring).
+Intermediate conditional interfaces; both inputs are now discharged
+(`FlatFrontend.markedRunGeometryHypothesis_holds`, FlatFrontend3Main.lean, and
+`ColoringRuntime.fullColoringNative_partialColor`, ColoringNative3.lean); the unconditional
+theorem is `moduleSVP_npComplete` in MainFinal.lean.
 -/
 
 namespace Power2ModuleSVP
