@@ -1,9 +1,13 @@
-import Rank2ModuleSVP.Descent2
+import Mathlib.Algebra.Polynomial.Roots
 import Mathlib.RingTheory.MvPolynomial.Symmetric.NewtonIdentities
 import Mathlib.RingTheory.Polynomial.Vieta
-import Mathlib.Algebra.Polynomial.Roots
+import Rank2ModuleSVP.Descent2
 
-/-! Elementary Newton-identity ingredients for the Bennett--Peikert bound. -/
+/-! # The Bennett–Peikert minimum
+
+Newton identities prove the Reed–Solomon minimum used in paper v2
+Theorem 3.2, and hence the canonical minimum of the ramified ideal.
+-/
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -16,7 +20,7 @@ variable {q : ℕ} [Fact q.Prime]
     symmetric polynomials, including repeated entries. -/
 theorem newton_esymm_eq_of_power_sums {σ τ : Type*} [Fintype σ] [Fintype τ]
     (f : σ → ZMod q) (g : τ → ZMod q) (n : ℕ) (hn : n < q)
-    (hp : ∀ j ≤ n, 0 < j → (∑ i, f i^j) = ∑ i, g i^j) :
+    (hp : ∀ j ≤ n, 0 < j → (∑ i, f i ^ j) = ∑ i, g i ^ j) :
     MvPolynomial.eval f (MvPolynomial.esymm σ (ZMod q) n) =
       MvPolynomial.eval g (MvPolynomial.esymm τ (ZMod q) n) := by
   classical
@@ -31,11 +35,11 @@ theorem newton_esymm_eq_of_power_sums {σ τ : Type*} [Fintype σ] [Fintype τ]
       exact (Nat.le_of_dvd (by omega) hd).not_gt hn
     have hsum :
         (∑ a ∈ (Finset.antidiagonal n).filter (fun a => a.1 < n),
-          (-1 : ZMod q)^a.1 *
+          (-1 : ZMod q) ^ a.1 *
             MvPolynomial.eval f (MvPolynomial.esymm σ (ZMod q) a.1) *
             MvPolynomial.eval f (MvPolynomial.psum σ (ZMod q) a.2)) =
         ∑ a ∈ (Finset.antidiagonal n).filter (fun a => a.1 < n),
-          (-1 : ZMod q)^a.1 *
+          (-1 : ZMod q) ^ a.1 *
             MvPolynomial.eval g (MvPolynomial.esymm τ (ZMod q) a.1) *
             MvPolynomial.eval g (MvPolynomial.psum τ (ZMod q) a.2) := by
       apply Finset.sum_congr rfl
@@ -60,19 +64,19 @@ theorem newton_esymm_eq_of_power_sums {σ τ : Type*} [Fintype σ] [Fintype τ]
 theorem prod_X_sub_C_eq_of_power_sums {σ τ : Type*} [Fintype σ] [Fintype τ]
     (f : σ → ZMod q) (g : τ → ZMod q)
     (hc : Fintype.card σ = Fintype.card τ) (hn : Fintype.card σ < q)
-    (hp : ∀ j ≤ Fintype.card σ, 0 < j → (∑ i, f i^j) = ∑ i, g i^j) :
-    (∏ i, (Polynomial.X-Polynomial.C (f i))) =
-      ∏ i, (Polynomial.X-Polynomial.C (g i)) := by
+    (hp : ∀ j ≤ Fintype.card σ, 0 < j → (∑ i, f i ^ j) = ∑ i, g i ^ j) :
+    (∏ i, (Polynomial.X - Polynomial.C (f i))) =
+      ∏ i, (Polynomial.X - Polynomial.C (g i)) := by
   classical
   have hpneg : ∀ j ≤ Fintype.card σ, 0 < j →
-      (∑ i, (-f i)^j) = ∑ i, (-g i)^j := by
+      (∑ i, (-f i) ^ j) = ∑ i, (-g i) ^ j := by
     intro j hj hj0
-    have hf : (∑ i, (-f i)^j) = (-1 : ZMod q)^j * ∑ i, f i^j := by
+    have hf : (∑ i, (-f i) ^ j) = (-1 : ZMod q) ^ j * ∑ i, f i ^ j := by
       rw [Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro i _
       rw [neg_pow]
-    have hg : (∑ i, (-g i)^j) = (-1 : ZMod q)^j * ∑ i, g i^j := by
+    have hg : (∑ i, (-g i) ^ j) = (-1 : ZMod q) ^ j * ∑ i, g i ^ j := by
       rw [Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro i _
@@ -97,8 +101,8 @@ theorem prod_X_sub_C_eq_of_power_sums {σ τ : Type*} [Fintype σ] [Fintype τ]
   rw [hes j (by have := Finset.mem_range.mp hj; omega)]
 
 private theorem int_pos_neg_decomposition (t : ℤ) :
-    ((t.toNat : ℕ) : ℤ)-(((-t).toNat : ℕ) : ℤ) = t ∧
-      ((t.toNat : ℕ) : ℤ)+(((-t).toNat : ℕ) : ℤ) = |t| := by
+    ((t.toNat : ℕ) : ℤ) - (((-t).toNat : ℕ) : ℤ) = t ∧
+      ((t.toNat : ℕ) : ℤ) + (((-t).toNat : ℕ) : ℤ) = |t| := by
   by_cases ht : 0 ≤ t
   · simp [Int.toNat_of_nonneg ht, Int.toNat_of_nonpos (by omega : -t ≤ 0), abs_of_nonneg ht]
   · simp [Int.toNat_of_nonpos (by omega : t ≤ 0),
@@ -108,10 +112,10 @@ private theorem int_pos_neg_decomposition (t : ℤ) :
     and Newton identities in characteristic `q`. -/
 theorem bennettPeikertMinimum : BennettPeikertMinimum := by
   intro q hq
-  letI : Fact q.Prime := ⟨hq⟩
+  let : Fact q.Prime := ⟨hq⟩
   intro k hk hkq z hz hne
   by_contra hmin
-  have hshort : IdealCVP.sqNorm z < (2*k : ℤ) := lt_of_not_ge hmin
+  have hshort : IdealCVP.sqNorm z < (2 * k : ℤ) := lt_of_not_ge hmin
   have hsum := short_liftedRS_sum_zero k hk hkq z hz hshort
   let σ := Σ a : ZMod q, Fin ((z a).toNat)
   let τ := Σ a : ZMod q, Fin ((-z a).toNat)
@@ -119,12 +123,12 @@ theorem bennettPeikertMinimum : BennettPeikertMinimum := by
   let g : τ → ZMod q := fun i => i.1
   have hcardσ : Fintype.card σ = ∑ a, (z a).toNat := by simp [σ, Fintype.card_sigma]
   have hcardτ : Fintype.card τ = ∑ a, (-z a).toNat := by simp [τ, Fintype.card_sigma]
-  have hdiff : (Fintype.card σ : ℤ)-(Fintype.card τ : ℤ) = 0 := by
+  have hdiff : (Fintype.card σ : ℤ) - (Fintype.card τ : ℤ) = 0 := by
     rw [hcardσ, hcardτ, Nat.cast_sum, Nat.cast_sum, ← Finset.sum_sub_distrib]
     simp_rw [(int_pos_neg_decomposition _).1]
     exact hsum
   have hc : Fintype.card σ = Fintype.card τ := by omega
-  have hl1 : (Fintype.card σ : ℤ)+(Fintype.card τ : ℤ) ≤ IdealCVP.sqNorm z := by
+  have hl1 : (Fintype.card σ : ℤ) + (Fintype.card τ : ℤ) ≤ IdealCVP.sqNorm z := by
     rw [hcardσ, hcardτ, Nat.cast_sum, Nat.cast_sum, ← Finset.sum_add_distrib]
     simp_rw [(int_pos_neg_decomposition _).2]
     exact sum_abs_le_sqNorm z
@@ -134,18 +138,18 @@ theorem bennettPeikertMinimum : BennettPeikertMinimum := by
     have : (Fintype.card σ : ℤ) < k := by omega
     exact_mod_cast this
   have hp : ∀ j ≤ Fintype.card σ, 0 < j →
-      (∑ i, f i^j) = ∑ i, g i^j := by
+      (∑ i, f i ^ j) = ∑ i, g i ^ j := by
     intro j hj _
     have hsj := congrFun hz ⟨j, hj.trans_lt hcardk⟩
-    change (∑ a : ZMod q, (z a : ZMod q)*a^j) = 0 at hsj
+    change (∑ a : ZMod q, (z a : ZMod q) * a ^ j) = 0 at hsj
     have hcast (a : ZMod q) :
-        (((z a).toNat : ℕ) : ZMod q)-(((-z a).toNat : ℕ) : ZMod q) = (z a : ZMod q) := by
+        (((z a).toNat : ℕ) : ZMod q) - (((-z a).toNat : ℕ) : ZMod q) = (z a : ZMod q) := by
       have he := congrArg (fun t : ℤ => (t : ZMod q))
         (int_pos_neg_decomposition (z a)).1
       simpa only [Int.cast_sub, Int.cast_natCast] using he
     apply sub_eq_zero.mp
-    change (∑ i : (Σ a : ZMod q, Fin (z a).toNat), i.1^j) -
-      (∑ i : (Σ a : ZMod q, Fin (-z a).toNat), i.1^j) = 0
+    change (∑ i : (Σ a : ZMod q, Fin (z a).toNat), i.1 ^ j) -
+      (∑ i : (Σ a : ZMod q, Fin (-z a).toNat), i.1 ^ j) = 0
     simp only [Fintype.sum_sigma, Finset.sum_const, Finset.card_univ,
       Fintype.card_fin, nsmul_eq_mul]
     rw [← Finset.sum_sub_distrib]
@@ -161,10 +165,10 @@ theorem bennettPeikertMinimum : BennettPeikertMinimum := by
     exact hne (funext hzero)
   let i : σ := ⟨a, ⟨0, by omega⟩⟩
   have he := congrArg (Polynomial.eval (f i)) hpoly
-  have hleft : (∏ j : σ, (f i-f j)) = 0 := by
+  have hleft : (∏ j : σ, (f i - f j)) = 0 := by
     apply Finset.prod_eq_zero (Finset.mem_univ i)
     simp
-  have hright : (∏ j : τ, (f i-g j)) ≠ 0 := by
+  have hright : (∏ j : τ, (f i - g j)) ≠ 0 := by
     apply Finset.prod_ne_zero_iff.mpr
     intro j _
     apply sub_ne_zero.mpr
@@ -183,11 +187,10 @@ theorem bennettPeikertMinimum : BennettPeikertMinimum := by
 /-- The canonical minimum from cyclotomic descent is unconditional after the
     elementary Bennett--Peikert argument above. -/
 theorem ramifiedIdeal_minimum {q : ℕ} [NeZero q] [Fact q.Prime]
-    (k : ℕ) (hk : 1 ≤ k) (hkq : 2*k ≤ q) (v : IntegerRing q)
+    (k : ℕ) (hk : 1 ≤ k) (hkq : 2 * k ≤ q) (v : IntegerRing q)
     (hv : v ∈ ramifiedIdeal k) (hne : v ≠ 0) :
-    (2*k*q : ℤ) ≤ normSq v :=
+    (2 * k * q : ℤ) ≤ normSq v :=
   ramifiedIdeal_norm_lower bennettPeikertMinimum k hk hkq v hv hne
-
 
 end
 end Rank2ModuleSVP

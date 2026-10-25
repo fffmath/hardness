@@ -1,10 +1,14 @@
-import Rank2ModuleSVP.Descent
-import Mathlib.Algebra.Polynomial.Taylor
 import Mathlib.Algebra.CharP.Lemmas
-import Mathlib.RingTheory.Polynomial.Cyclotomic.Basic
+import Mathlib.Algebra.Polynomial.Taylor
 import Mathlib.LinearAlgebra.Vandermonde
+import Mathlib.RingTheory.Polynomial.Cyclotomic.Basic
+import Rank2ModuleSVP.Descent
 
-/-! Polynomial descent for the prime cyclic coefficient model. -/
+/-! # Polynomial descent to the ramified ideal
+
+Paper v2 Theorem 3.2: polynomial divisibility identifies the lifted
+Reed–Solomon lattice with the ramified ideal and its cosets.
+-/
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -34,15 +38,15 @@ def eulerOperator (R : Type*) [CommRing R] : R[X] →ₗ[R] R[X] :=
     eulerOperator R P = X * derivative P := rfl
 
 @[simp] theorem eulerOperator_monomial {R : Type*} [CommRing R] (n : ℕ) (c : R) :
-    eulerOperator R (Polynomial.monomial n c) = Polynomial.monomial n ((n : R)*c) := by
+    eulerOperator R (Polynomial.monomial n c) = Polynomial.monomial n ((n : R) * c) := by
   cases n with
   | zero => simp
-  | succ n => simp [derivative_monomial, X_mul_monomial, mul_comm]
+  | succ n => simp [X_mul_monomial, mul_comm]
 
 @[simp] theorem eulerOperator_pow_monomial {R : Type*} [CommRing R]
     (j n : ℕ) (c : R) :
     (eulerOperator R ^ j) (Polynomial.monomial n c) =
-      Polynomial.monomial n ((n : R)^j*c) := by
+      Polynomial.monomial n ((n : R) ^ j * c) := by
   induction j with
   | zero => simp
   | succ j ih =>
@@ -54,7 +58,7 @@ def eulerOperator (R : Type*) [CommRing R] : R[X] →ₗ[R] R[X] :=
 /-- Power sums are evaluations of iterates of the Euler operator. -/
 theorem syndrome_eq_euler (z : Coeff ℤ q) (k : ℕ) (j : Fin k) :
     syndrome k z j = ((eulerOperator (ZMod q) ^ j.val) (residuePolynomial z)).eval 1 := by
-  simp [residuePolynomial_eq, map_sum, eval_finsetSum, syndrome, ZMod.natCast_zmod_val, mul_comm]
+  simp [residuePolynomial_eq, map_sum, eval_finsetSum, syndrome, mul_comm]
 
 @[simp] theorem residuePolynomial_coeff (z : Coeff ℤ q) (a : ZMod q) :
     (residuePolynomial z).coeff a.val = (z a : ZMod q) := by
@@ -70,7 +74,7 @@ theorem syndrome_eq_euler (z : Coeff ℤ q) (k : ℕ) (j : Fin k) :
 theorem residuePolynomial_natDegree_lt (z : Coeff ℤ q) :
     (residuePolynomial z).natDegree < q := by
   rw [residuePolynomial_eq]
-  have hh : (∑ a : ZMod q, Polynomial.monomial a.val (z a : ZMod q)).natDegree ≤ q-1 := by
+  have hh : (∑ a : ZMod q, Polynomial.monomial a.val (z a : ZMod q)).natDegree ≤ q - 1 := by
     apply natDegree_sum_le_of_forall_le
     intro a _
     exact (natDegree_monomial_le (z a : ZMod q)).trans (by have := ZMod.val_lt a; omega)
@@ -93,7 +97,7 @@ def cyclotomicEval : ℤ[X] →+* IntegerRing q :=
   exact (Ideal.Quotient.mk (cyclotomicIdeal : Ideal (Cyclic ℤ q))).map_one
 
 @[simp] theorem monomial_add (a b : ZMod q) :
-    (monomial (a+b) : IntegerRing q) = monomial a * monomial b := by
+    (monomial (a + b) : IntegerRing q) = monomial a * monomial b := by
   simp [monomial, ← map_mul, AddMonoidAlgebra.single_mul_single]
 
 theorem monomial_natCast (n : ℕ) :
@@ -116,7 +120,7 @@ theorem classOf_eq_sum_monomial (z : Coeff ℤ q) :
     cyclotomicEval (coefficientPolynomial z) = classOf z := by
   rw [classOf_eq_sum_monomial]
   simp [coefficientPolynomial, cyclotomicEval, eval₂_monomial,
-    ← monomial_natCast, ZMod.natCast_zmod_val]
+    ← monomial_natCast]
 
 /-- Polynomial evaluation is onto the integral cyclotomic ring. -/
 theorem cyclotomicEval_surjective : Function.Surjective (cyclotomicEval (q := q)) := by
@@ -172,18 +176,19 @@ theorem cyclotomicEval_eq_zero_iff (P : ℤ[X]) :
   · intro hp
     let Q := P %ₘ Polynomial.cyclotomic q ℤ
     have hmon := cyclotomic.monic q ℤ
-    have hd : Q.natDegree < q-1 := by
+    have hd : Q.natDegree < q - 1 := by
       have hn : Polynomial.cyclotomic q ℤ ≠ 1 := by
         intro he
         have hh := congrArg Polynomial.natDegree he
-        have hh' : q-1 = 0 := by
+        have hh' : q - 1 = 0 := by
           simpa [natDegree_cyclotomic, Nat.totient_prime (Fact.out : q.Prime)] using hh
         have := (Fact.out : q.Prime).two_le
         omega
       have hh := natDegree_modByMonic_lt P hmon hn
       simpa [Q, natDegree_cyclotomic, Nat.totient_prime (Fact.out : q.Prime)] using hh
     have hQ : cyclotomicEval (q := q) Q = 0 := by
-      have he := congrArg (cyclotomicEval (q := q)) (modByMonic_add_div P (Polynomial.cyclotomic q ℤ))
+      have he := congrArg (cyclotomicEval (q := q))
+        (modByMonic_add_div P (Polynomial.cyclotomic q ℤ))
       simpa [map_add, map_mul, cyclotomicEval_relation, hp, Q] using he
     have hQzero : Q = 0 := by
       have hz := (classOf_eq_iff (fun a : ZMod q => Q.coeff a.val) 0).mp (by
@@ -192,7 +197,7 @@ theorem cyclotomicEval_eq_zero_iff (P : ℤ[X]) :
         exact hQ)
       obtain ⟨c, hc⟩ := hz
       have hc0 : c = 0 := by
-        have hh := hc ((q-1 : ℕ) : ZMod q)
+        have hh := hc ((q - 1 : ℕ) : ZMod q)
         simpa [ZMod.val_natCast_of_lt (by have := NeZero.pos q; omega),
           coeff_eq_zero_of_natDegree_lt hd] using hh.symm
       ext n
@@ -207,12 +212,13 @@ theorem cyclotomicEval_eq_zero_iff (P : ℤ[X]) :
 /-- Modulo `q`, the prime cyclotomic relation has exactly `q-1` roots at one. -/
 theorem residue_cyclotomic :
     (Polynomial.cyclotomic q ℤ).map (Int.castRingHom (ZMod q)) =
-      (X-1 : (ZMod q)[X])^(q-1) := by
+      (X - 1 : (ZMod q)[X]) ^ (q - 1) := by
   rw [map_cyclotomic_int]
-  apply mul_right_cancel₀ (show (X-1 : (ZMod q)[X]) ≠ 0 from X_sub_C_ne_zero 1)
+  apply mul_right_cancel₀ (show (X - 1 : (ZMod q)[X]) ≠ 0 from X_sub_C_ne_zero 1)
   rw [cyclotomic_prime_mul_X_sub_one, ← pow_succ,
     Nat.sub_add_cancel (show 1 ≤ q from NeZero.pos q), sub_pow_char, one_pow]
 
+omit [NeZero q] in
 private theorem C_q_dvd_of_map_zero (P : ℤ[X])
     (hP : P.map (Int.castRingHom (ZMod q)) = 0) : C (q : ℤ) ∣ P := by
   rw [C_dvd_iff_dvd_coeff]
@@ -221,9 +227,9 @@ private theorem C_q_dvd_of_map_zero (P : ℤ[X])
   simpa using congrArg (fun f : (ZMod q)[X] => f.coeff n) hP
 
 /-- Total ramification, as divisibility in the actual quotient ring. -/
-theorem pi_pow_dvd_prime : (pi : IntegerRing q)^(q-1) ∣ (q : IntegerRing q) := by
-  let N := q-1
-  let F := Polynomial.cyclotomic q ℤ - (X-1 : ℤ[X])^N
+theorem pi_pow_dvd_prime : (pi : IntegerRing q) ^ (q - 1) ∣ (q : IntegerRing q) := by
+  let N := q - 1
+  let F := Polynomial.cyclotomic q ℤ - (X - 1 : ℤ[X]) ^ N
   have hF : F.map (Int.castRingHom (ZMod q)) = 0 := by
     dsimp [F, N]
     rw [Polynomial.map_sub, residue_cyclotomic]
@@ -235,16 +241,17 @@ theorem pi_pow_dvd_prime : (pi : IntegerRing q)^(q-1) ∣ (q : IntegerRing q) :=
     simp [F, cyclotomic_prime, hN] at he
     have hq : (q : ℤ) ≠ 0 := by exact_mod_cast NeZero.ne q
     exact mul_left_cancel₀ hq (by simpa using he.symm)
-  obtain ⟨B, hB⟩ : (X-1 : ℤ[X]) ∣ G-1 := by
+  obtain ⟨B, hB⟩ : (X - 1 : ℤ[X]) ∣ G - 1 := by
     apply dvd_iff_isRoot.mpr
     simp [IsRoot, hG1]
   have hrel : (q : IntegerRing q) =
-      (pi : IntegerRing q) * ((q : IntegerRing q) * cyclotomicEval B) - (-(pi : IntegerRing q))^N := by
+      (pi : IntegerRing q) * ((q : IntegerRing q) * cyclotomicEval B) -
+        (-(pi : IntegerRing q)) ^ N := by
     have he := congrArg (cyclotomicEval (q := q)) hG
     have heB := congrArg (cyclotomicEval (q := q)) hB
     simp [F, cyclotomicEval_relation, pi] at he heB ⊢
-    linear_combination -he - (q : IntegerRing q) * heB
-  have aux : ∀ t ≤ N, (pi : IntegerRing q)^t ∣ (q : IntegerRing q) := by
+    linear_combination - he - (q : IntegerRing q) * heB
+  have aux : ∀ t ≤ N, (pi : IntegerRing q) ^ t ∣ (q : IntegerRing q) := by
     intro t
     induction t with
     | zero => intro _; simp
@@ -260,87 +267,91 @@ theorem pi_pow_dvd_prime : (pi : IntegerRing q)^(q-1) ∣ (q : IntegerRing q) :=
 
 /-- The two principal ideals in the total ramification identity agree. -/
 theorem total_ramification :
-    Ideal.span {(q : IntegerRing q)} = ramifiedIdeal (q-1) := by
+    Ideal.span {(q : IntegerRing q)} = ramifiedIdeal (q - 1) := by
   apply le_antisymm
   · rw [Ideal.span_singleton_le_iff_mem, ramifiedIdeal, Ideal.mem_span_singleton]
     exact pi_pow_dvd_prime
   · rw [ramifiedIdeal, Ideal.span_singleton_le_iff_mem, Ideal.mem_span_singleton]
-    have hF : (Polynomial.cyclotomic q ℤ - (X-1 : ℤ[X])^(q-1)).map
+    have hF : (Polynomial.cyclotomic q ℤ - (X - 1 : ℤ[X]) ^ (q - 1)).map
         (Int.castRingHom (ZMod q)) = 0 := by
       rw [Polynomial.map_sub, residue_cyclotomic]
       simp
     obtain ⟨G, hG⟩ := C_q_dvd_of_map_zero _ hF
     have he := congrArg (cyclotomicEval (q := q)) hG
-    have hh : (q : IntegerRing q) ∣ (-pi : IntegerRing q)^(q-1) := by
+    have hh : (q : IntegerRing q) ∣ (-pi : IntegerRing q) ^ (q - 1) := by
       refine ⟨-cyclotomicEval G, ?_⟩
       simpa [pi, cyclotomicEval_relation] using congrArg Neg.neg he
     rw [neg_pow] at hh
-    have hunit : IsUnit ((-1 : IntegerRing q)^(q-1)) := (isUnit_neg_one).pow _
+    have hunit : IsUnit ((-1 : IntegerRing q) ^ (q - 1)) := (isUnit_neg_one).pow _
     exact (hunit.dvd_mul_left).mp hh
 
 /-- Polynomial ideal preimage, before choosing degree-`<q` representatives. -/
-theorem cyclotomicEval_mem_ramifiedIdeal_iff (k : ℕ) (hk : k ≤ q-1) (P : ℤ[X]) :
+theorem cyclotomicEval_mem_ramifiedIdeal_iff (k : ℕ) (hk : k ≤ q - 1) (P : ℤ[X]) :
     cyclotomicEval (q := q) P ∈ ramifiedIdeal k ↔
-      (X-1 : (ZMod q)[X])^k ∣ P.map (Int.castRingHom (ZMod q)) := by
+      (X - 1 : (ZMod q)[X]) ^ k ∣ P.map (Int.castRingHom (ZMod q)) := by
   constructor
   · intro hp
     obtain ⟨v, hv⟩ := Ideal.mem_span_singleton'.mp hp
     obtain ⟨Q, rfl⟩ := cyclotomicEval_surjective v
-    have hz : cyclotomicEval (q := q) (P-(1-X)^k*Q) = 0 := by
+    have hz : cyclotomicEval (q := q) (P - (1 - X) ^ k * Q) = 0 := by
       simpa [pi, mul_comm] using sub_eq_zero.mpr hv.symm
     obtain ⟨S, hS⟩ := (cyclotomicEval_eq_zero_iff _).mp hz
     have he := congrArg (Polynomial.map (Int.castRingHom (ZMod q))) hS
     simp only [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow,
       Polynomial.map_one, Polynomial.map_X, residue_cyclotomic] at he
-    have hd : (X-1 : (ZMod q)[X])^k ∣
-        P.map (Int.castRingHom (ZMod q)) - (1-X)^k*Q.map (Int.castRingHom (ZMod q)) := by
+    have hd : (X - 1 : (ZMod q)[X]) ^ k ∣
+        P.map (Int.castRingHom (ZMod q)) - (1 - X) ^ k * Q.map (Int.castRingHom (ZMod q)) := by
       rw [he]
       exact dvd_mul_of_dvd_left (pow_dvd_pow _ hk) _
-    have hs : (X-1 : (ZMod q)[X])^k ∣ (1-X)^k*Q.map (Int.castRingHom (ZMod q)) := by
-      rw [show (1-X : (ZMod q)[X]) = -(X-1) by ring, neg_pow]
+    have hs : (X - 1 : (ZMod q)[X]) ^ k ∣ (1 - X) ^ k * Q.map (Int.castRingHom (ZMod q)) := by
+      rw [show (1 - X : (ZMod q)[X]) = -(X - 1) by ring, neg_pow]
       exact dvd_mul_of_dvd_left (dvd_mul_left _ _) _
     simpa only [sub_add_cancel] using dvd_add hd hs
   · rintro ⟨S, hS⟩
     obtain ⟨Q, hQ⟩ := Polynomial.map_surjective (Int.castRingHom (ZMod q))
       ZMod.intCast_surjective S
-    have hz : (P-(X-1)^k*Q).map (Int.castRingHom (ZMod q)) = 0 := by
+    have hz : (P - (X - 1) ^ k * Q).map (Int.castRingHom (ZMod q)) = 0 := by
       simp [hQ, hS]
     obtain ⟨G, hG⟩ := C_q_dvd_of_map_zero _ hz
     have he := congrArg (cyclotomicEval (q := q)) hG
-    have hpi : (-pi : IntegerRing q)^k * cyclotomicEval Q ∈ ramifiedIdeal k := by
+    have hpi : (-pi : IntegerRing q) ^ k * cyclotomicEval Q ∈ ramifiedIdeal k := by
       rw [ramifiedIdeal, Ideal.mem_span_singleton]
       rw [neg_pow]
       exact dvd_mul_of_dvd_left (dvd_mul_left _ _) _
     have hq : (q : IntegerRing q) * cyclotomicEval G ∈ ramifiedIdeal k := by
       rw [ramifiedIdeal, Ideal.mem_span_singleton]
-      exact dvd_mul_of_dvd_left (dvd_trans (pow_dvd_pow (pi : IntegerRing q) hk) (pi_pow_dvd_prime (q := q))) _
+      exact dvd_mul_of_dvd_left
+        (dvd_trans (pow_dvd_pow (pi : IntegerRing q) hk) (pi_pow_dvd_prime (q := q))) _
     have he' : cyclotomicEval (q := q) P =
-        (-(pi : IntegerRing q))^k * cyclotomicEval Q + (q : IntegerRing q)*cyclotomicEval G := by
+        (-(pi : IntegerRing q)) ^ k * cyclotomicEval Q +
+          (q : IntegerRing q) * cyclotomicEval G := by
       have he'' : cyclotomicEval (q := q) P -
-          (-(pi : IntegerRing q))^k * cyclotomicEval Q =
-            (q : IntegerRing q)*cyclotomicEval G := by
+          (-(pi : IntegerRing q)) ^ k * cyclotomicEval Q =
+            (q : IntegerRing q) * cyclotomicEval G := by
         simpa [pi] using he
       exact (sub_eq_iff_eq_add.mp he'').trans (add_comm _ _)
     rw [he']
     exact (ramifiedIdeal k).add_mem hpi hq
 
+omit [NeZero q] in
 private theorem eq_C_of_derivative_zero (P : (ZMod q)[X])
     (h : P.derivative = 0) (hd : P.natDegree < q) : P = C (P.coeff 0) := by
   ext n
   cases n with
   | zero => simp
   | succ n =>
-    by_cases hn : n+1 ≤ P.natDegree
-    · have hcast : (n+1 : ZMod q) ≠ 0 := by
+    by_cases hn : n + 1 ≤ P.natDegree
+    · have hcast : (n + 1 : ZMod q) ≠ 0 := by
         intro hh
-        have hdvd := (ZMod.natCast_eq_zero_iff (n+1) q).mp
+        have hdvd := (ZMod.natCast_eq_zero_iff (n + 1) q).mp
           (by simpa only [Nat.cast_add, Nat.cast_one] using hh)
         exact (Nat.le_of_dvd (by omega) hdvd).not_gt (hn.trans_lt hd)
       have he := congrArg (fun f : (ZMod q)[X] => f.coeff n) h
       simp only [coeff_derivative, coeff_zero] at he
       simpa using (mul_eq_zero.mp he).resolve_right hcast
-    · simp [coeff_eq_zero_of_natDegree_lt (by omega : P.natDegree < n+1)]
+    · simp [coeff_eq_zero_of_natDegree_lt (by omega : P.natDegree < n + 1)]
 
+omit [NeZero q] in
 private theorem euler_ne_zero (P : (ZMod q)[X]) (hP : P ≠ 0)
     (hd : P.natDegree < q) (hr : P.IsRoot 1) :
     eulerOperator (ZMod q) P ≠ 0 := by
@@ -362,6 +373,7 @@ private theorem euler_degree_lt (P : (ZMod q)[X]) (hP : P.natDegree < q) :
       rw [eq_C_of_natDegree_eq_zero he, derivative_C]
     exact (Nat.succ_le_of_lt (natDegree_derivative_lt hp0)).trans_lt hP
 
+omit [NeZero q] in
 private theorem euler_multiplicity (P : (ZMod q)[X]) (hP : P ≠ 0)
     (hd : P.natDegree < q) (hr : P.IsRoot 1) :
     (eulerOperator (ZMod q) P).rootMultiplicity 1 = P.rootMultiplicity 1 - 1 := by
@@ -387,20 +399,21 @@ theorem liftedRS_iff_residue_dvd (k : ℕ) (z : Coeff ℤ q) :
     z ∈ liftedRS k ↔ (X - 1 : (ZMod q)[X]) ^ k ∣ residuePolynomial z := by
   have general (P : (ZMod q)[X]) (hd : P.natDegree < q) (n : ℕ) :
       (∀ j < n, ((eulerOperator (ZMod q) ^ j) P).eval 1 = 0) ↔
-        (X - 1 : (ZMod q)[X])^n ∣ P := by
+        (X - 1 : (ZMod q)[X]) ^ n ∣ P := by
     induction n generalizing P with
     | zero => simp
     | succ n ih =>
       by_cases hP : P = 0
       · simp [hP]
       have he := euler_degree_lt P hd
-      have hh : (∀ j < n+1, ((eulerOperator (ZMod q)^j) P).eval 1 = 0) ↔
-          P.IsRoot 1 ∧ ∀ j < n, ((eulerOperator (ZMod q)^j) (eulerOperator (ZMod q) P)).eval 1 = 0 := by
+      have hh : (∀ j < n + 1, ((eulerOperator (ZMod q) ^ j) P).eval 1 = 0) ↔
+          P.IsRoot 1 ∧
+            ∀ j < n, ((eulerOperator (ZMod q) ^ j) (eulerOperator (ZMod q) P)).eval 1 = 0 := by
         constructor
         · intro h
           refine ⟨by simpa [IsRoot] using h 0 (by omega), ?_⟩
           intro j hj
-          simpa [pow_succ, Module.End.mul_apply] using h (j+1) (by omega)
+          simpa [pow_succ, Module.End.mul_apply] using h (j + 1) (by omega)
         · rintro ⟨h0, h⟩ j hj
           cases j with
           | zero => simpa [IsRoot] using h0
@@ -409,13 +422,17 @@ theorem liftedRS_iff_residue_dvd (k : ℕ) (z : Coeff ℤ q) :
       constructor
       · rintro ⟨hr, hn⟩
         have hE := euler_ne_zero P hP hd hr
-        have hm := (le_rootMultiplicity_iff hE).mpr (by rw [show (C (1 : ZMod q) : (ZMod q)[X]) = 1 from C_1]; exact hn)
+        have hm := (le_rootMultiplicity_iff hE).mpr (by
+          rw [show (C (1 : ZMod q) : (ZMod q)[X]) = 1 from C_1]
+          exact hn)
         rw [euler_multiplicity P hP hd hr] at hm
         exact (le_rootMultiplicity_iff hP).mp (by
           have := (rootMultiplicity_pos hP).mpr hr
           omega)
       · intro hn
-        have hm := (le_rootMultiplicity_iff hP).mpr (by rw [show (C (1 : ZMod q) : (ZMod q)[X]) = 1 from C_1]; exact hn)
+        have hm := (le_rootMultiplicity_iff hP).mpr (by
+          rw [show (C (1 : ZMod q) : (ZMod q)[X]) = 1 from C_1]
+          exact hn)
         have hr : P.IsRoot 1 := (rootMultiplicity_pos hP).mp (by omega)
         refine ⟨hr, ?_⟩
         have hdiv := pow_sub_one_dvd_derivative_of_pow_dvd hn
@@ -429,13 +446,13 @@ theorem liftedRS_iff_residue_dvd (k : ℕ) (z : Coeff ℤ q) :
     simpa [syndrome_eq_euler] using hz j.val j.isLt
 
 /-- Equation `ideal-preimage` in the coefficient model. -/
-theorem ideal_preimage (k : ℕ) (hk : k ≤ q-1) (z : Coeff ℤ q) :
+theorem ideal_preimage (k : ℕ) (hk : k ≤ q - 1) (z : Coeff ℤ q) :
     classOf z ∈ ramifiedIdeal k ↔ z ∈ liftedRS k := by
   rw [← cyclotomicEval_coefficientPolynomial, cyclotomicEval_mem_ramifiedIdeal_iff k hk]
   exact (liftedRS_iff_residue_dvd k z).symm
 
 /-- Paper `cyclotomic-descent`: the image is the principal ramified ideal. -/
-theorem cyclotomic_descent (k : ℕ) (hk : k ≤ q-1) :
+theorem cyclotomic_descent (k : ℕ) (hk : k ≤ q - 1) :
     reedSolomonImage (q := q) k = (ramifiedIdeal (R := ℤ) (q := q) k).toAddSubgroup := by
   ext v
   constructor
@@ -456,7 +473,7 @@ def zeroSumLiftedRS (k : ℕ) : AddSubgroup (Coeff ℤ q) :=
   liftedRS k ⊓ (coefficientSum (q := q)).ker
 
 /-- Evaluation gives the additive isomorphism on `1`-perpendicular. -/
-def cyclotomicDescentEquiv (k : ℕ) (hk : 1 ≤ k) (hkq : k ≤ q-1) :
+def cyclotomicDescentEquiv (k : ℕ) (hk : 1 ≤ k) (hkq : k ≤ q - 1) :
     zeroSumLiftedRS (q := q) k ≃+ (ramifiedIdeal (R := ℤ) (q := q) k) := by
   let f : zeroSumLiftedRS (q := q) k →+ (ramifiedIdeal (R := ℤ) (q := q) k) :=
     { toFun := fun z => ⟨classOf z.val, (ideal_preimage k hkq z.val).mpr z.property.1⟩
@@ -478,10 +495,10 @@ def cyclotomicDescentEquiv (k : ℕ) (hk : 1 ≤ k) (hkq : k ≤ q-1) :
 
 /-- Canonical minimum of the ramified ideal, with the allowed BP input explicit. -/
 theorem ramifiedIdeal_norm_lower (hBP : BennettPeikertMinimum) (k : ℕ)
-    (hk : 1 ≤ k) (hkq : 2*k ≤ q) (v : IntegerRing q)
+    (hk : 1 ≤ k) (hkq : 2 * k ≤ q) (v : IntegerRing q)
     (hv : v ∈ ramifiedIdeal k) (hne : v ≠ 0) :
-    (2*k*q : ℤ) ≤ normSq v := by
-  have hbound : k ≤ q-1 := by have := (Fact.out : q.Prime).two_le; omega
+    (2 * k * q : ℤ) ≤ normSq v := by
+  have hbound : k ≤ q - 1 := by have := (Fact.out : q.Prime).two_le; omega
   have hv' : v ∈ reedSolomonImage k := by
     rw [cyclotomic_descent k hbound]
     exact hv
@@ -490,7 +507,7 @@ theorem ramifiedIdeal_norm_lower (hBP : BennettPeikertMinimum) (k : ℕ)
 
 /-- A Vandermonde minor makes every syndrome attainable; the constant kernel
     then sets the integral coefficient sum to any compatible value. -/
-theorem syndrome_surjective_fixed_sum (k : ℕ) (hk : 1 ≤ k) (hkq : k ≤ q-1)
+theorem syndrome_surjective_fixed_sum (k : ℕ) (hk : 1 ≤ k) (hkq : k ≤ q - 1)
     (u : Fin k → ZMod q) (s : ℤ) (hs : (s : ZMod q) = u ⟨0, hk⟩) :
     ∃ z : Coeff ℤ q, syndrome k z = u ∧ (∑ a, z a) = s := by
   classical
@@ -514,12 +531,12 @@ theorem syndrome_surjective_fixed_sum (k : ℕ) (hk : 1 ≤ k) (hkq : k ≤ q-1)
   have hz0 : syndrome k z0 = u := by
     ext j
     have hhy := congrFun hy j
-    change (∑ b : ZMod q, (z0 b : ZMod q)*b^j.val) = u j
+    change (∑ b : ZMod q, (z0 b : ZMod q) * b ^ j.val) = u j
     simp only [z0, Int.cast_natCast, ZMod.natCast_zmod_val]
     simp only [r, Finset.sum_mul]
     rw [Finset.sum_comm]
     simpa [M, Matrix.mulVec, dotProduct, Matrix.vandermonde, ite_mul, mul_comm] using hhy
-  have hd : (q : ℤ) ∣ (∑ b, z0 b)-s := by
+  have hd : (q : ℤ) ∣ (∑ b, z0 b) - s := by
     apply (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp
     have he := congrFun hz0 ⟨0, hk⟩
     simpa [syndrome, ← Int.cast_sum, hs] using sub_eq_zero.mpr he
@@ -539,9 +556,9 @@ theorem syndrome_surjective_fixed_sum (k : ℕ) (hk : 1 ≤ k) (hkq : k ≤ q-1)
     linarith
 
 /-- Paper `coset-syndrome`, now for the actual principal ideal. -/
-theorem ramified_coset_syndrome (k : ℕ) (hk : 1 ≤ k) (hkq : k ≤ q-1)
+theorem ramified_coset_syndrome (k : ℕ) (hk : 1 ≤ k) (hkq : k ≤ q - 1)
     (x : Coeff ℤ q) (v : IntegerRing q) :
-    v-classOf x ∈ ramifiedIdeal k ↔
+    v - classOf x ∈ ramifiedIdeal k ↔
       ∃! z : Coeff ℤ q, classOf z = v ∧ syndrome k z = syndrome k x ∧
         (∑ a, z a) = ∑ a, x a := by
   simpa [cyclotomic_descent k hkq] using coset_syndrome k hk hkq x v

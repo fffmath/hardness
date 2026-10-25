@@ -1,27 +1,29 @@
+import Rank2ModuleSVP.MembershipCert
 import Rank2ModuleSVP.Reduction
 import Rank2ModuleSVP.ReductionMap
 import Rank2ModuleSVP.ReductionMapPoly
-import Rank2ModuleSVP.MembershipCert
 
-/-! Paper v2 Theorem 1.1: semantic correctness of the total reduction and
-NP-completeness of rank-2 module SVP, given only `WanPowerSumEstimates`. -/
+/-! # NP-completeness of rank-two module SVP
+
+Paper v2 Theorem 1.1: semantic correctness of the total reduction and
+NP-completeness of rank-two module SVP, given only `WanPowerSumEstimates`.
+-/
 
 namespace Rank2ModuleSVP
 noncomputable section
 open IdealCVP Turing.MultiTapeTM Cslib.Complexity
 open ReductionMap
 
-set_option maxHeartbeats 1200000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 /-- Absolute cutoffs; the extra eighth power also dominates the cubic offsets. -/
 def mainK0 : ℕ := max redK0 1
+/-- Absolute exponent cutoff, including the bound for cubic Sidon offsets. -/
 def mainC0 : ℕ := max redC0 8
 
 theorem mainK0_ge_redK0 : redK0 ≤ mainK0 := le_max_left _ _
 theorem mainC0_ge_redC0 : redC0 ≤ mainC0 := le_max_left _ _
-theorem mainK0_pos : 1 ≤ mainK0 := le_max_right _ _
 theorem mainC0_pos : 1 ≤ mainC0 := by
   have : 8 ≤ mainC0 := le_max_right _ _
   omega
@@ -30,29 +32,29 @@ theorem mainC0_pos : 1 ≤ mainC0 := by
 The premise `I.q ≤ I.n` follows from the absence of zero rows. -/
 theorem main_cubic_offsets (I : X3CInstance) {k q : ℕ}
     (hk : 1 ≤ k) (hn : I.n ≤ k) (hM : I.q ≤ I.n)
-    (hq : (2*k)^8 ≤ q) :
-    4*Checker.tau I (SidonPositions.cubic I.n)*(3*I.q) < q := by
-  have ha : Checker.alphaStar I (SidonPositions.cubic I.n) ≤ 3*I.n^3+I.n :=
+    (hq : (2 * k) ^ 8 ≤ q) :
+    4 * Checker.tau I (SidonPositions.cubic I.n) * (3 * I.q) < q := by
+  have ha : Checker.alphaStar I (SidonPositions.cubic I.n) ≤ 3 * I.n ^ 3 + I.n :=
     ((SidonPositions.cubic I.n).bound _).trans (SidonPositions.cubic_size I.n)
-  have hn3 : I.n^3 ≤ k^3 := Nat.pow_le_pow_left hn 3
-  have hk3 : k ≤ k^3 := Nat.le_self_pow (by norm_num) k
-  have hk3pos : 1 ≤ k^3 := by
-    have : 0 < k^3 := pow_pos (by omega) _
+  have hn3 : I.n ^ 3 ≤ k ^ 3 := Nat.pow_le_pow_left hn 3
+  have hk3 : k ≤ k ^ 3 := Nat.le_self_pow (by norm_num) k
+  have hk3pos : 1 ≤ k ^ 3 := by
+    have : 0 < k ^ 3 := pow_pos (by omega) _
     omega
-  have ht : Checker.tau I (SidonPositions.cubic I.n) ≤ 9*k^3 := by
+  have ht : Checker.tau I (SidonPositions.cubic I.n) ≤ 9 * k ^ 3 := by
     unfold Checker.tau
     omega
   have hMk : I.q ≤ k := hM.trans hn
-  have hb : 4*Checker.tau I (SidonPositions.cubic I.n)*(3*I.q) ≤ 108*k^4 := by
+  have hb : 4 * Checker.tau I (SidonPositions.cubic I.n) * (3 * I.q) ≤ 108 * k ^ 4 := by
     calc
-      _ ≤ 4*(9*k^3)*(3*k) := by gcongr
+      _ ≤ 4 * (9 * k ^ 3) * (3 * k) := by gcongr
       _ = _ := by ring
-  have hk48 : k^4 ≤ k^8 := Nat.pow_le_pow_right hk (by norm_num)
+  have hk48 : k ^ 4 ≤ k ^ 8 := Nat.pow_le_pow_right hk (by norm_num)
   calc
-    _ ≤ 108*k^4 := hb
-    _ < 256*k^4 := Nat.mul_lt_mul_of_pos_right (by norm_num) (by positivity)
-    _ ≤ 256*k^8 := Nat.mul_le_mul_left _ hk48
-    _ = (2*k)^8 := by ring
+    _ ≤ 108 * k ^ 4 := hb
+    _ < 256 * k ^ 4 := Nat.mul_lt_mul_of_pos_right (by norm_num) (by positivity)
+    _ ≤ 256 * k ^ 8 := Nat.mul_le_mul_left _ hk48
+    _ = (2 * k) ^ 8 := by ring
     _ ≤ q := hq
 
 private theorem main_coreInput_m₁ (q : ℕ) [NeZero q] (I : X3CInstance)
@@ -76,9 +78,9 @@ private theorem main_coreInput_S (q : ℕ) [NeZero q] (I : X3CInstance)
 and the nonnegative threshold. Nonzero-row coverage supplies the latter premise. -/
 theorem main_coreInput_wellFormed (q : ℕ) [NeZero q] [Fact q.Prime]
     (I : X3CInstance) (s : SidonPositions I.n) {k : ℕ}
-    (hodd : q ≠ 2) (hk : redK0 ≤ k) (hpow : (2*k)^redC0 ≤ q)
-    (hrows : 3*I.q ≤ Checker.W I) : (coreInput q I s k).WellFormed := by
-  obtain ⟨h₁,h₂,h₃,h₄⟩ := coreInput_lengths q I s k
+    (hodd : q ≠ 2) (hk : redK0 ≤ k) (hpow : (2 * k) ^ redC0 ≤ q)
+    (hrows : 3 * I.q ≤ Checker.W I) : (coreInput q I s k).WellFormed := by
+  obtain ⟨h₁, h₂, h₃, h₄⟩ := coreInput_lengths q I s k
   refine ⟨(show q.Prime from Fact.out), hodd, h₁, h₂, h₃, h₄, ?_, ?_⟩
   · change determinant (powerPair (q := q) (coreInput q I s k).m₁)
       (powerPair (q := q) (coreInput q I s k).m₂) ≠ 0
@@ -91,9 +93,9 @@ theorem main_coreInput_wellFormed (q : ℕ) [NeZero q] [Fact q.Prime]
 theorem main_coreInput_correct (hWan : WanPowerSumEstimates)
     (q : ℕ) [NeZero q] [Fact q.Prime] (I : X3CInstance)
     (s : SidonPositions I.n) {k : ℕ} (hodd : q ≠ 2)
-    (hk : redK0 ≤ k) (hpow : (2*k)^redC0 ≤ q)
-    (hn : I.n+2 ≤ Nat.sqrt k) (hoff : 4*Checker.tau I s*(3*I.q) < q)
-    (hrows : 3*I.q ≤ Checker.W I) :
+    (hk : redK0 ≤ k) (hpow : (2 * k) ^ redC0 ≤ q)
+    (hn : I.n + 2 ≤ Nat.sqrt k) (hoff : 4 * Checker.tau I s * (3 * I.q) < q)
+    (hrows : 3 * I.q ≤ Checker.W I) :
     I.HasExactCover ↔ coreInput q I s k ∈ ModuleSVPLang := by
   have hw := main_coreInput_wellFormed q I s hodd hk hpow hrows
   have he : I.HasExactCover ↔
@@ -156,11 +158,11 @@ theorem reductionMap_correct_of_constants (hWan : WanPowerSumEstimates)
         have : Fact q.Prime := ⟨hspec.1⟩
         have hk := mapK_bounds K0 x
         have hr := red_regime_mono hK hC hk.1 hspec.2.2.1
-        have hn : I.n+2 ≤ Nat.sqrt k := Nat.le_sqrt'.mpr hk.2.1
+        have hn : I.n + 2 ≤ Nat.sqrt k := Nat.le_sqrt'.mpr hk.2.1
         have hnk : I.n ≤ k := by
-          have hsq : (I.n+2)^2 ≤ k := hk.2.1
+          have hsq : (I.n + 2) ^ 2 ≤ k := hk.2.1
           nlinarith
-        have hq8 : (2*k)^8 ≤ q :=
+        have hq8 : (2 * k) ^ 8 ≤ q :=
           (Nat.pow_le_pow_right (by have := hk.2.2; omega) hC8).trans hspec.2.2.1
         have hoff := main_cubic_offsets I (by have := hk.2.2; omega) hnk
           (mapM_le_n x hw hMpos hz) hq8

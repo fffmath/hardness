@@ -1,10 +1,13 @@
-import Mathlib.Algebra.Polynomial.FieldDivision
 import Mathlib.Algebra.Polynomial.EraseLead
+import Mathlib.Algebra.Polynomial.FieldDivision
 import Mathlib.Data.ZMod.Basic
 import Mathlib.Tactic
 
-/-! The sparse multiplicity bound, proved by repeatedly killing one coefficient
-with the Euler differential operator `X * derivative - a`. -/
+/-! # Sparse polynomial multiplicity
+
+Paper v2 Lemma 3.6, proved by repeatedly killing one coefficient
+with the Euler differential operator `X * derivative - a`.
+-/
 namespace Rank2ModuleSVP
 noncomputable section
 open Polynomial
@@ -15,7 +18,7 @@ private def killTerm (a : ℕ) (f : (ZMod q)[X]) : (ZMod q)[X] :=
   X * derivative f - C (a : ZMod q) * f
 
 private theorem killTerm_coeff (a n : ℕ) (f : (ZMod q)[X]) :
-    (killTerm a f).coeff n = ((n : ZMod q)-a) * f.coeff n := by
+    (killTerm a f).coeff n = ((n : ZMod q) - a) * f.coeff n := by
   cases n with
   | zero => simp [killTerm]
   | succ n => simp [killTerm, coeff_X_mul, coeff_derivative]; ring
@@ -68,7 +71,8 @@ theorem sparse_tools_ii (f : (ZMod q)[X]) (hf : f ≠ 0) (hd : f.natDegree < q) 
         · exact dvd_mul_of_dvd_right (pow_sub_one_dvd_derivative_of_pow_dvd
             (f.pow_rootMultiplicity_dvd 1)) X
         · exact dvd_mul_of_dvd_right
-            (dvd_trans (pow_dvd_pow _ (Nat.sub_le _ _)) (f.pow_rootMultiplicity_dvd 1)) (C (a : ZMod q))
+            (dvd_trans (pow_dvd_pow _ (Nat.sub_le _ _)) (f.pow_rootMultiplicity_dvd 1))
+            (C (a : ZMod q))
       omega
 
 end

@@ -1,14 +1,19 @@
-import Mathlib.Data.ZMod.Basic
-import Mathlib.Tactic.Linarith
-import Mathlib.Tactic.Positivity
-import Mathlib.Tactic.NormNum
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Data.Fintype.Perm
+import Mathlib.Data.ZMod.Basic
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Positivity
+
+/-! # Wan power-sum estimates
+
+The explicit external point-count hypothesis from paper v2 Proposition 2.3,
+with finite union bounds for collision-free power-sum solutions.
+-/
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-/-! The precise external point-count input of Proposition 2.3. -/
 namespace Rank2ModuleSVP
 open scoped BigOperators
 noncomputable section
@@ -31,20 +36,19 @@ def WanPowerSumEstimates : Prop :=
     letI : NeZero q := ⟨hq.ne_zero⟩
     ∀ k m : ℕ, 2 ≤ k → k ≤ m - 2 → m - 2 < q - 2 →
     ∀ b : PositiveMoment k → ZMod q,
-      |((powerSumSolutions q k m b).card : ℝ) - (q : ℝ) ^ (m-k+1)| ≤
-          (1/2 : ℝ) * (2*k : ℝ)^m * (q : ℝ)^(((m-k+2 : ℕ) : ℝ)/2) ∧
+      |((powerSumSolutions q k m b).card : ℝ) - (q : ℝ) ^ (m - k + 1)| ≤
+          (1 / 2 : ℝ) * (2 * k : ℝ) ^ m * (q : ℝ) ^ (((m - k + 2 : ℕ) : ℝ) / 2) ∧
       (∀ i l : Fin m, i ≠ l →
         |(((powerSumSolutions q k m b).filter fun z => z i = z l).card : ℝ) -
-            (q : ℝ)^(m-k)| ≤
-          (1/2 : ℝ) * (2*k : ℝ)^(m-1) * (q : ℝ)^(((m-k+2 : ℕ) : ℝ)/2)) ∧
+            (q : ℝ) ^ (m - k)| ≤
+          (1 / 2 : ℝ) * (2 * k : ℝ) ^ (m - 1) * (q : ℝ) ^ (((m - k + 2 : ℕ) : ℝ) / 2)) ∧
       (∀ (i : Fin m) (a : ZMod q),
         |(((powerSumSolutions q k m b).filter fun z => z i = a).card : ℝ) -
-            (q : ℝ)^(m-k)| ≤
-          (1/2 : ℝ) * (2*k : ℝ)^(m-1) * (q : ℝ)^(((m-k+1 : ℕ) : ℝ)/2))
+            (q : ℝ) ^ (m - k)| ≤
+          (1 / 2 : ℝ) * (2 * k : ℝ) ^ (m - 1) * (q : ℝ) ^ (((m - k + 1 : ℕ) : ℝ) / 2))
 
 /-- Finite union bound, retaining an explicit index set for the error budget. -/
-theorem card_filter_exists_le {α ι : Type*} [DecidableEq α] [DecidableEq ι]
-    (S : Finset α) (I : Finset ι) (bad : ι → α → Prop) :
+theorem card_filter_exists_le {α ι : Type*} (S : Finset α) (I : Finset ι) (bad : ι → α → Prop) :
     (S.filter fun x => ∃ i ∈ I, bad i x).card ≤
       ∑ i ∈ I, (S.filter (bad i)).card := by
   classical
@@ -58,8 +62,7 @@ theorem card_filter_exists_le {α ι : Type*} [DecidableEq α] [DecidableEq ι]
 
 /-- If the finite union has smaller cardinality than the sample space, a
 sample avoiding every event exists. -/
-theorem exists_avoiding_of_sum_lt {α ι : Type*} [DecidableEq α] [DecidableEq ι]
-    (S : Finset α) (I : Finset ι) (bad : ι → α → Prop)
+theorem exists_avoiding_of_sum_lt {α ι : Type*} (S : Finset α) (I : Finset ι) (bad : ι → α → Prop)
     (hbudget : (∑ i ∈ I, (S.filter (bad i)).card) < S.card) :
     ∃ x ∈ S, ∀ i ∈ I, ¬ bad i x := by
   classical
@@ -74,8 +77,7 @@ theorem exists_avoiding_of_sum_lt {α ι : Type*} [DecidableEq α] [DecidableEq 
   exact hgood (Finset.mem_filter.mpr ⟨hx, i, hi, hbad⟩)
 
 /-- A lower bound on the retained set, before making any estimate on errors. -/
-theorem card_le_good_add_errors {α ι : Type*} [DecidableEq α] [DecidableEq ι]
-    (S : Finset α) (I : Finset ι) (bad : ι → α → Prop) :
+theorem card_le_good_add_errors {α ι : Type*} (S : Finset α) (I : Finset ι) (bad : ι → α → Prop) :
     S.card ≤ (S.filter fun x => ∀ i ∈ I, ¬ bad i x).card +
       ∑ i ∈ I, (S.filter (bad i)).card := by
   classical
@@ -129,9 +131,9 @@ theorem card_powerSumSolutions_le_good_add (q k m : ℕ) [NeZero q]
       refine ⟨hz, ?_, ?_⟩
       · intro i l hil
         by_contra hne
-        exact hh (.inl (i,l)) (by simp [I, hne]) hil
+        exact hh (.inl (i, l)) (by simp [I, hne]) hil
       · intro i hi
-        exact hh (.inr (i,z i)) (by simp [J, hi]) rfl
+        exact hh (.inr (i, z i)) (by simp [J, hi]) rfl
     · rintro ⟨hz, hinj, hav⟩
       refine ⟨hz, ?_⟩
       intro e he
@@ -146,28 +148,31 @@ theorem card_powerSumSolutions_le_good_add (q k m : ℕ) [NeZero q]
   simpa [S, I, J, bad, Finset.sum_disjSum, add_assoc] using hh
 
 /-- Main term and explicit errors; real exponents include the half powers. -/
-def wanMain (q k m : ℕ) : ℝ := (q : ℝ)^(m-k+1)
+def wanMain (q k m : ℕ) : ℝ := (q : ℝ) ^ (m - k + 1)
+/-- Error term for the unrestricted power-sum count in Proposition 2.3(i). -/
 def wanError (q k m : ℕ) : ℝ :=
-  (1/2 : ℝ) * (2*k : ℝ)^m * (q : ℝ)^(((m-k+2 : ℕ) : ℝ)/2)
+  (1 / 2 : ℝ) * (2 * k : ℝ) ^ m * (q : ℝ) ^ (((m - k + 2 : ℕ) : ℝ) / 2)
+/-- Error term for a prescribed collision in Proposition 2.3(ii). -/
 def wanCollisionError (q k m : ℕ) : ℝ :=
-  (1/2 : ℝ) * (2*k : ℝ)^(m-1) * (q : ℝ)^(((m-k+2 : ℕ) : ℝ)/2)
+  (1 / 2 : ℝ) * (2 * k : ℝ) ^ (m - 1) * (q : ℝ) ^ (((m - k + 2 : ℕ) : ℝ) / 2)
+/-- Error term for a prescribed coordinate in Proposition 2.3(iii). -/
 def wanCoordinateError (q k m : ℕ) : ℝ :=
-  (1/2 : ℝ) * (2*k : ℝ)^(m-1) * (q : ℝ)^(((m-k+1 : ℕ) : ℝ)/2)
+  (1 / 2 : ℝ) * (2 * k : ℝ) ^ (m - 1) * (q : ℝ) ^ (((m - k + 1 : ℕ) : ℝ) / 2)
 
 /-- Explicit, uniform finite version of the counting argument in
 `uniform-completions`, prior to estimating the errors asymptotically. -/
 theorem wan_good_count_bounds (hWan : WanPowerSumEstimates)
     (q : ℕ) (hq : q.Prime) (k m : ℕ) (hk : 2 ≤ k)
-    (hkm : k ≤ m-2) (hmq : m-2 < q-2) :
+    (hkm : k ≤ m - 2) (hmq : m - 2 < q - 2) :
     letI : NeZero q := ⟨hq.ne_zero⟩
     ∀ (b : PositiveMoment k → ZMod q) (P : Finset (ZMod q)),
     wanMain q k m - wanError q k m -
-        ((m : ℝ)^2 * ((q : ℝ)^(m-k) + wanCollisionError q k m) +
-         (m : ℝ)*P.card * ((q : ℝ)^(m-k) + wanCoordinateError q k m)) ≤
+        ((m : ℝ) ^ 2 * ((q : ℝ) ^ (m - k) + wanCollisionError q k m) +
+         (m : ℝ) * P.card * ((q : ℝ) ^ (m - k) + wanCoordinateError q k m)) ≤
         (goodPowerSumSolutions q k m b P).card ∧
     ((goodPowerSumSolutions q k m b P).card : ℝ) ≤
         wanMain q k m + wanError q k m := by
-  letI : NeZero q := ⟨hq.ne_zero⟩
+  let : NeZero q := ⟨hq.ne_zero⟩
   intro b P
   obtain ⟨hA, hC, hE⟩ := hWan q hq k m hk hkm hmq b
   let S := powerSumSolutions q k m b
@@ -175,38 +180,39 @@ theorem wan_good_count_bounds (hWan : WanPowerSumEstimates)
   let J := (Finset.univ : Finset (Fin m)).product P
   have hC' (p : Fin m × Fin m) (hp : p ∈ I) :
       (((S.filter fun z => z p.1 = z p.2).card : ℕ) : ℝ) ≤
-        (q : ℝ)^(m-k) + wanCollisionError q k m := by
+        (q : ℝ) ^ (m - k) + wanCollisionError q k m := by
     have hh := (abs_le.mp (hC p.1 p.2 (Finset.mem_filter.mp hp).2)).2
-    change _ ≤ _ + (1/2 : ℝ) * (2*k : ℝ)^(m-1) *
-      (q : ℝ)^(((m-k+2 : ℕ) : ℝ)/2)
+    change _ ≤ _ + (1 / 2 : ℝ) * (2 * k : ℝ) ^ (m - 1) *
+      (q : ℝ) ^ (((m - k + 2 : ℕ) : ℝ) / 2)
     linarith
   have hE' (p : Fin m × ZMod q) :
       (((S.filter fun z => z p.1 = p.2).card : ℕ) : ℝ) ≤
-        (q : ℝ)^(m-k) + wanCoordinateError q k m := by
+        (q : ℝ) ^ (m - k) + wanCoordinateError q k m := by
     have hh := (abs_le.mp (hE p.1 p.2)).2
-    change _ ≤ _ + (1/2 : ℝ) * (2*k : ℝ)^(m-1) *
-      (q : ℝ)^(((m-k+1 : ℕ) : ℝ)/2)
+    change _ ≤ _ + (1 / 2 : ℝ) * (2 * k : ℝ) ^ (m - 1) *
+      (q : ℝ) ^ (((m - k + 1 : ℕ) : ℝ) / 2)
     linarith
-  have hCI : (I.card : ℝ) ≤ (m : ℝ)^2 := by
+  have hCI : (I.card : ℝ) ≤ (m : ℝ) ^ 2 := by
     have hh := Finset.card_filter_le (Finset.univ : Finset (Fin m × Fin m))
       (fun p => p.1 ≠ p.2)
-    have hn : I.card ≤ m^2 := by simpa [I, pow_two] using hh
+    have hn : I.card ≤ m ^ 2 := by simpa [I, pow_two] using hh
     exact_mod_cast hn
   have hcol : ((∑ p ∈ I, (S.filter fun z => z p.1 = z p.2).card : ℕ) : ℝ) ≤
-      (m : ℝ)^2 * ((q : ℝ)^(m-k) + wanCollisionError q k m) := by
+      (m : ℝ) ^ 2 * ((q : ℝ) ^ (m - k) + wanCollisionError q k m) := by
     rw [Nat.cast_sum]
     calc
-      _ ≤ ∑ _ ∈ I, ((q : ℝ)^(m-k) + wanCollisionError q k m) :=
+      _ ≤ ∑ _ ∈ I, ((q : ℝ) ^ (m - k) + wanCollisionError q k m) :=
         Finset.sum_le_sum hC'
-      _ = (I.card : ℝ) * ((q : ℝ)^(m-k) + wanCollisionError q k m) := by simp only [Finset.sum_const, nsmul_eq_mul]
+      _ = (I.card : ℝ) * ((q : ℝ) ^ (m - k) + wanCollisionError q k m) := by
+        simp only [Finset.sum_const, nsmul_eq_mul]
       _ ≤ _ := mul_le_mul_of_nonneg_right hCI (by unfold wanCollisionError; positivity)
   have hJ : J.card = m * P.card := by
     exact (Finset.card_product (Finset.univ : Finset (Fin m)) P).trans (by simp)
   have hent : ((∑ p ∈ J, (S.filter fun z => z p.1 = p.2).card : ℕ) : ℝ) ≤
-      (m : ℝ)*P.card * ((q : ℝ)^(m-k) + wanCoordinateError q k m) := by
+      (m : ℝ) * P.card * ((q : ℝ) ^ (m - k) + wanCoordinateError q k m) := by
     rw [Nat.cast_sum]
     calc
-      _ ≤ ∑ _ ∈ J, ((q : ℝ)^(m-k) + wanCoordinateError q k m) :=
+      _ ≤ ∑ _ ∈ J, ((q : ℝ) ^ (m - k) + wanCoordinateError q k m) :=
         Finset.sum_le_sum (fun p _ => hE' p)
       _ = _ := by
         simp only [Finset.sum_const, nsmul_eq_mul]

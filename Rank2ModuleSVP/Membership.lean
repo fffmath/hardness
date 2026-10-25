@@ -1,8 +1,10 @@
 import Rank2ModuleSVP.MembershipAux
 
-/-! Polynomial-time verification for the prime-cyclotomic SVP language. -/
+/-! # Polynomial-time module-SVP verification
+
+Paper v2 §5.4: polynomial-time verification and NP membership from certificate bit bounds.
+-/
 namespace Rank2ModuleSVP.Membership
-set_option maxHeartbeats 600000
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 open Turing.MultiTapeTM Cslib.Complexity IdealCVP
@@ -53,7 +55,7 @@ attribute [local irreducible] List.getD
   unfold mul encRingArgs
   apply mapWithInput (encA := encUnary) (by fun_prop)
   have hl : ComputableTidilyInPolyTime
-      (fun p : RingArgs × ℕ => p.1.1-1)
+      (fun p : RingArgs × ℕ => p.1.1 - 1)
       (encPair encRingArgs encUnary) encUnary := by
     unfold encRingArgs
     fun_prop
@@ -80,7 +82,7 @@ attribute [local irreducible] List.getD
     apply mapWithInput (encA := encUnary) (by fun_prop)
     exact poly_coeff
   have ht : ComputableTidilyInPolyTime
-      (fun p : ℕ × List ℤ => ((List.range p.1).map fun i => (coeff p.1 p.2 i)^2).sum)
+      (fun p : ℕ × List ℤ => ((List.range p.1).map fun i => (coeff p.1 p.2 i) ^ 2).sum)
       (encPair encUnary (encList encIntBin)) encIntBin := by
     apply intBin_sum.comp
     apply mapWithInput (encA := encUnary) (by fun_prop)
@@ -137,25 +139,25 @@ theorem dimension_le_input_length (x : SVPInput) : x.q ≤ (encSVP x).length := 
 end Rank2ModuleSVP.Membership
 
 namespace Rank2ModuleSVP
-open Membership IdealCVP Turing.MultiTapeTM Cslib.Complexity
+open Rank2ModuleSVP.Membership IdealCVP Turing.MultiTapeTM Cslib.Complexity
 
 /-- Polynomial coefficient bits suffice; verifier compilation is unconditional.
 The remaining premise is an arithmetic small-preimage theorem, not an NP assumption. -/
 theorem moduleSVP_mem_NP_of_resource_bounds (B : Polynomial ℕ)
     (hcertificateBits : ∀ x : SVPInput, x ∈ ModuleSVPLang →
-      ∃ c : List ℤ × List ℤ, verifier (x,c) = true ∧
+      ∃ c : List ℤ × List ℤ, verifier (x, c) = true ∧
         ∀ z ∈ c.1 ++ c.2, z.natAbs.size ≤ B.eval (encSVP x).length) :
     ModuleSVPLang ∈ NP encSVP := by
-  have he : ModuleSVPLang = {x | ∃ c, verifier (x,c) = true} := by
+  have he : ModuleSVPLang = {x | ∃ c, verifier (x, c) = true} := by
     ext x
     exact moduleSVP_iff_exists_check x
   rw [he]
   apply mem_NP_of_witness (p := Membership.witnessPolynomial B)
     (intBinDecoder.list.pair intBinDecoder.list) poly_verifier (fun _ _ => Iff.rfl)
   intro x c hc
-  have hx := (moduleSVP_iff_exists_check x).mpr ⟨c,hc⟩
+  have hx := (moduleSVP_iff_exists_check x).mpr ⟨c, hc⟩
   obtain ⟨c', hc', hb⟩ := hcertificateBits x hx
-  obtain ⟨hl,hr,_,_⟩ := (verifier_spec x hx.1 c').mp hc'
+  obtain ⟨hl, hr, _, _⟩ := (verifier_spec x hx.1 c').mp hc'
   have hlen (l : List ℤ) (h : ∀ z ∈ l, z.natAbs.size ≤ B.eval (encSVP x).length) :
       (encList encIntBin l).length ≤ l.length * (2 * (B.eval (encSVP x).length + 1) + 1) := by
     apply length_encList_le
@@ -167,13 +169,12 @@ theorem moduleSVP_mem_NP_of_resource_bounds (B : Polynomial ℕ)
   have h₂ := hlen c'.2 (fun z hz => hb z (List.mem_append_right _ hz))
   have hd := dimension_le_input_length x
   refine ⟨c', hc', ?_⟩
-  change (encPair (encList encIntBin) (encList encIntBin) c').length ≤ _
   rw [length_encPair]
   simp only [Membership.witnessPolynomial, Polynomial.eval_add, Polynomial.eval_mul,
     Polynomial.eval_X, Polynomial.eval_ofNat, Polynomial.eval_one]
   rw [hl] at h₁
   rw [hr] at h₂
-  have hd' : x.q-1 ≤ (encSVP x).length := by omega
+  have hd' : x.q - 1 ≤ (encSVP x).length := by omega
   have hm := Nat.mul_le_mul_right (2 * (B.eval (encSVP x).length + 1) + 1) hd'
   nlinarith
 

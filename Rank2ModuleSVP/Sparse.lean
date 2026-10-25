@@ -1,6 +1,9 @@
 import Rank2ModuleSVP.PrimeCyclotomic
 
-/-! Integral sparsification and the second canonical shell. -/
+/-! # Integral sparsification and the second canonical shell
+
+Coefficient bounds used in paper v2 Lemma 3.5.
+-/
 namespace Rank2ModuleSVP
 open scoped BigOperators
 noncomputable section
@@ -27,7 +30,7 @@ theorem sparse_representative (v : IntegerRing q) :
     ∃ x : Coeff ℤ q, classOf x = v ∧ (q : ℤ) * supportCard x ≤ 2 * normSq v := by
   classical
   obtain ⟨z, rfl⟩ := classOf_surjective v
-  let row (a : ZMod q) : ℤ := ∑ b, (z b-z a)^2
+  let row (a : ZMod q) : ℤ := ∑ b, (z b - z a) ^ 2
   have hsum : ∑ a, (q : ℤ) * row a ≤ ∑ _a : ZMod q, 2 * coeffNormSq z := by
     rw [← Finset.mul_sum]
     have he : (∑ a, row a) = 2 * coeffNormSq z := by
@@ -36,7 +39,7 @@ theorem sparse_representative (v : IntegerRing q) :
     rw [he]
     simp [Finset.card_univ, ZMod.card]
   obtain ⟨a, _, ha⟩ := Finset.exists_le_of_sum_le Finset.univ_nonempty hsum
-  let x : Coeff ℤ q := fun b => z b-z a
+  let x : Coeff ℤ q := fun b => z b - z a
   refine ⟨x, ?_, ?_⟩
   · simpa only [x, sub_eq_add_neg] using classOf_add_constant z (-z a)
   · rw [normSq_classOf]
@@ -45,12 +48,11 @@ theorem sparse_representative (v : IntegerRing q) :
     exact (mul_le_mul_of_nonneg_left hc hq).trans ha
 
 /-- Paper `sparse-tools` (i), with a rational right-hand side. -/
-theorem sparse_tools_i (v : IntegerRing q) (_h : ((normSq v : ℤ) : ℚ) < (q : ℚ)^2 / 4) :
+theorem sparse_tools_i (v : IntegerRing q) (_h : ((normSq v : ℤ) : ℚ) < (q : ℚ) ^ 2 / 4) :
     ∃ x : Coeff ℤ q, classOf x = v ∧ (supportCard x : ℚ) ≤ 2 * ((normSq v : ℤ) : ℚ) / q := by
   obtain ⟨x, hx, hs⟩ := sparse_representative v
   refine ⟨x, hx, (le_div_iff₀ (by exact_mod_cast (NeZero.pos q))).mpr ?_⟩
   exact_mod_cast (by simpa [mul_comm] using hs)
-
 
 /-- Cauchy--Schwarz restricted to the support. -/
 theorem coeffNormSq_support_lower (x : Coeff ℤ q) :
@@ -62,7 +64,7 @@ theorem coeffNormSq_support_lower (x : Coeff ℤ q) :
     intro a _ ha
     simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_not] at ha
     exact ha
-  have hsq : ∑ a ∈ t, x a^2 = ∑ a, x a^2 := by
+  have hsq : ∑ a ∈ t, x a ^ 2 = ∑ a, x a ^ 2 := by
     apply Finset.sum_subset (Finset.filter_subset _ _)
     intro a _ ha
     simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_not] at ha
@@ -73,8 +75,8 @@ theorem coeffNormSq_support_lower (x : Coeff ℤ q) :
     exact_mod_cast (show supportCard x ≤ q from
       (Finset.card_filter_le _ _).trans_eq (by simp [Finset.card_univ, ZMod.card]))
   have hx := supportCard_le_sqNorm x
-  change (supportCard x : ℤ) ≤ ∑ a, x a^2 at hx
-  change (∑ a, x a)^2 ≤ (supportCard x : ℤ) * ∑ a, x a^2 at hc
+  change (supportCard x : ℤ) ≤ ∑ a, x a ^ 2 at hx
+  change (∑ a, x a) ^ 2 ≤ (supportCard x : ℤ) * ∑ a, x a ^ 2 at hc
   rw [coeffNormSq_eq]
   nlinarith [mul_nonneg (sub_nonneg.mpr hs) (sub_nonneg.mpr hx)]
 
@@ -82,7 +84,7 @@ theorem coeffNormSq_support_lower (x : Coeff ℤ q) :
 def IsSignedMonomial (v : IntegerRing q) : Prop :=
   ∃ j : ZMod q, v = monomial j ∨ v = -monomial j
 
-theorem normSq_monomial (j : ZMod q) : normSq (monomial j : IntegerRing q) = q-1 := by
+theorem normSq_monomial (j : ZMod q) : normSq (monomial j : IntegerRing q) = q - 1 := by
   have he : (monomial j : IntegerRing q) = classOf (fun a => if a = j then 1 else 0) := by
     unfold monomial classOf
     congr 1
@@ -92,7 +94,7 @@ theorem normSq_monomial (j : ZMod q) : normSq (monomial j : IntegerRing q) = q-1
   simp
 
 theorem normSq_signedMonomial {v : IntegerRing q} (hv : IsSignedMonomial v) :
-    normSq v = q-1 := by
+    normSq v = q - 1 := by
   obtain ⟨j, rfl | rfl⟩ := hv
   · exact normSq_monomial j
   · rw [normSq_neg, normSq_monomial]
@@ -100,9 +102,9 @@ theorem normSq_signedMonomial {v : IntegerRing q} (hv : IsSignedMonomial v) :
 /-- Paper `second-shell`: every nonzero class is a signed monomial, or has
 squared canonical norm at least `2q-4`. -/
 theorem second_shell (v : IntegerRing q) (hv : v ≠ 0) :
-    IsSignedMonomial v ∨ 2*(q : ℤ)-4 ≤ normSq v := by
+    IsSignedMonomial v ∨ 2 * (q : ℤ) - 4 ≤ normSq v := by
   classical
-  by_cases hn : 2*(q : ℤ)-4 ≤ normSq v
+  by_cases hn : 2 * (q : ℤ) - 4 ≤ normSq v
   · exact Or.inr hn
   left
   have hn := lt_of_not_ge hn
@@ -139,7 +141,7 @@ theorem second_shell (v : IntegerRing q) (hv : v ≠ 0) :
       rw [hj] at this
       exact ha (Finset.mem_singleton.mp this)
   have he : x = fun a => if a = j then x j else 0 := funext hcoord
-  have hNj : normSq v = ((q : ℤ)-1) * (x j)^2 := by
+  have hNj : normSq v = ((q : ℤ) - 1) * (x j) ^ 2 := by
     rw [← hnx, he, coeffNormSq_eq]
     simp
     ring

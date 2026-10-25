@@ -1,12 +1,15 @@
-import Rank2ModuleSVP.PrimeCyclotomic
-import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 import Mathlib.RingTheory.Ideal.Quotient.Operations
+import Rank2ModuleSVP.PrimeCyclotomic
 
-/-! Coefficient proofs of the trace, adjointness and quadratic estimates used by
- the checker. No complex embedding or field structure on the quotient is used. -/
+/-! # Canonical forms and checker inequalities
+
+Coefficient proofs of the trace, adjointness and quadratic estimates used by
+the checker in paper v2 §4, including the positive-checker identity of Lemma 4.2.
+No complex embedding or field structure on the quotient is used.
+-/
+
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-set_option maxHeartbeats 1200000
 
 namespace Rank2ModuleSVP.Checker
 open scoped BigOperators
@@ -16,7 +19,7 @@ variable {q : ℕ} [NeZero q]
 variable {R : Type*} [CommRing R]
 
 @[simp] theorem conjugate_add (v w : Cyclotomic R q) :
-    conjugate (v+w) = conjugate v + conjugate w := by
+    conjugate (v + w) = conjugate v + conjugate w := by
   obtain ⟨x, rfl⟩ := classOf_surjective v
   obtain ⟨y, rfl⟩ := classOf_surjective w
   simp only [← classOf_add, conjugate_classOf]
@@ -29,22 +32,21 @@ variable {R : Type*} [CommRing R]
   rfl
 
 @[simp] theorem conjugate_mul (v w : Cyclotomic R q) :
-    conjugate (v*w) = conjugate v * conjugate w := by
+    conjugate (v * w) = conjugate v * conjugate w := by
   obtain ⟨x, rfl⟩ := classOf_surjective v
   obtain ⟨y, rfl⟩ := classOf_surjective w
   rw [classOf_mul, conjugate_classOf, conjugate_classOf,
     conjugate_classOf, classOf_mul]
   congr 1
   funext a
-  change (∑ b, x b * y (-a-b)) = ∑ b, x (-b) * y (-(a-b))
+  change (∑ b, x b * y (-a - b)) = ∑ b, x (-b) * y (-(a - b))
   have he := (Equiv.sum_comp (Equiv.neg (ZMod q))
-    (fun b => x b * y (-a-b))).symm
-  change (∑ b, x b * y (-a-b)) = ∑ b, x (-b) * y (-a-(-b)) at he
+    (fun b => x b * y (-a - b))).symm
+  change (∑ b, x b * y (-a - b)) = ∑ b, x (-b) * y (-a - (-b)) at he
   rw [he]
   congr 1
   funext b
-  rw [show -a-(-b) = -(a-b) by abel]
-
+  rw [show - a - (-b) = -(a - b) by abel]
 
 theorem monomial_eq_classOf (j : ZMod q) :
     (monomial j : Cyclotomic R q) = classOf (fun a => if a = j then 1 else 0) := by
@@ -86,6 +88,7 @@ private theorem traceCoeff_class_eq {x y : Coeff R q}
     Finset.card_univ, ZMod.card, nsmul_eq_mul]
   ring
 
+/-- Trace on the cyclotomic quotient, induced by the coefficient trace. -/
 def trace (v : Cyclotomic R q) : R :=
   traceCoeff (fun a => (Ideal.Quotient.mk_surjective v).choose.coeff a)
 
@@ -94,7 +97,7 @@ def trace (v : Cyclotomic R q) : R :=
   simpa only [classOf, ofCoeff_coeff] using
     (Ideal.Quotient.mk_surjective (classOf x)).choose_spec
 
-@[simp] theorem trace_add (v w : Cyclotomic R q) : trace (v+w) = trace v + trace w := by
+@[simp] theorem trace_add (v w : Cyclotomic R q) : trace (v + w) = trace v + trace w := by
   obtain ⟨x, rfl⟩ := classOf_surjective v
   obtain ⟨y, rfl⟩ := classOf_surjective w
   simp [← classOf_add, traceCoeff, Finset.sum_add_distrib]
@@ -108,14 +111,14 @@ def trace (v : Cyclotomic R q) : R :=
 @[simp] theorem trace_zero : trace (0 : Cyclotomic R q) = 0 := by
   rw [← classOf_zero, trace_classOf]; simp [traceCoeff]
 
-@[simp] theorem trace_sub (v w : Cyclotomic R q) : trace (v-w) = trace v - trace w := by
+@[simp] theorem trace_sub (v w : Cyclotomic R q) : trace (v - w) = trace v - trace w := by
   simp [sub_eq_add_neg]
 
 private theorem sum_convolution (x y : Coeff R q) :
-    (∑ a, ∑ b, x b * y (a-b)) = (∑ a, x a) * (∑ a, y a) := by
+    (∑ a, ∑ b, x b * y (a - b)) = (∑ a, x a) * (∑ a, y a) := by
   rw [Finset.sum_comm]
   simp only [← Finset.mul_sum]
-  have hs (b : ZMod q) : (∑ a, y (a-b)) = ∑ a, y a :=
+  have hs (b : ZMod q) : (∑ a, y (a - b)) = ∑ a, y a :=
     Equiv.sum_comp (Equiv.subRight b) y
   simp_rw [hs]
   rw [Finset.sum_mul]
@@ -142,7 +145,7 @@ theorem inner_symm (v w : Cyclotomic R q) : inner v w = inner w v := by
   simp [coeffNormSq]
 
 @[simp] theorem inner_add_left (u v w : Cyclotomic R q) :
-    inner (u+v) w = inner u w + inner v w := by simp [inner, add_mul]
+    inner (u + v) w = inner u w + inner v w := by simp [inner, add_mul]
 
 @[simp] theorem inner_neg_left (v w : Cyclotomic R q) :
     inner (-v) w = -inner v w := by
@@ -150,7 +153,7 @@ theorem inner_symm (v w : Cyclotomic R q) : inner v w = inner w v := by
   rfl
 
 @[simp] theorem inner_add_right (u v w : Cyclotomic R q) :
-    inner u (v+w) = inner u v + inner u w := by simp [inner, mul_add]
+    inner u (v + w) = inner u v + inner u w := by simp [inner, mul_add]
 
 @[simp] theorem inner_neg_right (v w : Cyclotomic R q) :
     inner v (-w) = -inner v w := by
@@ -159,19 +162,19 @@ theorem inner_symm (v w : Cyclotomic R q) : inner v w = inner w v := by
 
 /-- Multiplication and conjugation are adjoint for the canonical form. -/
 theorem inner_adjoint (u v w : Cyclotomic R q) :
-    inner (u*v) w = inner v (conjugate u*w) := by
+    inner (u * v) w = inner v (conjugate u * w) := by
   simp only [inner, conjugate_mul, conjugate_conjugate]
   congr 1
   ring
 
 theorem normSq_add (v w : Cyclotomic R q) :
-    normSq (v+w) = normSq v + 2*inner v w + normSq w := by
+    normSq (v + w) = normSq v + 2 * inner v w + normSq w := by
   rw [← inner_self, inner_add_left, inner_add_right, inner_add_right,
     inner_self, inner_self, inner_symm w v]
   ring
 
 theorem normSq_sub (v w : Cyclotomic R q) :
-    normSq (v-w) = normSq v - 2*inner v w + normSq w := by
+    normSq (v - w) = normSq v - 2 * inner v w + normSq w := by
   rw [sub_eq_add_neg, normSq_add, inner_neg_right, normSq_neg]
   ring
 
@@ -211,7 +214,7 @@ section Rational
   rw [inner_symm, inner_smul_left, inner_symm]
 
 @[simp] theorem normSq_smul (c : ℚ) (v : RationalRing q) :
-    normSq (c • v) = c^2 * normSq v := by
+    normSq (c • v) = c ^ 2 * normSq v := by
   rw [← inner_self, inner_smul_left, inner_smul_right, inner_self]
   ring
 
@@ -236,11 +239,11 @@ theorem inner_sum_right {ι : Type*} (s : Finset ι) (f : ι → RationalRing q)
   exact inner_symm _ _
 
 theorem inner_classOf_monomial (x : Coeff ℚ q) (j : ZMod q) :
-    inner (classOf x) (monomial j) = (q : ℚ)*x j-∑ a, x a := by
+    inner (classOf x) (monomial j) = (q : ℚ) * x j-∑ a, x a := by
   rw [monomial_eq_classOf, inner_classOf]
   simp [canonicalForm, mul_ite]
 
-theorem normSq_one : normSq (1 : RationalRing q) = (q : ℚ)-1 := by
+theorem normSq_one : normSq (1 : RationalRing q) = (q : ℚ) - 1 := by
   have hm : (monomial 0 : RationalRing q) = 1 := by
     simp [monomial, ← AddMonoidAlgebra.one_def]
   rw [← hm, monomial_eq_classOf, normSq_classOf, coeffNormSq_eq]
@@ -252,7 +255,7 @@ def rationalize : IntegerRing q →+* RationalRing q :=
     ((Ideal.Quotient.mk (cyclotomicIdeal : Ideal (Cyclic ℚ q))).comp
       (AddMonoidAlgebra.mapRingHom (ZMod q) (Int.castRingHom ℚ))) (by
     intro a ha
-    obtain ⟨c,hc⟩ := mem_cyclotomicIdeal_iff a |>.mp ha
+    obtain ⟨c, hc⟩ := mem_cyclotomicIdeal_iff a |>.mp ha
     apply Ideal.Quotient.eq_zero_iff_mem.mpr
     apply mem_cyclotomicIdeal_iff _ |>.mpr
     exact ⟨(c : ℚ), fun b => by simp [hc b]⟩)
@@ -266,7 +269,7 @@ def rationalize : IntegerRing q →+* RationalRing q :=
 
 @[simp] theorem rationalize_conjugate (v : IntegerRing q) :
     rationalize (conjugate v) = conjugate (rationalize v) := by
-  obtain ⟨x,rfl⟩ := classOf_surjective v
+  obtain ⟨x, rfl⟩ := classOf_surjective v
   simp only [conjugate_classOf, rationalize_classOf]
   rfl
 
@@ -290,24 +293,24 @@ section RationalEstimates
 
 /-- Young's inequality, obtained directly from positivity of the canonical form. -/
 theorem inner_young (r : ℚ) (hr : 0 < r) (v w : RationalRing q) :
-    2*inner v w ≤ r*normSq v + r⁻¹*normSq w := by
-  have h := normSq_nonneg (r • v-w)
+    2 * inner v w ≤ r * normSq v + r⁻¹ * normSq w := by
+  have h := normSq_nonneg (r • v - w)
   rw [normSq_sub, normSq_smul, inner_smul_left] at h
   apply (mul_le_mul_iff_right₀ hr).mp
-  have he : r*(r*normSq v+r⁻¹*normSq w) = r^2*normSq v+normSq w := by
-    have hi : r⁻¹*r = 1 := inv_mul_cancel₀ (ne_of_gt hr)
+  have he : r * (r * normSq v + r⁻¹ * normSq w) = r ^ 2 * normSq v + normSq w := by
+    have hi : r⁻¹ * r = 1 := inv_mul_cancel₀ (ne_of_gt hr)
     calc
-      r*(r*normSq v+r⁻¹*normSq w) =
-        r^2*normSq v+(r⁻¹*r)*normSq w := by ring
+      r * (r * normSq v + r⁻¹ * normSq w) =
+        r ^ 2 * normSq v + (r⁻¹ * r) * normSq w := by ring
       _ = _ := by rw [hi, one_mul]
   rw [he]
   nlinarith [h]
 
 theorem normSq_sum_le_card_sum {ι : Type*} (s : Finset ι)
     (f : ι → RationalRing q) :
-    normSq (∑ i ∈ s, f i) ≤ (s.card : ℚ)*(∑ i ∈ s, normSq (f i)) := by
-  have hh : (∑ i ∈ s, ∑ j ∈ s, 2*inner (f i) (f j)) ≤
-      ∑ i ∈ s, ∑ j ∈ s, (normSq (f i)+normSq (f j)) := by
+    normSq (∑ i ∈ s, f i) ≤ (s.card : ℚ) * (∑ i ∈ s, normSq (f i)) := by
+  have hh : (∑ i ∈ s, ∑ j ∈ s, 2 * inner (f i) (f j)) ≤
+      ∑ i ∈ s, ∑ j ∈ s, (normSq (f i) + normSq (f j)) := by
     apply Finset.sum_le_sum
     intro i hi
     apply Finset.sum_le_sum
@@ -317,116 +320,63 @@ theorem normSq_sum_le_card_sum {ι : Type*} (s : Finset ι)
     rw [← inner_self, inner_sum_left]
     simp_rw [inner_sum_right]
   simp only [← Finset.mul_sum, Finset.sum_add_distrib, Finset.sum_const,
-    nsmul_eq_mul, ← Finset.sum_mul] at hh
+    nsmul_eq_mul] at hh
   rw [← he] at hh
   linarith
 
 theorem normSq_sum_monomial_mul_le {ι : Type*} (s : Finset ι)
     (a : ι → ZMod q) (w : RationalRing q) :
-    normSq ((∑ i ∈ s, monomial (a i))*w) ≤ (s.card : ℚ)^2*normSq w := by
+    normSq ((∑ i ∈ s, monomial (a i)) * w) ≤ (s.card : ℚ) ^ 2 * normSq w := by
   rw [Finset.sum_mul]
-  have hh := normSq_sum_le_card_sum s (fun i => monomial (a i)*w)
+  have hh := normSq_sum_le_card_sum s (fun i => monomial (a i) * w)
   simpa [normSq_monomial_mul, pow_two, mul_assoc] using hh
-
-/-- Cauchy--Schwarz for the descended canonical form. -/
-theorem inner_sq_le (v w : RationalRing q) : (inner v w)^2 ≤ normSq v*normSq w := by
-  by_cases hw : normSq w = 0
-  · have hw0 := (normSq_eq_zero_iff w).mp hw
-    subst w
-    simp
-  have hwpos : 0 < normSq w := lt_of_le_of_ne (normSq_nonneg w) (Ne.symm hw)
-  have hh := normSq_nonneg (normSq w • v-inner v w • w)
-  rw [normSq_sub, normSq_smul, normSq_smul, inner_smul_left, inner_smul_right] at hh
-  have he : (normSq w)^2*normSq v-
-      2*(normSq w*(inner v w*inner v w))+(inner v w)^2*normSq w =
-      normSq w*(normSq v*normSq w-(inner v w)^2) := by ring
-  rw [he] at hh
-  have hnonneg : 0 ≤ normSq v*normSq w-(inner v w)^2 := by
-    by_contra hn
-    have hneg := mul_neg_of_pos_of_neg hwpos (lt_of_not_ge hn)
-    linarith
-  linarith
-
-/-- A finite dimensional model is enough to invert any norm-expanding multiplier. -/
-def classLinear : Coeff ℚ q →ₗ[ℚ] RationalRing q where
-  toFun := classOf
-  map_add' := classOf_add
-  map_smul' := classOf_smul
-
-instance finiteDimensional : FiniteDimensional ℚ (RationalRing q) :=
-  Module.Finite.of_surjective (classLinear (q := q)) classOf_surjective
-
-theorem isUnit_of_norm_expanding (u : RationalRing q)
-    (hu : ∀ y, normSq y ≤ normSq (u*y)) : IsUnit u := by
-  have hinj : Function.Injective (LinearMap.mulLeft ℚ u) := by
-    intro v w h
-    apply sub_eq_zero.mp
-    apply (normSq_eq_zero_iff _).mp
-    have hh := hu (v-w)
-    have hz : u*(v-w) = 0 := by simpa [mul_sub] using sub_eq_zero.mpr h
-    rw [hz] at hh
-    have hn := normSq_nonneg (v-w)
-    have h0 : normSq (0 : RationalRing q) = 0 := (normSq_eq_zero_iff _).mpr rfl
-    rw [h0] at hh
-    exact le_antisymm hh hn
-  obtain ⟨v, hv⟩ := LinearMap.surjective_of_injective hinj 1
-  change u*v = 1 at hv
-  exact ⟨⟨u,v,hv,by simpa only [mul_comm] using hv⟩,rfl⟩
 
 /-- The positive integral checker multiplier, extended to the rational quotient. -/
 def positiveChecker (Q : ℚ) (g : RationalRing q) : RationalRing q :=
-  Q • 1 + g^2
+  Q • 1 + g ^ 2
 
 /-- Self-adjointness converts the cross term to a squared norm. -/
 theorem inner_sq_mul (g y : RationalRing q) (hg : conjugate g = g) :
-    inner y (g^2*y) = normSq (g*y) := by
-  rw [← inner_self (g*y), inner_adjoint, hg]
+    inner y (g ^ 2 * y) = normSq (g * y) := by
+  rw [← inner_self (g * y), inner_adjoint, hg]
   congr 1
   ring
 
 /-- Lemma 4.2's exact identity, proved in the quotient coefficient model. -/
 theorem positiveChecker_norm_exact (Q : ℚ) (g y : RationalRing q)
     (hg : conjugate g = g) :
-    normSq (positiveChecker Q g*y) =
-      Q^2*normSq y + 2*Q*normSq (g*y) + normSq (g^2*y) := by
+    normSq (positiveChecker Q g * y) =
+      Q ^ 2 * normSq y + 2 * Q * normSq (g * y) + normSq (g ^ 2 * y) := by
   rw [positiveChecker, add_mul, smul_mul_assoc, one_mul, normSq_add,
     normSq_smul, inner_smul_left, inner_sq_mul g y hg]
   ring
 
 theorem positiveChecker_norm_lower (Q : ℚ) (hQ : 0 ≤ Q)
     (g y : RationalRing q) (hg : conjugate g = g) :
-    Q^2*normSq y ≤ normSq (positiveChecker Q g*y) := by
+    Q ^ 2 * normSq y ≤ normSq (positiveChecker Q g * y) := by
   rw [positiveChecker_norm_exact Q g y hg]
-  have := normSq_nonneg (g^2*y)
-  have := mul_nonneg (show 0 ≤ 2*Q by positivity) (normSq_nonneg (g*y))
+  have := normSq_nonneg (g ^ 2 * y)
+  have := mul_nonneg (show 0 ≤ 2 * Q by positivity) (normSq_nonneg (g * y))
   linarith
 
 theorem positiveChecker_value_norm (Q : ℚ) (g v y : RationalRing q)
     (hg : conjugate g = g) :
-    normSq (positiveChecker Q g*y-v) =
-      Q^2*normSq y + 2*Q*(normSq (g*y)-inner y v) + normSq (g^2*y-v) := by
-  have he : positiveChecker Q g*y-v = Q • y + (g^2*y-v) := by
-    simp [positiveChecker, add_mul, smul_mul_assoc]
+    normSq (positiveChecker Q g * y - v) =
+      Q ^ 2 * normSq y + 2 * Q * (normSq (g * y) - inner y v) + normSq (g ^ 2 * y - v) := by
+  have he : positiveChecker Q g * y - v = Q • y + (g ^ 2 * y - v) := by
+    simp [positiveChecker, add_mul]
     ring
   rw [he, normSq_add, normSq_smul, inner_smul_left]
-  have hi : inner y (g^2*y-v) = normSq (g*y)-inner y v := by
+  have hi : inner y (g ^ 2 * y - v) = normSq (g * y) - inner y v := by
     rw [sub_eq_add_neg, inner_add_right, inner_neg_right, inner_sq_mul g y hg]
     ring
   rw [hi]
   ring
 
-/-- Squared triangle inequality with a convenient factor two. -/
-theorem normSq_sub_le_two (v w : RationalRing q) :
-    normSq (v-w) ≤ 2*normSq v+2*normSq w := by
-  have h := inner_young 1 (by norm_num) v (-w)
-  simp only [one_mul, inv_one, inner_neg_right, normSq_neg] at h
-  rw [normSq_sub]
-  linarith
-
 /-- A weighted squared triangle bound suited to Q = 128 W⁴ h. -/
 theorem normSq_sub_le_three_halves (v w : RationalRing q) :
-    normSq (v-w) ≤ (3/2 : ℚ)*normSq v+3*normSq w := by
-  have h := inner_young (1/2) (by norm_num) v (-w)
+    normSq (v - w) ≤ (3 / 2 : ℚ) * normSq v + 3 * normSq w := by
+  have h := inner_young (1 / 2) (by norm_num) v (-w)
   simp only [inner_neg_right, normSq_neg] at h
   norm_num at h
   rw [normSq_sub]
@@ -436,62 +386,23 @@ theorem normSq_sub_le_three_halves (v w : RationalRing q) :
 premises are precisely the multiplier bounds proved for U and V. -/
 theorem global_stability_exact (u v y w : RationalRing q) (Γ ν : ℚ)
     (hν : 0 < ν) (hν1 : ν < 1)
-    (hu : normSq y ≤ normSq (u*y))
-    (hv : normSq (v*w) ≤ ν^2*Γ^2*normSq w) :
-    (1-ν)*(normSq y+Γ^2*normSq w) ≤
-      normSq (u*y-v*w)+Γ^2*normSq w := by
-  have hy := inner_young ν hν (u*y) (v*w)
-  have hn := normSq_nonneg (v*w)
-  have hb : ν⁻¹*normSq (v*w) ≤ ν*Γ^2*normSq w := by
+    (hu : normSq y ≤ normSq (u * y))
+    (hv : normSq (v * w) ≤ ν ^ 2 * Γ ^ 2 * normSq w) :
+    (1 - ν) * (normSq y + Γ ^ 2 * normSq w) ≤
+      normSq (u * y - v * w) + Γ ^ 2 * normSq w := by
+  have hy := inner_young ν hν (u * y) (v * w)
+  have hn := normSq_nonneg (v * w)
+  have hb : ν⁻¹ * normSq (v * w) ≤ ν * Γ ^ 2 * normSq w := by
     have hm := mul_le_mul_of_nonneg_left hv (inv_nonneg.mpr hν.le)
-    have hi : ν⁻¹*ν = 1 := inv_mul_cancel₀ (ne_of_gt hν)
+    have hi : ν⁻¹ * ν = 1 := inv_mul_cancel₀ (ne_of_gt hν)
     calc
-      ν⁻¹*normSq (v*w) ≤ ν⁻¹*(ν^2*Γ^2*normSq w) := hm
-      _ = ν*Γ^2*normSq w := by
+      ν⁻¹ * normSq (v * w) ≤ ν⁻¹ * (ν ^ 2 * Γ ^ 2 * normSq w) := hm
+      _ = ν * Γ ^ 2 * normSq w := by
         calc
-          ν⁻¹*(ν^2*Γ^2*normSq w) = (ν⁻¹*ν)*ν*Γ^2*normSq w := by ring
+          ν⁻¹ * (ν ^ 2 * Γ ^ 2 * normSq w) = (ν⁻¹ * ν) * ν * Γ ^ 2 * normSq w := by ring
           _ = _ := by rw [hi, one_mul]
   rw [normSq_sub]
-  nlinarith [mul_nonneg (show 0 ≤ 1-ν by linarith) (sub_nonneg.mpr hu)]
-
-private theorem real_young_of_sq_le (a b c r : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b)
-    (hr : 0 < r) (hc : c^2 ≤ a*b) : 2*c ≤ r*a+r⁻¹*b := by
-  have hp : (r*a)*(r⁻¹*b) = a*b := by
-    calc
-      (r*a)*(r⁻¹*b) = (r*r⁻¹)*(a*b) := by ring
-      _ = _ := by rw [mul_inv_cancel₀ (ne_of_gt hr), one_mul]
-  have h₁ := mul_nonneg hr.le ha
-  have h₂ := mul_nonneg (inv_nonneg.mpr hr.le) hb
-  rw [← hp] at hc
-  nlinarith [sq_nonneg (r*a-r⁻¹*b)]
-
-/-- The real-parameter version allows every positive real Γ in the paper. -/
-theorem global_stability_exact_real (u v y w : RationalRing q) (Γ ν : ℝ)
-    (hν : 0 < ν) (hν1 : ν < 1)
-    (hu : normSq y ≤ normSq (u*y))
-    (hv : ((normSq (v*w) : ℚ) : ℝ) ≤ ν^2*Γ^2*((normSq w : ℚ) : ℝ)) :
-    (1-ν)*(((normSq y : ℚ) : ℝ)+Γ^2*((normSq w : ℚ) : ℝ)) ≤
-      ((normSq (u*y-v*w) : ℚ) : ℝ)+Γ^2*((normSq w : ℚ) : ℝ) := by
-  have ha : (0 : ℝ) ≤ ((normSq (u*y) : ℚ) : ℝ) := by exact_mod_cast normSq_nonneg (u*y)
-  have hb : (0 : ℝ) ≤ ((normSq (v*w) : ℚ) : ℝ) := by exact_mod_cast normSq_nonneg (v*w)
-  have hc : ((inner (u*y) (v*w) : ℚ) : ℝ)^2 ≤
-      ((normSq (u*y) : ℚ) : ℝ)*((normSq (v*w) : ℚ) : ℝ) := by
-    exact_mod_cast inner_sq_le (u*y) (v*w)
-  have hy := real_young_of_sq_le _ _ _ ν ha hb hν hc
-  have hbound : ν⁻¹*((normSq (v*w) : ℚ) : ℝ) ≤ ν*Γ^2*((normSq w : ℚ) : ℝ) := by
-    have hm := mul_le_mul_of_nonneg_left hv (inv_nonneg.mpr hν.le)
-    calc
-      ν⁻¹*((normSq (v*w) : ℚ) : ℝ) ≤ ν⁻¹*(ν^2*Γ^2*((normSq w : ℚ) : ℝ)) := hm
-      _ = ν*Γ^2*((normSq w : ℚ) : ℝ) := by
-        calc
-          _ = (ν⁻¹*ν)*ν*Γ^2*((normSq w : ℚ) : ℝ) := by ring
-          _ = _ := by rw [inv_mul_cancel₀ (ne_of_gt hν), one_mul]
-  have hu' : ((normSq y : ℚ) : ℝ) ≤ ((normSq (u*y) : ℚ) : ℝ) := by exact_mod_cast hu
-  have he := congrArg (fun a : ℚ => (a : ℝ)) (normSq_sub (u*y) (v*w))
-  push_cast at he
-  rw [he]
-  nlinarith [mul_nonneg (show (0 : ℝ) ≤ 1-ν by linarith) (sub_nonneg.mpr hu')]
-
+  nlinarith [mul_nonneg (show 0 ≤ 1 - ν by linarith) (sub_nonneg.mpr hu)]
 
 end RationalEstimates
 end

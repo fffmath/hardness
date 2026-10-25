@@ -1,14 +1,18 @@
-import Rank2ModuleSVP.Wan
-import Rank2ModuleSVP.Descent
 import Mathlib.Data.Fintype.CardEmbedding
+import Rank2ModuleSVP.Descent
+import Rank2ModuleSVP.Wan
+
+/-! # Binary completions and finite counting
+
+Finite counting for the binary completions used in paper v2 §3.2. The combinatorial results below
+have explicit numerical premises, so the remaining asymptotic estimates can be
+proved independently of the finite counting and of the cyclotomic model.
+-/
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 set_option maxRecDepth 4096
 
-/-! Binary completions and finite counting. The combinatorial results below
-have explicit numerical premises, so the remaining asymptotic estimates can be
-proved independently of the finite counting and of the cyclotomic model. -/
 namespace Rank2ModuleSVP
 open scoped BigOperators
 noncomputable section
@@ -97,13 +101,15 @@ variable {q : ℕ} [NeZero q]
 def binaryIndicator (s : Finset (ZMod q)) : Coeff ℤ q :=
   fun a => if a ∈ s then 1 else 0
 
+omit [NeZero q] in
 @[simp] theorem binaryIndicator_one (s : Finset (ZMod q)) (a : ZMod q) :
     binaryIndicator s a = 1 ↔ a ∈ s := by simp [binaryIndicator]
 
 @[simp] theorem binaryIndicator_sum (s : Finset (ZMod q)) :
     (∑ a, binaryIndicator s a) = (s.card : ℤ) := by
-  simp [binaryIndicator, ← Finset.sum_filter]
+  simp [binaryIndicator]
 
+omit [NeZero q] in
 theorem binaryIndicator_injective : Function.Injective (binaryIndicator (q := q)) := by
   intro s t h
   ext a
@@ -146,7 +152,7 @@ def completions (k h : ℕ) (u : Fin k → ZMod q)
     x ∈ completions k h u P η ↔
       IsBinary x ∧ syndrome k x = u ∧ (∑ a, x a) = (h : ℤ) ∧
         ∀ a ∈ P, x a = η a := by
-  simp [completions, and_assoc]
+  simp [completions]
 
 /-- Support of an integral binary vector. -/
 def binarySupport (x : Coeff ℤ q) : Finset (ZMod q) :=
@@ -270,20 +276,20 @@ theorem card_orderedCompletions (k h m : ℕ) (u : Fin k → ZMod q)
 
 /-- The support definition has the intended power-sum syndrome. -/
 theorem syndrome_binaryIndicator (k : ℕ) (s : Finset (ZMod q)) (j : Fin k) :
-    syndrome k (binaryIndicator s) j = ∑ a ∈ s, a^j.val := by
+    syndrome k (binaryIndicator s) j = ∑ a ∈ s, a ^ j.val := by
   classical
-  simp [syndrome, binaryIndicator, ← Finset.sum_filter]
+  simp [syndrome, binaryIndicator]
 
 /-- The shifted positive syndrome from `eq:shifted-syndrome`. -/
 def shiftedMoment (k : ℕ) (u : Fin k → ZMod q)
     (P : Finset (ZMod q)) (η : Coeff ℤ q) : PositiveMoment k → ZMod q :=
-  fun j => u j.val - ∑ a ∈ P, (η a : ZMod q) * a^j.val.val
+  fun j => u j.val - ∑ a ∈ P, (η a : ZMod q) * a ^ j.val.val
 
 /-- Insert the prescribed ones into a free support and add their moments. -/
 theorem syndrome_insert_free (k : ℕ) (s P : Finset (ZMod q)) (η : Coeff ℤ q)
     (hs : Disjoint s P) (hη : ∀ a ∈ P, η a = 0 ∨ η a = 1) (j : Fin k) :
     syndrome k (binaryIndicator (s ∪ fixedOnes P η)) j =
-      (∑ a ∈ s, a^j.val) + ∑ a ∈ P, (η a : ZMod q) * a^j.val := by
+      (∑ a ∈ s, a ^ j.val) + ∑ a ∈ P, (η a : ZMod q) * a ^ j.val := by
   have hd : Disjoint s (fixedOnes P η) :=
     hs.mono_right (Finset.filter_subset _ _)
   rw [syndrome_binaryIndicator, Finset.sum_union hd]
@@ -298,7 +304,7 @@ theorem syndrome_insert_tuple (k m : ℕ) (z : Fin m → ZMod q)
     (hz : Function.Injective z) (P : Finset (ZMod q)) (η : Coeff ℤ q)
     (hav : ∀ i, z i ∉ P) (hη : ∀ a ∈ P, η a = 0 ∨ η a = 1) (j : Fin k) :
     syndrome k (binaryIndicator (Finset.univ.image z ∪ fixedOnes P η)) j =
-      (∑ i, z i^j.val) + ∑ a ∈ P, (η a : ZMod q) * a^j.val := by
+      (∑ i, z i ^ j.val) + ∑ a ∈ P, (η a : ZMod q) * a ^ j.val := by
   have hd : Disjoint (Finset.univ.image z) P := by
     apply Finset.disjoint_left.mpr
     intro a ha hp
@@ -310,7 +316,7 @@ theorem syndrome_insert_tuple (k m : ℕ) (z : Fin m → ZMod q)
 /-- The tuple description is exactly Wan's distinct, avoiding solution set
 for the shifted positive syndrome, including the forced zeroth equation. -/
 theorem orderedCompletions_eq_good (k h m : ℕ) (hk : 0 < k)
-    (u : Fin k → ZMod q) (hu : u ⟨0,hk⟩ = (h : ZMod q))
+    (u : Fin k → ZMod q) (hu : u ⟨0, hk⟩ = (h : ZMod q))
     (P : Finset (ZMod q)) (η : Coeff ℤ q)
     (hη : ∀ a ∈ P, η a = 0 ∨ η a = 1)
     (hm : m + (fixedOnes P η).card = h) :
@@ -344,7 +350,7 @@ theorem orderedCompletions_eq_good (k h m : ℕ) (hk : 0 < k)
     refine ⟨hinj, hd, by omega, ?_⟩
     funext j
     by_cases hj : j.val = 0
-    · have hj0 : j = ⟨0,hk⟩ := Fin.ext hj
+    · have hj0 : j = ⟨0, hk⟩ := Fin.ext hj
       subst j
       rw [hu]
       have hdis : Disjoint (Finset.univ.image z) (fixedOnes P η) :=
@@ -355,13 +361,13 @@ theorem orderedCompletions_eq_good (k h m : ℕ) (hk : 0 < k)
       simpa using congrArg (fun n : ℕ => (n : ZMod q)) hcard
     · have hjpos : 0 < j.val := Nat.pos_of_ne_zero hj
       rw [syndrome_insert_tuple k m z hinj P η hav hη j]
-      have he := hpos ⟨j,hjpos⟩
+      have he := hpos ⟨j, hjpos⟩
       dsimp [shiftedMoment] at he
       exact eq_sub_iff_add_eq.mp he
 
 /-- The paper's exact identity connecting binary completions to Wan's count. -/
 theorem factorial_mul_card_completions (k h m : ℕ) (hk : 0 < k)
-    (u : Fin k → ZMod q) (hu : u ⟨0,hk⟩ = (h : ZMod q))
+    (u : Fin k → ZMod q) (hu : u ⟨0, hk⟩ = (h : ZMod q))
     (P : Finset (ZMod q)) (η : Coeff ℤ q)
     (hη : ∀ a ∈ P, η a = 0 ∨ η a = 1)
     (hm : m + (fixedOnes P η).card = h) :
@@ -375,14 +381,14 @@ hypothesis. The expression is multiplied by m!, avoiding divisions and any
 positivity side conditions on the main term. -/
 theorem completions_count_bounds (hWan : WanPowerSumEstimates)
     (hq : q.Prime) (k h m : ℕ) (hk : 2 ≤ k)
-    (hkm : k ≤ m-2) (hmq : m-2 < q-2)
-    (u : Fin k → ZMod q) (hu : u ⟨0,by omega⟩ = (h : ZMod q))
+    (hkm : k ≤ m - 2) (hmq : m - 2 < q - 2)
+    (u : Fin k → ZMod q) (hu : u ⟨0, by omega⟩ = (h : ZMod q))
     (P : Finset (ZMod q)) (η : Coeff ℤ q)
     (hη : ∀ a ∈ P, η a = 0 ∨ η a = 1)
     (hm : m + (fixedOnes P η).card = h) :
     wanMain q k m - wanError q k m -
-        ((m : ℝ)^2 * ((q : ℝ)^(m-k) + wanCollisionError q k m) +
-         (m : ℝ)*P.card * ((q : ℝ)^(m-k) + wanCoordinateError q k m)) ≤
+        ((m : ℝ) ^ 2 * ((q : ℝ) ^ (m - k) + wanCollisionError q k m) +
+         (m : ℝ) * P.card * ((q : ℝ) ^ (m - k) + wanCoordinateError q k m)) ≤
       (m.factorial : ℝ) * (completions k h u P η).card ∧
     (m.factorial : ℝ) * (completions k h u P η).card ≤
       wanMain q k m + wanError q k m := by
@@ -393,28 +399,6 @@ theorem completions_count_bounds (hWan : WanPowerSumEstimates)
       (goodPowerSumSolutions q k m (shiftedMoment k u P η) P).card := by
     exact_mod_cast he
   rwa [← he'] at hh
-
-/-- Positivity follows directly once the explicit error budget is smaller than
-Wan's main term. This isolates precisely the analytic obligation. -/
-theorem completions_nonempty_of_error_budget (hWan : WanPowerSumEstimates)
-    (hq : q.Prime) (k h m : ℕ) (hk : 2 ≤ k)
-    (hkm : k ≤ m-2) (hmq : m-2 < q-2)
-    (u : Fin k → ZMod q) (hu : u ⟨0,by omega⟩ = (h : ZMod q))
-    (P : Finset (ZMod q)) (η : Coeff ℤ q)
-    (hη : ∀ a ∈ P, η a = 0 ∨ η a = 1)
-    (hm : m + (fixedOnes P η).card = h)
-    (herr : wanError q k m +
-        ((m : ℝ)^2 * ((q : ℝ)^(m-k) + wanCollisionError q k m) +
-         (m : ℝ)*P.card * ((q : ℝ)^(m-k) + wanCoordinateError q k m)) <
-      wanMain q k m) :
-    (completions k h u P η).Nonempty := by
-  have hh := (completions_count_bounds hWan hq k h m hk hkm hmq
-    u hu P η hη hm).1
-  apply Finset.card_pos.mp
-  by_contra hn
-  have he : (completions k h u P η).card = 0 := by omega
-  rw [he, Nat.cast_zero, mul_zero] at hh
-  linarith
 
 /-- Additional prescribed ones, the event used in the fixed-coordinate ratio. -/
 def completionEvent (F : Finset (Coeff ℤ q)) (Q : Finset (ZMod q)) :
@@ -448,7 +432,7 @@ This is the exact interface used to apply a one/two coordinate ratio bound. -/
 theorem pairEvent_subset_completionEvent (F : Finset (Coeff ℤ q))
     (P : Finset (ZMod q)) (a b : ZMod q) :
     (F.filter fun x => x a = 1 ∧ x b = 1) ⊆
-      completionEvent F ({a,b} \ P) := by
+      completionEvent F ({a, b} \ P) := by
   intro x hx
   obtain ⟨hxF, hxa, hxb⟩ := Finset.mem_filter.mp hx
   apply Finset.mem_filter.mpr
@@ -463,27 +447,23 @@ theorem pairEvent_subset_completionEvent (F : Finset (Coeff ℤ q))
 theorem card_pairEvent_le (F : Finset (Coeff ℤ q))
     (P : Finset (ZMod q)) (a b : ZMod q) :
     (F.filter fun x => x a = 1 ∧ x b = 1).card ≤
-      (completionEvent F ({a,b} \ P)).card :=
+      (completionEvent F ({a, b} \ P)).card :=
   Finset.card_le_card (pairEvent_subset_completionEvent F P a b)
-
-/-- Integer cyclic correlation, independent of the checker implementation. -/
-def cyclicCorrelation (x : Coeff ℤ q) (d : ZMod q) : ℤ :=
-  ∑ a, x a * x (a+d)
 
 /-- The precise events removed in the clean-completion union bound. Internal
 pairs are retained; Sidon uniqueness handles those separately. -/
 def forbiddenPairIndices (P D : Finset (ZMod q)) : Finset (ZMod q × ZMod q) :=
-  (D.product Finset.univ).filter fun p => p.2 ∉ P ∨ p.2+p.1 ∉ P
+  (D.product Finset.univ).filter fun p => p.2 ∉ P ∨ p.2 + p.1 ∉ P
 
 /-- A finite union bound for clean products, with the exact event budget.
 No independence of coordinate events is assumed. -/
 theorem exists_clean_products_of_budget (F : Finset (Coeff ℤ q))
     (P D : Finset (ZMod q)) (hbinary : ∀ x ∈ F, IsBinary x)
     (hbudget : (∑ p ∈ forbiddenPairIndices P D,
-      (F.filter fun x => x p.2 = 1 ∧ x (p.2+p.1) = 1).card) < F.card) :
-    ∃ x ∈ F, ∀ d ∈ D, ∀ a, a ∉ P ∨ a+d ∉ P → x a * x (a+d) = 0 := by
+      (F.filter fun x => x p.2 = 1 ∧ x (p.2 + p.1) = 1).card) < F.card) :
+    ∃ x ∈ F, ∀ d ∈ D, ∀ a, a ∉ P ∨ a + d ∉ P → x a * x (a + d) = 0 := by
   obtain ⟨x, hx, hav⟩ := exists_avoiding_of_sum_lt F (forbiddenPairIndices P D)
-    (fun p x => x p.2 = 1 ∧ x (p.2+p.1) = 1) (by
+    (fun p x => x p.2 = 1 ∧ x (p.2 + p.1) = 1) (by
       convert hbudget using 1
       apply Finset.sum_congr rfl
       intro p hp
@@ -492,108 +472,13 @@ theorem exists_clean_products_of_budget (F : Finset (Coeff ℤ q))
       simp only [Finset.mem_filter])
   refine ⟨x, hx, ?_⟩
   intro d hd a ha
-  have hn : ¬ (x a = 1 ∧ x (a+d) = 1) :=
-    hav (d,a) (by simp [forbiddenPairIndices, hd, ha])
+  have hn : ¬ (x a = 1 ∧ x (a + d) = 1) :=
+    hav (d, a) (by simp [forbiddenPairIndices, hd, ha])
   rcases hbinary x hx a with hzero | hone
   · simp [hzero]
-  · rcases hbinary x hx (a+d) with hzero | hone'
+  · rcases hbinary x hx (a + d) with hzero | hone'
     · simp [hzero]
     · exact (hn ⟨hone, hone'⟩).elim
-
-/-- Once all external products vanish, an offset with a unique internal
-ordered pair has exactly that pair's contribution. -/
-theorem cyclicCorrelation_eq_single (x : Coeff ℤ q) (P : Finset (ZMod q))
-    (d a₀ : ZMod q)
-    (hinternal : ∀ a ∈ P, a+d ∈ P → a = a₀)
-    (hzero : ∀ a, a ∉ P ∨ a+d ∉ P → x a * x (a+d) = 0) :
-    cyclicCorrelation x d = x a₀ * x (a₀+d) := by
-  unfold cyclicCorrelation
-  apply Finset.sum_eq_single a₀
-  · intro a _ hne
-    by_cases ha : a ∈ P
-    · by_cases had : a+d ∈ P
-      · exact (hne (hinternal a ha had)).elim
-      · exact hzero a (Or.inr had)
-    · exact hzero a (Or.inl ha)
-  · simp
-
-/-- An offset with no internal pair has zero correlation. -/
-theorem cyclicCorrelation_eq_zero (x : Coeff ℤ q) (P : Finset (ZMod q))
-    (d : ZMod q) (hinternal : ∀ a ∈ P, a+d ∉ P)
-    (hzero : ∀ a, a ∉ P ∨ a+d ∉ P → x a * x (a+d) = 0) :
-    cyclicCorrelation x d = 0 := by
-  apply Finset.sum_eq_zero
-  intro a _
-  by_cases ha : a ∈ P
-  · exact hzero a (Or.inr (hinternal a ha))
-  · exact hzero a (Or.inl ha)
-
-/-- Abstract Sidon witness offsets, with no row/checker construction. -/
-def completionWitnessOffsets {n : ℕ} (α : Fin n → ZMod q) : Finset (ZMod q) :=
-  (Finset.univ.filter fun p : Fin n × Fin n => p.1 ≠ p.2).image
-    (fun p => α p.2 - α p.1)
-
-/-- The finite, exact-budget form of `enhanced-clean`. Its numerical premise
-is the union bound left to discharge using uniform completion estimates.
-It applies to arbitrary syndromes and arbitrary integral prescribed values. -/
-theorem enhanced_clean_of_budget {n : ℕ} (α : Fin n → ZMod q)
-    (hα : Function.Injective α)
-    (hSidon : ∀ j l j' l', j ≠ l → j' ≠ l' →
-      α l - α j = α l' - α j' → j = j' ∧ l = l')
-    (Dbad : Finset (ZMod q)) (hbad0 : (0 : ZMod q) ∉ Dbad)
-    (hbadwit : Disjoint Dbad (completionWitnessOffsets α))
-    (k h : ℕ) (u : Fin k → ZMod q) (η : Coeff ℤ q)
-    (hbudget :
-      (∑ p ∈ forbiddenPairIndices (Finset.univ.image α)
-          (completionWitnessOffsets α ∪ Dbad),
-        ((completions k h u (Finset.univ.image α) η).filter
-          fun x => x p.2 = 1 ∧ x (p.2+p.1) = 1).card) <
-        (completions k h u (Finset.univ.image α) η).card) :
-    ∃ x ∈ completions k h u (Finset.univ.image α) η,
-      (∀ j l, j ≠ l → cyclicCorrelation x (α l - α j) = η (α j) * η (α l)) ∧
-      ∀ d ∈ Dbad, cyclicCorrelation x d = 0 := by
-  let P := Finset.univ.image α
-  obtain ⟨x, hx, hzero⟩ := exists_clean_products_of_budget
-    (completions k h u P η) P (completionWitnessOffsets α ∪ Dbad)
-    (fun x hx => (mem_completions k h u P η x).mp hx |>.1) hbudget
-  have hfix := ((mem_completions k h u P η x).mp hx).2.2.2
-  have hpres (j : Fin n) : x (α j) = η (α j) :=
-    hfix _ (Finset.mem_image.mpr ⟨j, Finset.mem_univ _, rfl⟩)
-  refine ⟨x, hx, ?_, ?_⟩
-  · intro j l hjl
-    have hd : α l - α j ∈ completionWitnessOffsets α :=
-      Finset.mem_image.mpr ⟨(j,l), by simp [hjl], rfl⟩
-    have hinternal : ∀ a ∈ P, a+(α l-α j) ∈ P → a = α j := by
-      intro a ha hb
-      obtain ⟨r, _, hr⟩ := Finset.mem_image.mp ha
-      obtain ⟨s, _, hs⟩ := Finset.mem_image.mp hb
-      have hrs : r ≠ s := by
-        intro he
-        subst s
-        have hz : α l - α j = 0 := by rw [hr] at hs; exact add_left_cancel (hs.symm.trans (add_zero a).symm)
-        exact hjl (hα (sub_eq_zero.mp hz).symm)
-      have he : α s - α r = α l - α j := by rw [hr, hs]; abel
-      exact hr.symm.trans (congrArg α (hSidon r s j l hrs hjl he).1)
-    rw [cyclicCorrelation_eq_single x P _ (α j) hinternal
-      (hzero _ (Finset.mem_union_left Dbad hd))]
-    have he : α j + (α l-α j) = α l := by abel
-    rw [he, hpres j, hpres l]
-  · intro d hd
-    have hinternal : ∀ a ∈ P, a+d ∉ P := by
-      intro a ha hb
-      obtain ⟨r, _, hr⟩ := Finset.mem_image.mp ha
-      obtain ⟨s, _, hs⟩ := Finset.mem_image.mp hb
-      have hrs : r ≠ s := by
-        intro he
-        subst s
-        have hz : d = 0 := by rw [hr] at hs; exact add_left_cancel (hs.symm.trans (add_zero a).symm)
-        exact hbad0 (hz ▸ hd)
-      have he : α s - α r = d := by rw [hr, hs]; abel
-      have hw : d ∈ completionWitnessOffsets α :=
-        Finset.mem_image.mpr ⟨(r,s), by simp [hrs], he⟩
-      exact Finset.disjoint_left.mp hbadwit hd hw
-    exact cyclicCorrelation_eq_zero x P d hinternal
-      (hzero d (Finset.mem_union_right _ hd))
 
 end Finite
 end
