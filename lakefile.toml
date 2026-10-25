@@ -7,6 +7,8 @@ defaultTargets = ["IdealCVP", "Rank2ModuleSVP", "Power2ModuleSVP"]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 relaxedAutoImplicit = false
 weak.linter.mathlibStandardSet = true
+# No copyright/licence header in this repo, so the Mathlib header linter is disabled.
+weak.linter.style.header = false
 maxSynthPendingDepth = 3
 
 [[require]]
