@@ -14,10 +14,39 @@ and the fixed-family CVPP Karp–Lipton corollary, including universe-indexed
 polynomial preprocessing advice.
 Round 10 proves NP-completeness of principal cyclic CVP on a polynomial-time
 recognized integral separated class containing the reduction image.
+Round 11 proves membership and NP-completeness for arbitrary principal cyclic
+generators and arbitrary independent integral rank-two module bases.
+
+## Paper ↔ Lean map
+
+Paths in this table are relative to this directory. The detailed module guide
+below records the mathematical interfaces; the README's headline table records
+the final complexity results.
+
+| Paper source and label | Lean entry points |
+|---|---|
+| [pre.tex](paper/src/chapter/pre.tex), `def:principal-cyclotomic-cvp` | [Lattice.lean](Lattice.lean), [Quotient.lean](Quotient.lean), [GeneralFullRank.lean](GeneralFullRank.lean) |
+| [pre.tex](paper/src/chapter/pre.tex), `lem:canonical` | [Canonical.lean](Canonical.lean): `Canonical.norm_identity`, `field_norm_identity` |
+| [principal-ideal.tex](paper/src/chapter/principal-ideal.tex), `lem:sidon`, `lem:boolean-identity` | [Sidon.lean](Sidon.lean), [Coordinates.lean](Coordinates.lean), [Reduction.lean](Reduction.lean) |
+| [principal-ideal.tex](paper/src/chapter/principal-ideal.tex), `lem:admissible`, `thm:compiler` | [Rounding.lean](Rounding.lean), [Norms.lean](Norms.lean), [Penalty.lean](Penalty.lean), [Main.lean](Main.lean): `ReductionData.compiler_correct` |
+| [principal-ideal.tex](paper/src/chapter/principal-ideal.tex), `thm:cyclotomic-cvp` | [Main.lean](Main.lean): `x3c_correct`; [Complexity/SatToX3C.lean](Complexity/SatToX3C.lean): `principalCVP_npHard_via_X3C`; [Complexity/NPComplete.lean](Complexity/NPComplete.lean): `principalCVP_npComplete` |
+| [principal-ideal.tex](paper/src/chapter/principal-ideal.tex), `lem:principal-crt`, `thm:cyclic-cvp` | [Cyclic.lean](Cyclic.lean): `x3c_cyclic_correct`; [Complexity/GeneralCyclic.lean](Complexity/GeneralCyclic.lean): `principalCyclicCVPGeneral_npComplete` |
+| [sivp-module.tex](paper/src/chapter/sivp-module.tex), `lem:module-completion`, `thm:module-sivp` | [ModuleSIVP.lean](ModuleSIVP.lean): `ModuleSIVP.module_completion`, `x3c_module_sivp_correct`; [Complexity/GeneralModule.lean](Complexity/GeneralModule.lean): `moduleSIVPGeneral_npComplete` |
+| [fixed.tex](paper/src/chapter/fixed.tex), `thm:fixed-family` | [Fixed.lean](Fixed.lean), [FixedIndexed.lean](FixedIndexed.lean), [Complexity/FixedCompiler.lean](Complexity/FixedCompiler.lean) |
+| [fixed.tex](paper/src/chapter/fixed.tex), `cor:cvpp` | [Complexity/CVPPClass.lean](Complexity/CVPPClass.lean): `np_subset_ppoly_of_fixedCVPP`, `PH_eq_SigmaP_two_of_polyCVPP` |
+
+The native list encodings, polynomial-time compilers, and arbitrary-generator
+certificate bounds make the paper's complexity assertions explicit. General
+cyclic membership includes singular and zero generators. General module-SIVP
+membership covers arbitrary independent integral rank-two bases. The CVPP
+corollary permits unbounded preprocessing with polynomial-size advice and a
+polynomial-time query algorithm. Approximate variants beyond the proved exact
+squared-distance gaps are outside the current development.
 
 ## Files and theorem names
 
 All names below are in namespace `IdealCVP` unless qualified otherwise.
+Unprefixed module paths are relative to `IdealCVP/`.
 
 - `Lattice.lean`: `Coeff`, `sqNorm`, `CVPYes`, and
   `MinimumSquaredDistance`. The last predicate asserts both an attained value
@@ -72,8 +101,9 @@ All names below are in namespace `IdealCVP` unless qualified otherwise.
   `generator_mask_independent` proves the ideal is independent of the mask.
   `ceilSqrt` uses `Nat.sqrt`; `ceilSqrt_eq` identifies it with the real
   ceiling in the paper, so the output construction is executable.
-  `h_support_card`, `ha_expansion`, and `boolean_identity` prove the
-  distinct-monomials and Boolean norm identities.
+  `ReductionData.h_norm` computes `sqNorm h = W`; `h_support_card`,
+  `ha_expansion`, and `boolean_identity` prove the distinct-monomials and
+  Boolean norm identities.
   `generator_product` and `block_product` give the two-block multiplication
   formula. `mask_norm`, `decode_rounded`, `discrete_gap`,
   `admissible_allowed`, and `admissible_forbidden` implement both parts of
@@ -209,8 +239,9 @@ All names below are in namespace `IdealCVP` unless qualified otherwise.
   `sigma` is the odd-root evaluation sum. `norm_identity` proves
   `lem:canonical` for arbitrary real coefficients and every positive d.
   `integralEmbedding` and `rationalEmbedding` are genuine quotient ring
-  homomorphisms; `odd_root`, the `_mk` theorems, `integralEmbedding_toQuot`,
-  `sigma_mul`, and `rationalEmbedding_eq_sigma` prove compatibility with
+  homomorphisms; `odd_root`, `Canonical.integralEmbedding_mk`,
+  `Canonical.rationalEmbedding_mk`, `integralEmbedding_toQuot`, `sigma_mul`,
+  and `rationalEmbedding_eq_sigma` prove compatibility with
   polynomial evaluation and coefficient representatives. The rational maps
   are injective for power-of-two d (`rationalEmbedding_injective`).
   `field_norm_identity` and `rational_field_norm_identity` give the actual
@@ -241,6 +272,16 @@ All names below are in namespace `IdealCVP` unless qualified otherwise.
   output using finite integer functions. `compileX3C_correct` and
   `compileX3C_size` combine correctness with all bounds, substituting M=3q
   and retaining d≤4(3q)(8n²+1).
+
+## Historical development and audits
+
+The sections below preserve the per-round record. Scope limitations describe
+that round, not the final library: Rounds 6–11 subsequently discharge the
+complexity and general-membership obligations. `/tmp/` logs and audit files
+are historical artifacts and are not distributed with this repository.
+The former data-evaluation file `Smoke.lean` and the later
+`Complexity/Smoke.lean` import test were scratch files; neither is a current
+entry point. The library exports are listed in the repository-root `IdealCVP.lean`.
 
 ## Round 2 changes and size
 
@@ -363,15 +404,17 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   `penaltyBound (3*q) n`, every generator/target coefficient, the nonnegative
   threshold, and dimension (`penaltyBound_le_valueBound`,
   `compileX3C_coeff_le`, `compileX3C_target_le`, `compileX3C_threshold_le`,
-  `compileX3C_dim_le`). The coefficient and threshold `_bits` theorems give
-  the explicit logarithmic bound `19+12*Nat.size(q+n+1)`.
+  `compileX3C_dim_le`). The generator, target, and threshold bit bounds
+  (`compileX3C_coeff_bits`, `compileX3C_target_bits`,
+  `compileX3C_threshold_bits`) give the explicit logarithmic bound
+  `19+12*Nat.size(q+n+1)`.
 - `inputLength` encodes q,n and three universe elements per indexed triple;
   `outputLength` counts signed binary coefficients, threshold and dimension.
   `compileX3C_outputLength_le` and `compileX3C_unaryLength_le` use the explicit
   polynomial `encodingBound s = 8*(262144*(s+1)^12+1)^2`. The latter is the
   numerical strong-hardness statement, without asserting a complexity class.
-- `Smoke.lean` is executable and excluded from `IdealCVP.lean`. No computable
-  twin is necessary: `compileX3C` itself evaluates. Its one-triple, repeated
+- The former `Smoke.lean` was executable and excluded from `IdealCVP.lean`.
+  No computable twin is necessary: `compileX3C` itself evaluates. Its one-triple, repeated
   triple, and q=2 uncovered-element examples print `(d, Δ, maxAbsCoeff,
   outputLength, allBoundsHold)` as `(8,2116,92,73,true)`,
   `(128,13454,164,580,true)`, `(16,2401,98,112,true)`; the one-triple verifier
@@ -442,7 +485,7 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   not included; the requested closest-vector extraction is complete.
 - `timeout 1500 lake build` succeeds (6700 jobs), logged in
   `/tmp/round5-t8-build.log`. All nine public T8 theorems are included in
-  the cumulative scratch axiom audit. `Smoke.lean` additionally evaluates
+  the cumulative scratch axiom audit. The former `Smoke.lean` also evaluated
   extraction for a singleton cover and for the second of two repeated triples.
 
 ### Round 5 final validation
@@ -452,7 +495,7 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   checked declaration by declaration: only `propext`, `Classical.choice`,
   and `Quot.sound` occur. No `sorry`, new `axiom`, or `native_decide`
   occurs in the library sources.
-- `timeout 600 lake env lean IdealCVP/Smoke.lean` succeeds. In addition to
+- The former scratch evaluation command succeeded. In addition to
   the T3 tuples above it prints `({0},true)` and `({1},true)` for extraction
   from the singleton and repeated-triple encoded covers, then `false` for
   the NO instance's empty decoded set. `/tmp/round5-smoke.log` records this.
@@ -462,9 +505,9 @@ proof; heavy complexity-class infrastructure remains outside scope as requested.
   `true,false,true,false`, and checks the dimension-zero finite-certificate
   equivalence. Log: `/tmp/round5-certificate-smoke.log`.
 - Final `timeout 1500 lake build` log: `/tmp/round5-build.log` (6700 jobs).
-  All four new proof modules are imported by `IdealCVP.lean`; `Smoke.lean`
-  remains separate. README main entry points are updated. All mandatory
-  T3/T1/T2/T8 work is complete; no T4/T5, dependency, configuration or
+  All four new proof modules were imported by `IdealCVP.lean`; the former
+  scratch evaluations remained separate. README main entry points are updated.
+  All mandatory T3/T1/T2/T8 work is complete; no T4/T5, dependency, configuration or
   toolchain changes were made, and no git command was used.
 
 ## Round 6 — complexitylib decision problems and reductions

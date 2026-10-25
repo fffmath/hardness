@@ -8,9 +8,10 @@ Lean 4 / Mathlib formalisation of
 Lean modules live under `IdealCVP/` (module prefix `IdealCVP.*`, root `IdealCVP.lean` at the repo root).
 Run builds from the repository root.
 
-Build with `timeout 1500 lake build` (toolchain `leanprover/lean4:v4.36.0-rc1`, Mathlib `v4.36.0-rc1`).
+Build with `lake build IdealCVP` (toolchain `leanprover/lean4:v4.36.0-rc1`,
+Mathlib `v4.36.0-rc1`).
 The library is sorry-free and adds no axioms. If the toolchain artifact cache is read-only, use
-`LAKE_CACHE_DIR=/tmp/hardness-lake-cache timeout 1500 lake build`.
+`LAKE_CACHE_DIR=/tmp/hardness-lake-cache lake build IdealCVP`.
 
 ## Final summary
 
@@ -21,20 +22,24 @@ complexitylib's native multitape-TM notions (`NP`, `NPHard`, `NPComplete`, `Poly
 
 ### Headline theorems
 
+The cyclotomic dimension `d` ranges over powers of two; cyclic instances have
+dimension `2 * d`. Norms and thresholds use squared coefficient distances. The
+canonical embedding versions below account for the factor `d` in squared norms.
+
 | Theorem | Statement | File |
 |---|---|---|
-| `IdealCVP.principalCVP_npComplete` | `NPComplete encCVP PrincipalCVP`: exact principal cyclotomic CVP over ℤ[X]/(X^d+1) is NP-complete | `IdealCVP/Complexity/NPComplete.lean` |
-| `IdealCVP.x3c_npComplete` | `NPComplete encX3C X3CLang`: X3C is NP-complete, via ExactThreeSAT → X3C (direct gadget) | `IdealCVP/Complexity/SatToX3C.lean` |
-| `IdealCVP.principalCVP_npHard_via_X3C` | The paper's route to principal CVP hardness: X3C → principal CVP | `IdealCVP/Complexity/SatToX3C.lean` |
-| `IdealCVP.principalCyclicCVP_npComplete` | `NPComplete encCVP SeparatedPrincipalCyclicCVP`: cyclic ℤ[X]/(X^{2d}−1), separated generators | `IdealCVP/Complexity/SeparatedCyclic.lean` |
-| `IdealCVP.principalCyclicCVP_npHard` | NP-hardness for arbitrary principal cyclic CVP | `IdealCVP/Complexity/CyclicProblem.lean` |
-| `IdealCVP.principalCyclicCVPGeneral_npComplete` | `NPComplete encCVP PrincipalCyclicCVP`: arbitrary principal cyclic generators, including singular and zero generators | `IdealCVP/Complexity/GeneralCyclic.lean` |
-| `IdealCVP.moduleSIVP_npComplete` | `NPComplete encModuleSIVP ModuleSIVPLang`: rank-2 module-SIVP, triangular-basis subclass | `IdealCVP/Complexity/ModuleProblem.lean` |
-| `IdealCVP.moduleSIVPGeneral_npComplete` | `NPComplete encModuleSIVP ModuleSIVPGeneral`: arbitrary independent rank-2 integral cyclotomic bases | `IdealCVP/Complexity/GeneralModule.lean` |
-| `Cslib.Circuits.Boolean.PPoly.of_polyTimeReducible` | P/poly is closed under polynomial-time reductions | `IdealCVP/Complexity/PPolyReduction.lean` |
-| `IdealCVP.np_subset_ppoly_of_fixedCVPP` | P/poly circuits for the fixed CVPP family ⇒ NP ⊆ P/poly | `IdealCVP/Complexity/CVPPClass.lean` |
-| `IdealCVP.PH_eq_SigmaP_two_of_fixedCVPP` | The same hypothesis ⇒ PH = Σ₂ (Karp–Lipton) | `IdealCVP/Complexity/CVPPClass.lean` |
-| `IdealCVP.PH_eq_SigmaP_two_of_polyCVPP` | Poly-size advice plus a poly-time decider for fixed-family CVPP ⇒ PH = Σ₂ | `IdealCVP/Complexity/CVPPClass.lean` |
+| `IdealCVP.principalCVP_npComplete` | `NPComplete encCVP PrincipalCVP`: exact principal cyclotomic CVP over ℤ[X]/(X^d+1) is NP-complete | [IdealCVP/Complexity/NPComplete.lean](Complexity/NPComplete.lean) |
+| `IdealCVP.x3c_npComplete` | `NPComplete encX3C X3CLang`: X3C is NP-complete, via ExactThreeSAT → X3C (direct gadget) | [IdealCVP/Complexity/SatToX3C.lean](Complexity/SatToX3C.lean) |
+| `IdealCVP.principalCVP_npHard_via_X3C` | The paper's route to principal CVP hardness: X3C → principal CVP | [IdealCVP/Complexity/SatToX3C.lean](Complexity/SatToX3C.lean) |
+| `IdealCVP.principalCyclicCVP_npComplete` | `NPComplete encCVP SeparatedPrincipalCyclicCVP`: cyclic ℤ[X]/(X^{2d}−1), separated generators | [IdealCVP/Complexity/SeparatedCyclic.lean](Complexity/SeparatedCyclic.lean) |
+| `IdealCVP.principalCyclicCVP_npHard` | NP-hardness for arbitrary principal cyclic CVP | [IdealCVP/Complexity/CyclicProblem.lean](Complexity/CyclicProblem.lean) |
+| `IdealCVP.principalCyclicCVPGeneral_npComplete` | `NPComplete encCVP PrincipalCyclicCVP`: arbitrary principal cyclic generators, including singular and zero generators | [IdealCVP/Complexity/GeneralCyclic.lean](Complexity/GeneralCyclic.lean) |
+| `IdealCVP.moduleSIVP_npComplete` | `NPComplete encModuleSIVP ModuleSIVPLang`: rank-2 module-SIVP, triangular-basis subclass | [IdealCVP/Complexity/ModuleProblem.lean](Complexity/ModuleProblem.lean) |
+| `IdealCVP.moduleSIVPGeneral_npComplete` | `NPComplete encModuleSIVP ModuleSIVPGeneral`: arbitrary independent rank-2 integral cyclotomic bases | [IdealCVP/Complexity/GeneralModule.lean](Complexity/GeneralModule.lean) |
+| `Cslib.Circuits.Boolean.PPoly.of_polyTimeReducible` | P/poly is closed under polynomial-time reductions | [IdealCVP/Complexity/PPolyReduction.lean](Complexity/PPolyReduction.lean) |
+| `IdealCVP.np_subset_ppoly_of_fixedCVPP` | P/poly circuits for the fixed CVPP family ⇒ NP ⊆ P/poly | [IdealCVP/Complexity/CVPPClass.lean](Complexity/CVPPClass.lean) |
+| `IdealCVP.PH_eq_SigmaP_two_of_fixedCVPP` | The same hypothesis ⇒ PH = Σ₂ (Karp–Lipton) | [IdealCVP/Complexity/CVPPClass.lean](Complexity/CVPPClass.lean) |
+| `IdealCVP.PH_eq_SigmaP_two_of_polyCVPP` | Poly-size advice plus a poly-time decider for fixed-family CVPP ⇒ PH = Σ₂ | [IdealCVP/Complexity/CVPPClass.lean](Complexity/CVPPClass.lean) |
 
 Below the complexity layer sit the paper's mathematical results:
 
@@ -115,7 +120,7 @@ Below the complexity layer sit the paper's mathematical results:
   complete the unconditional hardness chain
 - `IdealCVP.compileList_correct` – the original prime-search reference compiler;
   its former conditional headline is retained as
-  `IdealCVP.principalCVP_npComplete_of_compilePoly`. See NOTES.md, Rounds 7–8.
+  `IdealCVP.principalCVP_npComplete_of_compilePoly`. See [NOTES.md](NOTES.md), Rounds 7–8.
 
 - `IdealCVP.x3cToCVP` – the X3C → principal cyclotomic CVP reduction (ℤ[y]/(y^d+1), d a power of two)
 - `IdealCVP.x3c_correct`, `x3c_yes_gap` (min dist² = Δ), `x3c_no_gap` (dist² ≥ Δ+4),

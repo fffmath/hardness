@@ -1,59 +1,31 @@
-# Director status log (hardness formalisation)
+# IdealCVP final status
 
-Times Asia/Shanghai (UTC+8).
+The formalisation is complete for the exact problems described in
+[README.md](../README.md). The paper ↔ Lean map and historical development
+record are in [NOTES.md](../NOTES.md).
 
-## Done (pushed to master)
-- 5e1ab6c / 976898f / f60dcd8 / 35f2352: paper, rounds 1–2, README.
-- 461a745 round 3: general full rank, module-SIVP, fixed family.
-- d4d28fa round 4: FixedIndexed, Rational, Canonical, Certificates, SizeBounds.
-- 50b47f2 round 5: StrongBounds (T3), CVPP (T1), CertificateBound (T2), SearchToDecision (T8), Smoke.lean (#eval), research reports.
-- af77627: complexitylib dependency pinned at ba134c18 (+ cslib 6ff325e8), IdealCVP/Complexity/Smoke.lean.
+- Principal power-of-two cyclotomic CVP is NP-complete:
+  `IdealCVP.principalCVP_npComplete`.
+- List X3C is NP-complete, with a certified ExactThreeSAT reduction and the
+  paper's X3C → principal CVP route.
+- Principal cyclic CVP is NP-complete for both separated generators and
+  arbitrary generators, including singular and zero generators.
+- Rank-two module-SIVP is NP-complete for the triangular completion subclass
+  and for arbitrary independent integral cyclotomic bases.
+- The fixed-family CVPP corollaries prove NP ⊆ P/poly and PH = Σ₂ under the
+  stated circuit or polynomial-advice query hypotheses.
+- Rational data, canonical embeddings, exact squared-distance gaps,
+  certificate bounds, and closest-vector cover extraction are formalised.
+- The source is sorry-free and adds no axioms. Headline theorem axiom audits
+  allow only `propext`, `Classical.choice`, and `Quot.sound`.
 
-- (round 6 commit, see below): complexity layer M1–M3 + conditional headline.
+The CVPP statements permit unbounded preprocessing; its output advice and
+query runtime satisfy the stated polynomial bounds. Approximate variants
+beyond the exact +4 / +32 squared-distance gaps are not formalised.
 
-## Done (cont.)
-- e9d0a61 round 6: IdealCVP/Complexity/* — PrincipalCVP ∈ NP (unconditional), ExactThreeSAT → MaskedSys NP-hard
-  (unconditional), compileList correctness; principalCVP_npComplete conditional on
-  hcompilePoly : ComputableTidilyInPolyTime compileList encMasked encCVP.
+Build the library from the repository root with `lake build IdealCVP`.
+The shared tidy jobs use their serialising `build.sh IdealCVP` wrapper.
 
-- (round 7 commit): compileFast (cubic Sidon, pure list code) + bridge + native polytime
-  certificate poly_compileFast ⇒ principalCVP_npComplete : NPComplete encCVP PrincipalCVP
-  UNCONDITIONAL (axioms: propext, Classical.choice, Quot.sound only). Conditional variant kept as
-  principalCVP_npComplete_of_compilePoly.
-
-## In flight
-- Nothing. Headline landed; director loop stopped.
-
-## Possible next steps (not started)
-- X3C NP-completeness in complexitylib terms (3SAT → 3DM → X3C, polytime) to match the paper's source problem.
-- Module-SIVP NP-hardness via the same list-compiler pattern; fixed-family CVPP ⇒ P/poly ⇒ PH = Σ₂
-  (complexitylib has PPoly / Karp–Lipton).
-
-## Round 8 (DONE)  — X3C NP-completeness + paper route + cyclic (if cheap)
-- prompt: specs/phase8_prompt.md; log: /workspace/hardness_codex_r8.log
-- session id: 01a16b2e-d23e-7772-80ec-39486b4e134d (resume with `codex exec resume <id> -c sandbox_mode='"workspace-write"' -`)
-- Planned after: round 9 = Module-SIVP NPComplete (class level); round 10 = CVPP ⇒ NP ⊆ P/poly ⇒ PH = Σ₂.
-- Result: x3c_npComplete (ExactThreeSAT→X3C, native polytime), principalCVP_npHard_via_X3C, principalCyclicCVP_npHard. Cyclic NP membership open. Axioms clean.
-
-## Round 8 commit: bd3448f
-## Round 9 (DONE) — Module-SIVP NPComplete; CVPP ⇒ NP ⊆ P/poly ⇒ PH = Σ₂; cyclic membership (optional)
-- prompt: specs/phase9_prompt.md; log: /workspace/hardness_codex_r9.log
-session id: 01a16b4a-27c5-7041-8d68-d8ce50435650
-- Result: moduleSIVP_npComplete (separated triangular subclass = image of paper's completion), IdealCVP.PPoly.of_polyTimeReducible, np_subset_ppoly_of_fixedCVPP, PH_eq_SigmaP_two_of_fixedCVPP, PH_eq_SigmaP_two_of_polyCVPP. Cyclic NP membership still open (singular cyclic generators). Axioms clean, 7168 jobs.
-
-## Round 9 commit: fe290a6
-## Round 10 (DONE) — cyclic NP membership (separated subclass), optional general Module-SIVP
-- prompt: specs/phase10_prompt.md; log: /workspace/hardness_codex_r10.log
-- session id: 01a16b7b-e3c2-7f50-a9ea-2b2dd7c58483
-- Result: principalCyclicCVP_npComplete (SeparatedPrincipalCyclicCVP). General Module-SIVP / singular cyclic membership deferred. README final summary written. PROJECT WRAPPED UP — nothing in flight.
-
-## Round 10 commit: 12733aa
-## Round 11 (DONE) — general Module-SIVP membership + general cyclic CVP membership
-- prompt: specs/phase11_prompt.md; log: /workspace/hardness_codex_r11.log; PID 1075581
-- session id: 01a16b94-839b-7bb0-94fe-a9dd56423248
-- On interruption: check pgrep; if log stalls >30 min, kill and resume session with nudge. After: build/audit/commit/push.
-- Result: moduleSIVPGeneral_npComplete, principalCyclicCVPGeneral_npComplete (original PrincipalCyclicCVP, singular generators included), exists_bounded_integer_preimage. 7198 jobs, axioms clean. Nothing in flight.
-
-## Restructure (2026-10-24)
-- Moved Hardness/ → IdealCVP/ (module prefix and namespace `Hardness` → `IdealCVP`), paper/specs/NOTES/README into IdealCVP/.
-- Historical phaseN prompts still mention `Hardness/...` paths; read them as `IdealCVP/...`.
+Historical research notes remain in `research_*.md`; the paper and sources
+remain in `../paper/`. Old prompts or audit records using `Hardness/` refer to
+the current `IdealCVP/` paths. Scratch smoke tests are not library entry points.
