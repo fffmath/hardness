@@ -11,9 +11,11 @@ open Power2ModuleSVP IdealCVP.Cyclotomic
 /-- The sum of the absolute values of the coefficients. -/
 def coeffL1 {d : ℕ} (a : Coeff d) : ℕ := ∑ i, (a i).natAbs
 
+/-- The zero polynomial has coefficient l1 norm zero. -/
 @[simp] theorem coeffL1_zero {d : ℕ} : coeffL1 (0 : Coeff d) = 0 := by
   simp [coeffL1]
 
+/-- Negation preserves the coefficient l1 norm. -/
 @[simp] theorem coeffL1_neg {d : ℕ} (a : Coeff d) : coeffL1 (-a) = coeffL1 a := by
   simp [coeffL1]
 
@@ -39,12 +41,15 @@ theorem coeffSup_le_iff {d : ℕ} (a : Coeff d) (T : ℕ) :
     coeffSup a ≤ T ↔ ∀ i, (a i).natAbs ≤ T := by
   simp [coeffSup, Finset.sup_le_iff]
 
+/-- The zero polynomial has coefficient maximum zero. -/
 @[simp] theorem coeffSup_zero {d : ℕ} : coeffSup (0 : Coeff d) = 0 := by
   simp [coeffSup]
 
+/-- Negation preserves the coefficient maximum norm. -/
 @[simp] theorem coeffSup_neg {d : ℕ} (a : Coeff d) : coeffSup (-a) = coeffSup a := by
   simp [coeffSup]
 
+/-- The coefficient maximum norm vanishes exactly at zero. -/
 @[simp] theorem coeffSup_eq_zero_iff {d : ℕ} (a : Coeff d) :
     coeffSup a = 0 ↔ a = 0 := by
   constructor

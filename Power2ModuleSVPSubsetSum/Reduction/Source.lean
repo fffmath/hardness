@@ -26,7 +26,6 @@ theorem sum_positiveWeights (weights : List ℕ) :
     (positiveWeights weights).sum = weights.sum := by
   simp [positiveWeights]
 
-
 /-- Zero removal preserves Subset Sum, with no positivity or nonemptiness assumption. -/
 theorem positiveWeights_subsetSum_iff (weights : List ℕ) (target : ℕ) :
     (positiveWeights weights, target) ∈ Cslib.Complexity.SubsetSum ↔

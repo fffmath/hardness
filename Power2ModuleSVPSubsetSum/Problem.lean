@@ -7,7 +7,8 @@ Exact decision SVP in the coefficient maximum norm for full-rank free rank-two m
 `ℤ[X]/(X^n + 1)`, `n` a power of two, with an arbitrary binary radius `T`.
 
 An input stores the degree in unary, the two module generators as columns
-`((g₁₁, g₂₁), (g₁₂, g₂₂))` of signed-binary coefficient arrays, and the radius `T` in binary.
+`((g₁₁, g₂₁), (g₁₂, g₂₂))` of signed-binary coefficient arrays,
+and the radius `T` in binary.
 Malformed inputs (non-dyadic degree, wrong lengths, `det G = 0`) are rejected.
 The language asks for a nonzero module vector of coefficient max norm at most `T`, i.e.
 `λ₁,∞(Λ(G)) ≤ T`.

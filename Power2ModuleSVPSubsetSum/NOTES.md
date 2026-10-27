@@ -1,11 +1,61 @@
-# hp2n-amath: main declaration signatures
+# Power2ModuleSVPSubsetSum — paper ↔ Lean map
 
-All paths below are relative to `Power2ModuleSVPSubsetSum/`. Signatures are copied from
-source; `Coeff`, `coeffSup`, `pairSup`, `moduleVector`, `FirstMinimum`, and `coeffOne`
-are reused from `Power2ModuleSVP`, and `mul` is `IdealCVP.Cyclotomic.mul`.
-`Rigidity` and `Reduction` are namespaces below `Power2ModuleSVPSubsetSum`.
-Root-level endpoints are `Power2ModuleSVPSubsetSum.reduce_correct`,
-`reduce_wellFormed`, `reduce_yes_gap`, and `reduce_no_gap`.
+Paper: [power2svp-subsetsum.pdf](paper/power2svp-subsetsum.pdf).
+Names are in `Power2ModuleSVPSubsetSum` unless qualified. Section and result numbers
+refer to that paper. Runtime certificates formalise its bit-time claims with native
+multitape Turing machines on explicitly encoded coefficient lists.
+
+| Paper | Lean declaration | File |
+| --- | --- | --- |
+| §2.1, coefficient arithmetic and norms | `coeffL1`, `coeffSup_mul_le`, `monomial_mul_apply` | [Algebra/Norms.lean](Algebra/Norms.lean) |
+| §2.1, signed monomial units | `SignedMonomial.coeffSup_mul`, `SignedMonomial.exists_inverse` | [Algebra/Units.lean](Algebra/Units.lean) |
+| §2.1, involution and adjoint pairing (2.4) | `star_involutive`, `star_mul`, `coeffInner_mul_adjoint` | [Algebra/Adjoint.lean](Algebra/Adjoint.lean) |
+| §2.2, encoded decision language | `SVPInput`, `encSVP`, `ModuleYes`, `SVPInput.WellFormed`, `ModuleSVPLang` | [Problem.lean](Problem.lean) |
+| Proposition 2.2, verifier | `moduleVerifier`, `moduleVerifier_correct` | [Membership/Verifier.lean](Membership/Verifier.lean) |
+| Proposition 2.2, bounded certificates | `Membership.module_certificate_bound`, `Membership.module_certificate_length` | [Membership/Certificates.lean](Membership/Certificates.lean) |
+| Proposition 2.2, polynomial verification | `moduleVerifier_polytime`, `Membership.moduleNormInput_polytime`, `Membership.moduleBoundInput_polytime` | [Membership/PolyTime.lean](Membership/PolyTime.lean) |
+| Proposition 2.2, NP membership | `moduleSVP_mem_NP` | [Membership/NP.lean](Membership/NP.lean) |
+| §2.3, multiplier recovery for verification | `moduleVerifier_spec`, `Membership.module_certificate_bound` (reuse `IdealCVP` matrix/Cramer machinery) | [Membership/Verifier.lean](Membership/Verifier.lean), [Membership/Certificates.lean](Membership/Certificates.lean) |
+| §2.4, full multiset source | `positiveWeights_subsetSum_iff`, `subsetSum_iff_bool` | [Reduction/Source.lean](Reduction/Source.lean) |
+| §3, filter (3.1), opposite pairs | `Rigidity.D`, `Rigidity.S`, `Rigidity.K`, `Rigidity.D_mul_low`, `Rigidity.D_mul_high` | [Rigidity/Filter.lean](Rigidity/Filter.lean) |
+| Lemma 3.1, exact norm (3.2) and l1 bound (3.4) | `Rigidity.coeffSup_D_mul`, `Rigidity.coeffL1_DK_le` | [Rigidity/Bounds.lean](Rigidity/Bounds.lean) |
+| Lemma 3.1, adjoint identities (3.3) | `Rigidity.star_K`, `Rigidity.star_D_mul_D`, `Rigidity.D_K_inner_zero` | [Rigidity/Skew.lean](Rigidity/Skew.lean) |
+| Lemma 3.2, support rigidity | `Rigidity.sum_five_pow_eq_zero`, `Rigidity.support_rigidity` | [Rigidity/Support.lean](Rigidity/Support.lean) |
+| Proposition 3.3, scales | `Rigidity.F`, `Rigidity.nu`, `Rigidity.rho`, `Rigidity.L`, `Rigidity.M`, `Rigidity.Q` | [Rigidity/Parameters.lean](Rigidity/Parameters.lean) |
+| Proposition 3.3, multiplier rigidity | `Rigidity.multiplier_rigidity`, `Rigidity.Q_add_V_mul_injective` | [Rigidity/Multiplier.lean](Rigidity/Multiplier.lean) |
+| §4, formulas (4.1)–(4.3) | `Reduction.gadget`, `Reduction.positiveReduce`, `reduce` | [Reduction/Construction.lean](Reduction/Construction.lean), [Reduction/Map.lean](Reduction/Map.lean) |
+| §4, list/coefficient parameter bridge | `Reduction.gadget_M`, `Reduction.gadget_Q` | [Reduction/Bridge.lean](Reduction/Bridge.lean) |
+| Lemma 4.1, Boolean encoding | `Reduction.boolean_encoding` | [Reduction/Boolean.lean](Reduction/Boolean.lean) |
+| §4.1, equality-test coefficients | `Reduction.H_centered_zero`, `Reduction.H_centered_half` | [Reduction/WeightIdentity.lean](Reduction/WeightIdentity.lean) |
+| §4.1, exact norm identity | `Reduction.gadget_exactNorm` | [Reduction/ExactNorm.lean](Reduction/ExactNorm.lean) |
+| Proposition 4.2, determinant and validity | `Reduction.gadget_determinant_ne_zero`, `Reduction.positiveReduce_wellFormed` | [Reduction/Validity.lean](Reduction/Validity.lean) |
+| Proposition 4.2, normalize short vectors | `Reduction.short_normalizes_to_boolean` | [Reduction/Soundness.lean](Reduction/Soundness.lean) |
+| Proposition 4.2, correctness and exact gap | `reduce_correct`, `reduce_wellFormed`, `reduce_yes_gap`, `reduce_no_gap`, `Reduction.gadget_no_minimum_bounds` | [Reduction/Correctness.lean](Reduction/Correctness.lean) |
+| Proposition 4.2, upper bound `2M` | `Reduction.gadget_firstMinimum_exists_le_two_M` | [Reduction/UpperBound.lean](Reduction/UpperBound.lean) |
+| §4.2, polynomial size and bit time | `reduce_polytime` | [Runtime/Reduction.lean](Runtime/Reduction.lean) |
+| Theorem 1.1 | `subsetSum_polyTimeReducible_moduleSVP`, `moduleSVP_npHard`, `moduleSVP_npComplete` | [Main.lean](Main.lean) |
+| Corollary 4.3, bijection and count | `Search.witnessEquiv`, `Search.card_shortVectors` | [Search/Witness.lean](Search/Witness.lean) |
+| Corollary 4.3, recovery from multipliers | `Search.recover_correct`, `Search.recover_signed_boolean` | [Search/Witness.lean](Search/Witness.lean) |
+| Corollary 4.4, mathematical threshold test and answer bounds | `Search.positiveReduce_search`, `Search.reduce_search_correct`, `Search.reduce_shortest_bound` | [Search/Shortest.lean](Search/Shortest.lean) |
+
+The §2.3 row describes reused verification infrastructure; no separate polynomial-time
+algorithm recovering multipliers from an arbitrary vector is claimed by `Search/Witness`.
+Corollary 4.4's full oracle/runtime claim is to be reconciled with the separate
+`Search/Turing.lean` job. The `Search/` docstrings delimit the mathematical results.
+<!-- TODO-for-dispatcher: update the Corollary 4.4 row after integrating Search/Turing.lean. -->
+
+The total source map removes zeros and uses fixed identity instances when normalization
+empties the list. The gadget degree is `2 * 2 ^ Nat.clog 2 (max 2 weights.length)`.
+Its exact `rho` is computed by `listL1 DK`; the upper estimate is used only in proofs.
+All loops depend on list length or unary degree. Binary weights, targets, and scales enter
+binary arithmetic; the runtime proof tracks their encoded size, including powers of five.
+
+## Detailed mathematical API
+
+The following signatures consolidate `specs/API-hp2n-amath.md`. Paths are relative to
+this folder. `Coeff`, `coeffSup`, `pairSup`, `moduleVector`, `FirstMinimum`, and `coeffOne`
+come from `Power2ModuleSVP`; `mul` is `IdealCVP.Cyclotomic.mul`. Open the root namespace
+and, for gadget statements, `Reduction`; rigidity declarations are in `Rigidity`.
 
 ## `Algebra/Norms.lean`
 

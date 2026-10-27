@@ -15,6 +15,7 @@ def coeffInner {d : ℕ} (a b : Coeff d) : ℤ := ∑ i, a i * b i
 def star {d : ℕ} (a : Coeff d) : Coeff d := fun i =>
   if h : i.val = 0 then a i else -a ⟨d - i.val, by omega⟩
 
+/-- Applying the coefficient adjoint twice gives the original polynomial. -/
 @[simp] theorem star_involutive {d : ℕ} (a : Coeff d) : star (star a) = a := by
   ext i
   by_cases hi : i.val = 0
@@ -26,19 +27,23 @@ def star {d : ℕ} (a : Coeff d) : Coeff d := fun i =>
       omega
     simp [star, hi, hrev, heq]
 
+/-- The coefficient adjoint preserves addition. -/
 @[simp] theorem star_add {d : ℕ} (a b : Coeff d) : star (a + b) = star a + star b := by
   ext i
   simp only [star, Pi.add_apply]
   split_ifs <;> ring
 
+/-- The coefficient adjoint commutes with integer scalar multiplication. -/
 @[simp] theorem star_smul {d : ℕ} (z : ℤ) (a : Coeff d) : star (z • a) = z • star a := by
   ext i
   simp only [star, Pi.smul_apply, smul_eq_mul]
   split_ifs <;> ring
 
+/-- The coefficient adjoint commutes with negation. -/
 @[simp] theorem star_neg {d : ℕ} (a : Coeff d) : star (-a) = -star a := by
   simpa only [neg_one_smul] using star_smul (-1) a
 
+/-- The coefficient adjoint commutes with finite sums. -/
 @[simp] theorem star_sum {ι : Type*} [Fintype ι] {d : ℕ} (a : ι → Coeff d) :
     star (∑ j, a j) = ∑ j, star (a j) := by
   ext i
@@ -69,10 +74,12 @@ theorem star_sum_finset {ι : Type*} {d : ℕ} (s : Finset ι) (a : ι → Coeff
   · have heq : d - r.val = e.val ↔ r.val = d - e.val := by omega
     simp [star, monomialInv, he, hr, monomial, Fin.ext_iff, heq]
 
+/-- The integer coefficient pairing is symmetric. -/
 @[simp] theorem coeffInner_comm {d : ℕ} (a b : Coeff d) :
     coeffInner a b = coeffInner b a := by
   simp only [coeffInner, _root_.mul_comm]
 
+/-- Negating the second argument negates the coefficient pairing. -/
 @[simp] theorem coeffInner_neg_right {d : ℕ} (a b : Coeff d) :
     coeffInner a (-b) = -coeffInner a b := by
   simp [coeffInner, Finset.sum_neg_distrib]

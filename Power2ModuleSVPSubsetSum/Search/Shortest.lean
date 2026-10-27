@@ -19,10 +19,11 @@ search relations, not the decision-to-total-search Turing reduction in this coro
 There is no declaration named `TuringReducible` in the surveyed checkout.
 
 This file formalises the mathematical one-query correctness and coefficient bounds. It does
-NOT claim polynomial-time Turing hardness in complexitylib: the gadget construction's
-polynomial-time TM certificate is not yet available in this project, and neither the oracle
-answer encoding/parser nor the oracle program's runtime is certified here. In particular the
-coefficient bound alone is not a formal polynomial bound in the source encoding length.
+NOT claim polynomial-time Turing hardness in complexitylib. The gadget construction has a
+polynomial-time TM certificate in `Runtime/Reduction.lean`; oracle answer encoding/parsing
+and the oracle program's runtime are separate obligations, not certified in this file.
+In particular the coefficient bound alone is not a formal polynomial bound in the source
+encoding length.
 No new oracle-machine framework is introduced.
 -/
 

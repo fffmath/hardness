@@ -30,6 +30,7 @@ theorem monomial_mul_monomial {d : ℕ} (e f : Fin d) :
   simp only [Finset.sum_ite_eq', Finset.mem_univ, ite_true]
   simp [monomial, Fin.ext_iff, eq_comm]
 
+/-- The explicit inverse cancels a coordinate monomial. -/
 @[simp] theorem monomial_mul_inv {d : ℕ} (e : Fin d) :
     mul (monomial e 1) (monomialInv e) = coeffOne (by have := e.isLt; omega) := by
   unfold monomialInv
