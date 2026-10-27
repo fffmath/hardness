@@ -6,8 +6,9 @@ import Power2IdealSVP.Ideal.Construction
 # Executable reduction and the ideal construction
 
 The list program agrees, intermediate by intermediate, with the coefficient construction.
-The sparse polynomial is interpreted directly from the runtime array, leaving equation (1)
-to the separate Spin development. All identities here hold even outside the main case.
+The sparse polynomial is interpreted directly from the runtime array. Equation (1) is
+discharged in `Glue.Correctness` using the Spin development. All identities here hold even
+outside the main case.
 
 Paper: `paper/power2-ideal-svp.pdf`, Section 1.5, equations (2) and (3).
 -/
@@ -216,9 +217,8 @@ theorem reduceList_mem_iff {x : Graph × ℕ} (hx : Runtime.mainCase x = true) :
   rw [reduceList_eq_outputInput hx]
   exact Ideal.outputInput_mem_iff _ (Runtime.degree_dyadic x) _ _ (runtimeTau_nonneg x)
 
-/-- Intermediate composition helper only: `hEq1` is the pending Spin equation (1).
-It must be discharged by the separate Spin development before claiming an unconditional
-reduction. The other two bridges and all non-main branches are proved in this worktree. -/
+/-- Compose a main-case spin equivalence with the source and ideal bridges.
+`Glue.runtime_eq1` discharges this premise in the unconditional correctness theorem. -/
 theorem reduceList_correct_of_eq1
     (hEq1 : ∀ x : Graph × ℕ, Runtime.mainCase x = true →
       (runtimeTau x ≤ Ideal.thetaOf (degree_pos x) (runtimeG x) ↔
