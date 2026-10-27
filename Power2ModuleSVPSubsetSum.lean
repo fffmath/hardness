@@ -1,3 +1,5 @@
+import Power2ModuleSVPSubsetSum.Problem
+
 /-!
 # Power2ModuleSVPSubsetSum
 

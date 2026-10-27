@@ -1,3 +1,5 @@
+import Power2IdealSVP.Problem
+
 /-!
 # Power2IdealSVP
 
