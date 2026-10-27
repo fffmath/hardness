@@ -1,0 +1,856 @@
+                      ModuleSVP(2)
+                               ∞ (Z[ζ2k ]) Is NP-Hard
+
+                                            Abstract
+          We prove deterministic NP-completeness of exact shortest-vector decision in the coef-
+     ficient maximum norm for full-rank free rank-two modules over power-of-two cyclotomic
+     rings. Our reduction from binary Subset Sum uses an explicit multiplication operator to
+     force the ring multiplier of every short vector to be a signed monomial. The construction
+     has polynomial binary size and also yields NP-hardness of exact shortest-vector search.
+
+
+1    Introduction
+Lattice-based cryptography is a central approach to post-quantum security, as illustrated by
+the standardization of ML-KEM and ML-DSA [10, 11]. Its security relies on the presumed
+hardness of lattice problems and related average-case problems, with worst-case-to-average-
+case reductions providing connections between them. Regev’s quantum reduction from
+worst-case lattice approximation problems to learning with errors is a fundamental exam-
+ple [12]. The complexity of basic lattice problems depends on the norm and the required
+approximation factor. Van Emde Boas established deterministic NP-hardness for exact
+closest-vector problems and exact maximum-norm SVP [13]. For Euclidean SVP, Ajtai
+proved NP-hardness under randomized reductions [1], and Micciancio proved       √ randomized
+hardness of approximation within every fixed factor strictly between one and 2 [9]. Recent
+preprints of Wan report deterministic hardness for exact Euclidean SVP and for approximation
+within every fixed constant factor greater than one [14, 15].
+    Algebraic structure permits compact representations and efficient arithmetic in lattice-
+based cryptography. It also imposes a substantive restriction on lattice hardness: a module
+contains all ring multiples of each vector, so a reduction must control more vectors than the
+integer combinations used in an ordinary lattice encoding. The ring and module worst-case-
+to-average-case reductions [7, 5] motivate studying these structured families. General lattice
+NP-hardness does not automatically persist under their algebraic restrictions.
+    Several recent results address this question for structured lattices. Liu, Feng, and Pan
+prove deterministic NP-completeness for exact SVP in the canonical Euclidean norm on free
+rank-two modules over Z[ζq ], where q ≡ 3 (mod 4) is prime [6]. Martin gives a dimension-
+preserving reduction from general Euclidean lattice problems to ideal-lattice problems in
+varying totally real monogenic orders [8]. Wan proves deterministic NP-completeness for
+coefficient Euclidean SVP on cyclic lattices associated with Z[X]/(X N − 1), where N = q − 1
+for varying odd primes [16]. These results concern different algebraic families or norms from
+the one studied here.
+    We prove hardness for free rank-two modules over the prescribed power-of-two cyclotomic
+rings
+                    Rn = Z[X]/(X n + 1) ∼ = Z[ζ2k ],     n = 2k−1 , k ≥ 1.
+          Pn−1     i
+For f =    i=0 fi X , define the coefficient maximum norm and its extension to two coordinates
+by
+                   kf k∞ = max |fi |,       k(f, g)k∞ = max{kf k∞ , kgk∞ }.
+                            0≤i<n
+
+If G ∈ Rn2×2 has nonzero determinant, put
+
+                      Λ(G) = GRn2 ,        λ1,∞ (Λ(G)) =      min      kvk∞ .
+                                                           06=v∈Λ(G)
+
+
+                                                 1
+Theorem 1.1. Given a power of two n, a matrix G ∈ Rn2×2 with det G 6= 0, and an integer
+T ≥ 0, deciding whether λ1,∞ (Λ(G)) ≤ T is NP-complete under deterministic polynomial-time
+many-one reductions. Finding an exact shortest nonzero vector in this family is NP-hard
+under deterministic polynomial-time Turing reductions.
+    The module rank is fixed at two, while the ring degree and the decision radius vary with
+the input. All polynomial coefficients are explicitly represented binary integers. For a Subset
+Sum instance with s weights, our reduction produces n = O(s) and has polynomial binary
+size. Its YES instances have first minimum exactly M , whereas its NO instances have first
+minimum at least M + 1. Thus the theorem establishes exact hardness in the coefficient
+maximum norm; this additive separation does not give a fixed relative approximation factor.
+    To explain the proof, first recall the Boolean encoding available for ordinary lattices. Let
+(w1 , . . . , ws ; B) be a Subset Sum instance with positive integer weights and nonnegative
+target, and set
+                      s
+                      X
+                W =         wj ,       C = 2(W + B + 1),   1 = (1, . . . , 1) ∈ Zs .
+                      j=1
+
+Consider the full-rank integer lattice
+                                                               
+                           s
+                           X                                    
+      Lcl = 2a − b1, b, 2    wj aj − Bb + Cc : a ∈ Zs , b, c ∈ Z ⊆ Zs+2 .                (1.1)
+                                                                 
+                                     j=1
+
+Its basis has determinant of absolute value 2s C and polynomial binary length. A vector of
+norm at most one has b ∈ {0, ±1}. If b = 0, its first block forces a = 0 and its last coordinate
+forces c = 0. A nonzero short vector can therefore be negated to have b = 1. Its first block
+then gives a ∈ {0, 1}s . The last coordinate is even and hence zero. Since
+                                                
+                                      X
+                                   2  wj aj − B  ≤ 2(W + B) < C,
+                                      j
+                                     P
+this equality forces c = 0 and j wj aj = B. Conversely, every satisfying assignment gives
+a vector of norm one. This embedding gives a direct deterministic reduction from binary
+Subset Sum to maximum-norm SVP.
+    Our module construction retains the Boolean expression as 2a − ub, where a, b ∈ Rn and
+u marks the positions of the weights. The additional difficulty is that the homogenizing
+multiplier b is now a polynomial. Even a bound kbk∞ ≤ 1 allows many coefficients to be
+nonzero. We construct a multiplier filter which instead forces every nonzero short multiplier
+to belong to
+                            Un = {εX j : ε ∈ {−1, 1}, 0 ≤ j < n}.
+These units act by signed permutations of coefficients. Multiplying by b−1 therefore preserves
+the norm and reduces the problem to the Boolean encoding with b = 1.
+     The filter uses D = 1 + X n/2 to control the total absolute coefficient mass in each
+opposite pair. A second multiplication operator is skew-adjoint, meaning that its adjoint
+is its negative for the coefficient inner product. The short-vector inequalities make certain
+products nonpositive, while skew-adjointness makes their sum zero. Each product must
+consequently vanish. Powers of five separate the individual shift tests, and tests at both
+positions of an occupied pair force every other coefficient to vanish. After this normalization,
+reversed weights encode the subset sum in a constant coefficient, and an opposite coefficient
+imposes the reverse inequality. Together they force equality with the target.
+     Section 2 fixes the algebraic and computational definitions. Section 3 proves multiplier
+rigidity. Section 4 gives the reduction, proves its correctness and polynomial size, and derives
+witness recovery and search hardness. Section 5 concludes with the scope of the construction.
+
+                                                  2
+2     Preliminaries
+2.1   Cyclotomic number fields and coefficient arithmetic
+An algebraic number field is a finite extension of Q. Its ring of integers consists of the
+elements satisfying a monic polynomial with integer coefficients. In this paper, for a power of
+two n, we use
+
+             ζ2n = eπi/n ,         Kn = Q(ζ2n ),              Rn = Z[ζ2n ] ∼
+                                                                           = Z[X]/(X n + 1).
+
+Here Rn is the full ring of integers of Kn [17]. The polynomial X n + 1 is irreducible: after
+the substitution X 7→ X + 1, its constant coefficient is two, all intermediate coefficients are
+even, and its leading coefficient is one, so Eisenstein’s criterion at two applies. Thus
+                                                                      n−1
+                                                                      M
+                                   [Kn : Q] = n,              Rn =          ZX i
+                                                                      i=0
+
+and Rn is an integral domain. We identify X with ζ2n under the displayed isomorphism. All
+ring products are reduced using X n = −1.
+    For f ∈ Rn , write its unique coefficient representation as
+                                n−1
+                                X
+                       f=             fi X i ,       coeff n (f ) = (f0 , . . . , fn−1 )T .
+                                i=0
+
+For two coordinates we concatenate the arrays:
+                                                                            !
+                                                               coeff n (f )
+                                         coeff 2n (f, g) =                  .
+                                                               coeff n (g)
+
+The coefficient norms and inner product, also defined for real arrays, are
+                          n−1
+                          X                                                                n−1
+                                                                                           X
+                kf k1 =         |fi |,           kf k∞ = max |fi |,             hf, gi =         fi gi .   (2.1)
+                                                          0≤i<n
+                          i=0                                                              i=0
+
+The coefficient maximum norm on a pair is the maximum of the two coordinate maximum
+norms.
+    For any integer index i, use Euclidean division i = qn + r, where q ∈ Z and 0 ≤ r < n, to
+define
+                                fei = (−1)q fr ,   fei+n = −fei .
+This antiperiodic extension records the signs in the shift identity
+
+                                         (X d f )i = fei−d        (d ∈ Z).                                 (2.2)
+
+In particular, multiplication by a signed monomial is a signed permutation of the coefficient
+array. The set
+                             Un = {εX j : ε ∈ {−1, 1}, 0 ≤ j < n}                       (2.3)
+therefore consists of norm-preserving units. Their inverses are integral ring elements because
+X −j = −X n−j for 1 ≤ j < n.
+   The involution induced by complex conjugation is
+
+                                 f ∗ = f (X −1 ),             X −1 = −X n−1 .
+
+
+
+                                                          3
+It is also the adjoint of multiplication for the coefficient inner product:
+
+                         hf g, hi = hg, f ∗ hi,               kf gk∞ ≤ kf k1 kgk∞ .                    (2.4)
+
+Indeed, the transpose of the signed shift g 7→ X i g is h 7→ X −i h, so
+
+                                                                  fi hg, X −i hi = hg, f ∗ hi.
+                                  X                        X
+                     hf g, hi =        fi hX i g, hi =
+                                  i                           i
+
+The second identity follows from the triangle inequality:
+
+                                  X                      X
+                    kf gk∞ =          fi X i g       ≤        |fi | X i g        = kf k1 kgk∞ .
+                                                                             ∞
+                                  i              ∞        i
+
+   For a linear operator A on the real coefficient space, its adjoint A† is defined by
+
+                                           hAx, yi = hx, A† yi.
+
+The operator is called skew-adjoint if
+
+                                                 A† = −A.
+
+Thus multiplication by a polynomial K is skew-adjoint precisely when K ∗ = −K. In that
+case, symmetry of the real inner product gives
+
+             hb, Kbi = hKb, bi = hb, K ∗ bi = −hb, Kbi,                      hence      hb, Kbi = 0.   (2.5)
+
+These adjoints concern the coefficient inner product used throughout the paper.
+
+2.2   Lattices, SVP, and rank-two modules
+A lattice with integer basis matrix B ∈ ZN ×d , whose columns are linearly independent, is
+
+                                      Λ(B) = {Bz : z ∈ Zd } ⊆ RN .
+
+Its rank is d, and it is full rank in its ambient space when d = N . For the maximum norm,
+the first minimum is
+                                λ1,∞ (Λ(B)) = min       max |vi |.
+                                                         06=v∈Λ(B) 1≤i≤N
+
+The decision version of exact `∞ -SVP asks, given (B, T ) with integer T ≥ 0, whether
+λ1,∞ (Λ(B)) ≤ T . The search version asks for a nonzero lattice vector attaining this minimum.
+   In the structured problem studied here, a module basis is a matrix
+
+                               G = (g1 g2 ) ∈ Rn2×2 ,                 det G 6= 0,
+
+and its module is                                             (         !              )
+                                                                    a
+                        Λ(G) = Rn g1 + Rn g2 =                    G         : a, b ∈ Rn .              (2.6)
+                                                                    b
+Since G is invertible over Kn , its two columns are Rn -linearly independent. Every element has
+unique multipliers (a, b), so the module is free of rank two. The vectors X j gi , for i ∈ {1, 2}
+and 0 ≤ j < n, form an integer basis of its coefficient lattice in Z2n . They span because
+1, X, . . . , X n−1 span Rn ; a linear relation among them would give G(a, b)T = 0, forcing
+a = b = 0.
+
+
+                                                          4
+   For explicit computations, let Cn (f ) be the integer matrix of multiplication by f :
+                                       (
+                                           fi−j ,          i ≥ j,
+                       (Cn (f ))ij =                                  0 ≤ i, j < n.
+                                           −fn+i−j ,       i < j,
+
+Its jth column is coeff n (X j f ). The coefficient basis matrix and its defining identity are
+                                            !                             !!                  !
+                   Cn (G11 ) Cn (G12 )                                a           coeff n (a)
+             G
+             b=                        ,               coeff 2n     G          =G
+                                                                                b              .   (2.7)
+                   Cn (G21 ) Cn (G22 )                                b             coeff n (b)
+
+In particular, Gb is a nonsingular 2n × 2n integer matrix. Conversely, singularity of G over
+Kn gives a nonzero kernel vector with rational coefficient arrays and hence a rational kernel
+vector for G.
+            b Thus the nonsingularity conditions are equivalent and can be checked by exact
+rational linear algebra.
+
+Definition 2.1 (Exact rank-two module SVP). The input to ModuleSVP(2)
+                                                                  ∞ is
+
+                  n a power of two,             G ∈ Rn2×2 , det G 6= 0,           T ∈ Z≥0 .
+
+The entries of G are explicit length-n coefficient arrays, and all integers are encoded in binary.
+The question is whether
+                                 ∃ v ∈ Λ(G) \ {0} : kvk∞ ≤ T,
+or equivalently λ1,∞ (Λ(G)) ≤ T . Malformed inputs are rejected. The corresponding exact
+search problem takes (n, G) and asks for a shortest nonzero module vector.
+
+Proposition 2.2. The language ModuleSVP(2)
+                                       ∞ belongs to NP.
+
+Proof. Let N = 2n and let A ≥ 1 bound the absolute entries of G.
+                                                              b A certificate consists of
+integer vectors v, t satisfying
+
+                                  0 < kvk∞ ≤ T,                   Gt
+                                                                  b = v.
+
+We verify these conditions by integer arithmetic. It remains to show that every YES instance
+has such a certificate of polynomial length. Choose any nonzero module vector v of norm at
+most T . Its unique coefficient multiplier vector is an integer t. By Cramer’s rule, for each
+coordinate,
+                                             det G
+                                                 b i (v)
+                                        ti =             ,
+                                               det Gb
+
+where Gb i (v) replaces column i by v. Put U = max{A, T, 1}. Every column of G
+                           √
+                                                                             b i (v) has
+Euclidean norm at most N U , so Hadamard’s inequality gives
+                                             b i (v)| ≤ N N/2 U N .
+                                       | det G
+
+The nonzero denominator is an integer of absolute value at least one. Thus each ti has
+O(N (log(N + 1) + log(U + 1))) bits. The vector v has O(N log(T + 2)) bits. Both lengths are
+polynomial in the explicit input length, and checking the displayed equations is polynomial
+time. Input validity can also be checked in polynomial time, using the nonsingularity test
+above. If T = 0, there is no nonzero witness.
+
+
+
+
+                                                       5
+2.3   Membership and recovery of multipliers
+Lemma 2.3. Given valid (n, G) and v ∈ Rn2 , one can decide in polynomial bit time whether
+v ∈ Λ(G) and, if so, recover its unique multipliers (a, b) ∈ Rn2 .
+
+Proof. Use (2.7) to solve
+                                              Gt
+                                              b = coeff 2n (v)
+
+over Q. There is a unique rational solution because G  b is nonsingular. It is integral if and only
+if v belongs to the module: an integral solution gives the two coefficient arrays of a, b, while
+every module representation gives such an integral solution. Exact Gaussian elimination, or
+fraction-free elimination followed by divisibility tests, computes this solution in polynomial
+bit time [2]. The same determinant bounds used in Proposition 2.2, with T replaced by the
+largest absolute coefficient of v, bound the binary lengths of the numerators and denominator.
+Splitting an integral t into its two length-n blocks recovers a, b.
+
+2.4   The subset-sum problem
+A binary Subset Sum instance consists of
+
+                            s ≥ 1,       (w1 , . . . , ws ) ∈ Zs>0 ,       B ∈ Z≥0 .
+
+It is a YES instance precisely when
+                      s
+                      X
+                            wj ξ j = B       for some ξ = (ξ1 , . . . , ξs ) ∈ {0, 1}s .                      (2.8)
+                      j=1
+
+All weights and the target are encoded in binary. The empty subset is allowed, and repeated
+weights are distinguished by their positions. This problem is NP-complete under deterministic
+polynomial-time many-one reductions [4, 3]; its positive-target restriction already has this
+property. A proposed Boolean word is verified by binary addition in polynomial time.
+    For the size estimates, use
+                                                                                           s
+                                                                                           X
+       bits(t) = max{1, dlog2 (t + 1)e}         (t ∈ Z≥0 ),            ` = s + bits(B) +         bits(wj ).
+                                                                                           j=1
+
+This is a binary input-length measure up to constant encoding overhead. Throughout the
+reduction, polynomial time refers to bit operations in `, rather than to the numerical values
+of the weights.
+
+
+3     Rigidity of short multipliers
+Fix n = 2m with n a power of two and m ≥ 2. Define
+                                                                                   m−1
+                                                −d
+                                                                                   X
+                  m                      d
+      D =1+X ,               S   (d)
+                                       =X −X          (1 ≤ d < m),            K=         5d−1 S (d) .         (3.1)
+                                                                                   d=1
+
+For 0 ≤ j < m, call {j, j + m} an opposite pair. It is occupied by b when (bj , bj+m ) 6= (0, 0).
+
+
+
+
+                                                       6
+Lemma 3.1. For every b ∈ Rn ,
+
+                            kDbk∞ = max (|bj | + |bj+m |) ≥ kbk∞ .                           (3.2)
+                                        0≤j<m
+
+Moreover,
+
+                         D∗ D = 2,       K ∗ = −K,        hDb, DKbi = 0,                     (3.3)
+                  K0 = Km = (DK)0 = (DK)m = 0,               kDKk1 ≤ 5m−1 − 1.               (3.4)
+
+Proof. Since X 2m = −1, the coefficients of X m b at positions j and j + m are −bj+m and bj ,
+respectively. Hence multiplication by D acts on each opposite pair as
+
+                          ((Db)j , (Db)j+m ) = (bj − bj+m , bj + bj+m ).
+
+For real c, e,
+
+                   max{|c − e|, |c + e|}2 = max{c2 + e2 − 2ce, c2 + e2 + 2ce}
+                                          = c2 + e2 + 2|ce| = (|c| + |e|)2 .
+
+Both sides before squaring are nonnegative, so taking square roots and then the maximum
+over all opposite pairs proves the equality in (3.2). Each coefficient of b belongs to one pair
+and is bounded by that pair’s absolute sum, proving the final inequality.
+   The relation X 2m = −1 also gives X −m = −X m . Therefore
+
+                 D∗ = 1 − X m ,      D∗ D = (1 − X m )(1 + X m ) = 1 − X 2m = 2.
+
+For every 1 ≤ d < m, applying the involution gives
+
+                                  (S (d) )∗ = X −d − X d = −S (d) ,
+
+so K ∗ = −K by linearity. Symmetry of the coefficient inner product and (2.4) imply
+
+                            hb, Kbi = hKb, bi = hb, K ∗ bi = −hb, Kbi,
+
+whence hb, Kbi = 0. Using D∗ D = 2 now yields
+
+                           hDb, DKbi = hb, D∗ DKbi = 2hb, Kbi = 0.
+
+   For 1 ≤ d < m, we have X −d = −X n−d and thus S (d) = X d + X n−d . The two
+exponent ranges 1, . . . , m − 1 and m + 1, . . . , n − 1 are disjoint and avoid 0, m. Consequently
+K0 = Km = 0. Applying the pair formula to K gives
+
+                      ((DK)0 , (DK)m ) = (K0 − Km , K0 + Km ) = (0, 0).
+
+There are exactly two coefficients 5d−1 for each d, all positive. Therefore the geometric sum
+gives
+                                  m−1
+                                  X            5m−1 − 1      5m−1 − 1
+                       kKk1 = 2       5d−1 = 2            =           .
+                                  d=1
+                                                 5−1              2
+Finally, the triangle inequality and signed-shift invariance imply
+
+             kDKk1 = kK + X m Kk1 ≤ kKk1 + kX m Kk1 = 2 kKk1 = 5m−1 − 1.
+
+This proves all the asserted identities and bounds.
+
+                                                 7
+Lemma 3.2 (Support rigidity). Suppose b ∈ Rn satisfies kDbk∞ ≤ 1 and Kb vanishes at
+both positions of every occupied opposite pair of b. Then b = 0 or b ∈ Un .
+
+Proof. By (3.2), |bj | + |bj+m | ≤ 1 for every 0 ≤ j < m. The two coefficients are integers, so
+each occupied pair contains exactly one coefficient equal to 1 or −1 and one zero coefficient.
+In particular, every coefficient of b, and hence every coefficient in its antiperiodic extension,
+belongs to {−1, 0, 1}. The shift formula in Section 2 therefore gives
+
+                            (S (d) b)i = ebi−d − ebi+d ∈ {−2, −1, 0, 1, 2}.
+
+    Fix a position i at which Kb vanishes, and write cd = (S (d) b)i . By (3.1),
+                                                       m−1
+                                                       X
+                                     0 = (Kb)i =             5d−1 cd .
+                                                       d=1
+
+Reducing this equality modulo five shows that c1 is divisible by five. As −2 ≤ c1 ≤ 2, it
+follows that c1 = 0. Removing that term and dividing by five gives the same statement for
+c2 ; continuing in this way proves cd = 0 for every 1 ≤ d < m. Thus all individual shift tests
+vanish at every position where Kb vanishes.
+     If b 6= 0, choose an occupied pair {j, j + m} with 0 ≤ j < m. By hypothesis, both positions
+satisfy every shift test. For 1 ≤ d < m, the dth test at j and the (m − d)th test at j + m give
+
+                      0 = (S (d) b)j = ebj−d − ebj+d ,
+                      0 = (S (m−d) b)j+m = ebj+d − ebj+2m−d = ebj+d + ebj−d .
+
+The final equality uses antiperiodicity with period n = 2m. Adding and subtracting these two
+equations yields ebj−d = ebj+d = 0. Modulo 2m, the offsets d for 1 ≤ d < m give 1, . . . , m − 1,
+while the offsets −d give m + 1, . . . , 2m − 1. These disjoint ranges exhaust every residue
+except 0, m. Translating by j shows that all coefficients of b outside {j, j + m} vanish; the
+signs introduced by the antiperiodic extension do not affect vanishing. The chosen pair is
+occupied and has absolute coefficient sum at most one, so it contains exactly one nonzero
+coefficient, equal to 1 or −1. Hence b ∈ Un .
+
+Proposition 3.3 (Multiplier rigidity). Let H, V ∈ Rn , and put
+
+                F = kHk1 ,           ν = kV k1 ,                         ρ = kDKk1 ,
+                                                                                             (3.5)
+                L = F + ν + 1, M = 2(Lρ + ν) + F + 1, Q = M D + LDK.
+
+For all b, z ∈ Rn ,
+
+                 kzk∞ ≤ 1,     kHz − (Q + V )bk∞ ≤ M                =⇒      b ∈ {0} ∪ Un .   (3.6)
+
+These parameters are computable deterministically in time polynomial in n and the binary
+lengths of the coefficients of H, V .
+
+Proof. Assume the two inequalities in (3.6), and set t = kDbk∞ . Since Db has integer
+coefficients, t is a nonnegative integer. Equation (3.2) gives kbk∞ ≤ t. Applying (2.4) to each
+product gives
+
+                                    kHzk∞ ≤ kHk1 kzk∞ ≤ F,
+                                 kDKbk∞ ≤ kDKk1 kbk∞ ≤ ρt,
+                                    kV bk∞ ≤ kV k1 kbk∞ ≤ νt.
+
+
+                                                   8
+From Q = M D + LDK and the triangle inequality, we obtain
+          M t = kM Dbk∞ ≤ kHz − (Q + V )bk∞ + kHzk∞ + L kDKbk∞ + kV bk∞
+                            ≤ M + F + (Lρ + ν)t.
+Thus
+                                   (M − Lρ − ν)t ≤ M + F.
+The coefficient on the left is positive, since M − Lρ − ν = Lρ + ν + F + 1 > 0. If t ≥ 2, it
+follows that
+                         2(M − Lρ − ν) ≤ (M − Lρ − ν)t ≤ M + F,
+and hence
+                                 M ≤ 2(Lρ + ν) + F = M − 1,
+a contradiction. Therefore t ≤ 1. In particular, every occupied pair of b contains a single sign
+coefficient, and the pair formula shows that r = Db has two coefficients in {−1, 1} at that
+pair and zero coefficients at every unoccupied pair.
+    Write v = DKb and e = V b − Hz. The preceding product bounds and t ≤ 1 give
+                         kek∞ ≤ kV bk∞ + kHzk∞ ≤ νt + F ≤ ν + F.
+The second premise in (3.6) is equivalent to |M ri + Lvi + ei | ≤ M for every coefficient position
+i. At a position with ri 6= 0, we have ri ∈ {−1, 1}, so
+               M + Lri vi + ri ei = ri (M ri + Lvi + ei ) ≤ |M ri + Lvi + ei | ≤ M.
+Subtracting M and rearranging yields
+                          Lri vi ≤ −ri ei ≤ |ei | ≤ ν + F = L − 1 < L.
+Since L > 0, this gives ri vi < 1. Both ri and vi are integers, so ri vi ≤ 0. At positions with
+ri = 0 the product is zero. On the other hand, (3.3) says
+                                   n−1
+                                   X
+                                         ri vi = hDb, DKbi = 0.
+                                   i=0
+Every summand is nonpositive, so each must be zero. Consequently vi = 0 whenever ri 6= 0.
+   For an occupied pair {j, j+m}, both rj and rj+m are nonzero, and therefore vj = vj+m = 0.
+Put w = Kb, so v = Dw. The pair formula gives
+                           vj = wj − wj+m ,          vj+m = wj + wj+m .
+Solving these two equations explicitly gives
+                            vj + vj+m                   vj+m − vj
+                      wj =             = 0,      wj+m =           = 0.
+                                 2                           2
+Thus Kb vanishes at both positions of every occupied pair. Together with kDbk∞ = t ≤ 1,
+this verifies both hypotheses of Lemma 3.2 and proves b ∈ {0} ∪ Un .
+    For the complexity claim, suppose the coefficients of H, V have at most τ ≥ 1 bits each.
+Their absolute sums F, ν are at most n2τ , so they have O(τ + log n) bits. The largest
+coefficient of K is 5m−2 , whose binary length is O(m) = O(n), and (3.4) gives ρ ≤ 5m−1 − 1.
+Thus L has O(τ + log n) bits and M = 2Lρ + 2ν + F + 1 has O(n + τ + log n) bits. Since
+                          kQk∞ ≤ M kDk∞ + L kDKk∞ ≤ M + Lρ,
+the coefficients of Q satisfy the same bit bound. The coefficients of K can be generated by
+successive multiplication by five, DK by one signed shift and addition, and F, ν, ρ by summing
+absolute coefficients. The remaining formulas use integer additions and multiplications on
+numbers of the stated lengths. There are polynomially many such operations, so the entire
+construction runs in deterministic polynomial bit time.
+
+                                                 9
+4     The reduction and proof of hardness
+Given a Subset Sum instance (w1 , . . . , ws ; B), choose
+                                                                                      s
+                         m = 2dlog2 max{2,s}e ,
+                                                                                      X
+                                                          n = 2m,             W =           wj .      (4.1)
+                                                                                      j=1
+
+Thus m is the least power of two that is at least max{2, s}. For s ≥ 2 we have s ≤ m < 2s,
+and hence 2s ≤ n < 4s. For s = 1, the choice is m = 2, n = 4. In all cases, s ≤ m, m ≥ 2,
+and 2s ≤ n ≤ 4s. Define the following elements of Rn :
+                   s                                  s
+                                                              wj X −(j−1) ,
+                   X                                  X
+              u=         X j−1 ,                 h=                                    E = 2B − W,
+                   j=1                                j=1                                             (4.2)
+                             m            ∗                         m             ∗
+             H = (1 − X )h = D h, V = E(1 − X ) = ED .
+
+The negative powers are interpreted in Rn , where X n = −1. Apply Proposition 3.3 to H, V ,
+using F = kHk1 , ν = kV k1 , and ρ = kDKk1 , to obtain L, M, Q. Form
+                                                                          !
+                                               2H     −Hu − Q − V
+                                     G=                                       .                       (4.3)
+                                               2M       −M u
+
+The output of the reduction is (n, G, M ).
+
+4.1   Boolean encoding and the equality test
+Lemma 4.1. For every a ∈ Rn ,
+                                                          s
+                                                          X
+           k2a − uk∞ ≤ 1           ⇐⇒         a = aξ :=         ξj X j−1 for a unique ξ ∈ {0, 1}s .   (4.4)
+                                                          j=1
+                       Ps
+For such ξ, put A =        j=1 wj ξj and zξ = 2aξ − u. Then
+                                                          
+                                 Hzξ − Q − V, M zξ             ∞
+                                                                   = M + 2|A − B|.                    (4.5)
+
+Proof. Write a = n−1           i
+                      i=0 ai X . At positions 0 ≤ i < s, the inequality in (4.4) is |2ai − 1| ≤ 1.
+                   P
+
+Since ai is integral, this is equivalent to ai ∈ {0, 1}. At positions s ≤ i < n, it is |2ai | ≤ 1,
+which is equivalent to ai = 0. These conditions prove both directions of (4.4) and the
+uniqueness of ξ. They also show that zξ has coefficients 2ξj − 1 ∈ {−1, 1} at positions j − 1,
+1 ≤ j ≤ s, and zero elsewhere. In particular, kzξ k∞ = 1.
+   Consider the Laurent expansion
+                                                    s
+                                                    X
+                                   f := hzξ =             wj (2ξk − 1)X k−j .
+                                                  j,k=1
+
+Every exponent belongs to [−s + 1, s − 1] ⊆ [−m + 1, m − 1]. A negative exponent −r, with
+1 ≤ r < m, reduces to −X n−r ; a nonnegative exponent in this interval is already between 0
+and m − 1. Thus, after reduction to the coefficient basis of Rn , only the terms with j = k
+contribute at position 0, and no term contributes at position m. Consequently
+                                   s
+                                   X
+                            f0 =         wj (2ξj − 1) = 2A − W,                fm = 0.
+                                   j=1
+
+
+
+                                                        10
+Multiplication by D∗ = 1 − X m sends an opposite pair (fi , fi+m ) to (fi + fi+m , fi+m − fi ).
+Since Hzξ = D∗ f , the pair at 0, m is therefore
+
+             (Hzξ )0 = f0 + fm = 2A − W,           (Hzξ )m = fm − f0 = −2A + W.
+
+    By (3.4), the coefficients of DK at 0, m vanish. The definition Q = M D + LDK therefore
+gives Q0 = Qm = M , whereas V = E(1 − X m ) gives V0 = E and Vm = −E. Using
+E = 2B − W , the two corresponding coefficients of the first coordinate are
+
+                (Hzξ − Q − V )0 = (2A − W ) − M − E = −M + 2(A − B),
+                                                                                           (4.6)
+               (Hzξ − Q − V )m = (−2A + W ) − M + E = −M − 2(A − B).
+
+For M ≥ 0 and a real number δ, max{| − M + δ|, | − M − δ|} = M + |δ|. Indeed, if δ ≥ 0,
+the second term is M + δ and bounds the first; the case δ ≤ 0 interchanges the terms. Thus
+the maximum absolute value in (4.6) is M + 2|A − B|.
+    At every other position, the coefficients of M D and V are zero. The convolution inequality
+(2.4) and kzξ k∞ = 1 yield
+
+         |(Hzξ − Q − V )i | ≤ kHzξ k∞ + L kDKk∞ ≤ F + Lρ < M               (i ∈
+                                                                              / {0, m}).
+
+The last inequality is strict because M − (F + Lρ) = Lρ + 2ν + 1 > 0. Finally, kM zξ k∞ = M .
+The two coefficients in (4.6) consequently determine the norm of the whole vector, proving
+(4.5).
+
+4.2   Correctness and size of the reduction
+Proposition 4.2. The matrix (4.3) has nonzero determinant, and
+
+                                 λ1,∞ (Λ(G)) = M       (YES),
+                                                                                           (4.7)
+                            M + 1 ≤ λ1,∞ (Λ(G)) ≤ 2M           (NO).
+
+The construction is deterministic polynomial time in the binary input length `, and its output
+length is O(`2 ).
+Proof. We first compute the norms used in the parameters and verify that G defines a
+full-rank free rank-two module. For 2 ≤ j ≤ s, the relations X −(j−1) = −X n−j+1 and
+X m−(j−1) = X m−j+1 give
+                                           s
+                                           X
+                       H = w1 − w1 X m −         wj X m−j+1 + X n−j+1 .
+                                                                       
+
+                                           j=2
+
+The exponents in the first nonconstant sum range from m − s + 1 to m − 1, and those in
+the second range from n − s + 1 to n − 1. Because s ≤ m, these ranges lie in [1, m − 1] and
+[m + 1, n − 1], respectively. They are disjoint and avoid 0, m; for s = 1 both sums are empty.
+Every weight therefore occurs in two distinct coefficients, and
+
+                                   F = 2W,         ν = 2|E|.                               (4.8)
+
+Expanding the determinant of (4.3) gives
+
+                det G = (2H)(−M u) − (−Hu − Q − V )(2M ) = 2M (Q + V ).
+
+Its factor Q + V has constant coefficient M + E, since Q0 = M . From M = 2(Lρ + ν) + F + 1
+we have M > ν = 2|E|, so M + E > 0. In particular, Q + V is a nonzero element of Rn . As
+M > 0 and Rn is a domain, det G 6= 0.
+
+                                              11
+    For arbitrary multipliers a, b ∈ Rn , put z = 2a − ub. Direct multiplication of the two rows
+of G yields            !                              !                     !
+                     a        2Ha − (Hu + Q + V )b          Hz − (Q + V )b
+                  G      =                              =                     .             (4.9)
+                     b              2M a − M ub                   Mz
+Suppose this vector is nonzero and has norm at most M . Since M > 0, its second coordinate
+implies kzk∞ ≤ 1. The first coordinate then supplies the other hypothesis of Proposition 3.3,
+so b = 0 or b ∈ Un . If b = 0, we have z = 2a. Every coefficient of 2a is an even integer
+with absolute value at most one, whence a = z = 0 and the vector in (4.9) is zero. This
+contradiction excludes b = 0.
+    It follows that b = εX j ∈ Un . Multiplication of both coordinates by b−1 preserves the
+coefficient maximum norm and commutes with multiplication by G. With a0 = ab−1 we
+obtain                          !          !                        !
+                              a        a 0      H(2a 0 − u) − Q − V
+                       b−1 G      =G         =                       .
+                              b        1            M (2a0 − u)
+Its second coordinate gives k2a0 − uk∞ ≤ 1. Lemma 4.1 consequently identifies a0 = aξ for a
+unique ξ ∈ {0, 1}s and gives
+
+                                                        s
+                               G(a0 , 1)T
+                                                        X
+                                                =M +2         wj ξ j − B .
+                                            ∞
+                                                        j=1
+
+The assumed bound by M forces the absolute value to vanish. Thus every nonzero vector of
+norm at most M determines a satisfying assignment and has norm exactly M . In particular,
+there is no nonzero vector of norm less than M in any output lattice.
+    Conversely, if ξ satisfies j wj ξj = B, then Lemma 4.1 gives a lattice vector G(aξ , 1)T of
+                              P
+
+norm M . It is nonzero because its second coordinate has norm kM zξ k∞ = M > 0. Hence a
+YES instance has first minimum exactly M . A NO instance has no nonzero vector of norm
+at most M ; since all coefficients are integral, its first minimum is at least M + 1. The first
+column (2H, 2M )T is a nonzero lattice vector of norm 2M : indeed, kHk∞ ≤ F < M , whereas
+its second coordinate is the constant 2M . This proves both bounds in (4.7).
+    To estimate the binary length, put
+
+                A0 = W + B + 1,             β = dlog2 (W + B + 2)e,          q = 5m−1 .
+
+Equations (3.4) and (4.8) imply
+
+      F + 1 = 2W + 1 < 2A0 ,           ν = 2|2B − W | ≤ 4B + 2W < 4A0 ,              0 ≤ ρ < q.
+
+Moreover,
+                      L = 2W + 2|2B − W | + 1 ≤ 4W + 4B + 1 < 4A0 .
+Substitution in the definition of M now gives, since q ≥ 5,
+
+                             M = 2Lρ + 2ν + F + 1
+                               < 8A0 q + 10A0 ≤ 10A0 q < 16A0 5m−1 .
+
+Since A0 < 2β , this gives
+                                 log2 M < 4 + β + (m − 1) log2 5.
+Thus M has O(m + β) = O(s + β) bits. The coefficients of the upper-right entry of G satisfy
+
+              kHu + Q + V k∞ ≤ kHk1 kuk∞ + M kDk∞ + L kDKk∞ + kV k∞
+                                  ≤ F + M + Lρ + ν < 2M,
+
+                                                  12
+because kuk∞ = kDk∞ = 1 and M − (F + Lρ + ν) = Lρ + ν + 1 > 0. The coefficients of 2H
+are bounded by 2F < 2M , those of −M u by M , and the remaining entry is the constant 2M .
+Thus every basis coefficient is bounded in absolute value by 2M . Writing all four entries in
+the coefficient basis requires O(n log(M + 2)) = O(s(s + β)) bits, including the radius and
+the degree within the same bound.
+    For completeness, s = O(`) because the input lists s weights, and β = O(`) because
+the binary lengths of W and B are bounded by the input length and the logarithm of
+the number of weights. Hence the output length is O(`2 ). The degree in (4.1) can be
+found by successive doubling, and the coefficients of K by successive multiplication by five.
+Constructing H, V, L, M, Q, G then uses polynomially many additions and multiplications of
+integers of polynomial binary length; polynomial products may be computed by ordinary
+coefficient convolution and reduction modulo X n + 1. The entire construction is therefore
+deterministic polynomial time.
+
+Proof of Theorem 1.1 (decision). Proposition 4.2 gives a deterministic polynomial-time many-
+one reduction from binary Subset Sum. Malformed input encodings may be mapped to
+the fixed NO instance (n, G, T ) = (4, 2I2 , 1). Together with Proposition 2.2, this proves the
+asserted NP-completeness.
+
+4.3    Witness recovery and exact search
+Corollary 4.3. For a Subset Sum instance and its reduction output, the map
+                                                           s
+                                   !
+                               aξ                          X
+                (ξ, b) 7−→ b G    ,        ξ ∈ {0, 1}s ,         wj ξj = B,   b ∈ Un ,         (4.10)
+                               1                           j=1
+
+is a bijection onto the nonzero vectors in Λ(G) of norm at most M . Its inverse is computable
+in polynomial bit time. In particular, if the instance has Nsol solutions, there are exactly
+2nNsol such vectors.
+
+Proof. For every satisfying assignment ξ, the vector G(aξ , 1)T has norm M by Lemma 4.1.
+Multiplication by b ∈ Un preserves that norm and keeps the vector in Λ(G), so (4.10) has the
+stated codomain. Conversely, let v be any nonzero lattice vector of norm at most M . Since
+det G 6= 0, it has unique multipliers a, b ∈ Rn with v = G(a, b)T . The soundness proof gives
+b ∈ Un and ab−1 = aξ for a satisfying assignment ξ. Therefore
+                                                 !            !
+                                         baξ              aξ
+                                     v=G             = bG    ,
+                                          b               1
+
+proving surjectivity.
+    If the pairs (ξ, b) and (ξ 0 , b0 ) have the same image, then injectivity of the map defined by G
+gives (baξ , b) = (b0 aξ0 , b0 ). Equality of the second coordinates implies b = b0 , and cancellation
+of this unit in the first gives aξ = aξ0 , hence ξ = ξ 0 . The map is therefore injective. Since
+the 2n elements ±X j , 0 ≤ j < n, are distinct in the coefficient basis, the counting assertion
+follows.
+    To compute the inverse, apply Lemma 2.3 to recover the unique multipliers (a, b) from v.
+The coefficient array of b identifies its sign and exponent, so multiplying a by b−1 is a signed
+shift. The first s coefficients of ab−1 = aξ are precisely ξ1 , . . . , ξs . Exact linear algebra and
+the signed shift take polynomial bit time. Moreover, the input vector has O(n log(M + 2))
+bits, which is polynomial in ` by Proposition 4.2. Thus recovery is polynomial time in the
+original instance length as well.
+
+
+                                                 13
+Corollary 4.4. Exact shortest-vector search for the modules in Theorem 1.1 is NP-hard
+under deterministic polynomial-time Turing reductions.
+
+Proof. Given a Subset Sum instance, construct (n, G, M ) and query an exact shortest-vector
+oracle on (n, G). Let v be the returned shortest nonzero vector. The first column of G has
+norm 2M , so kvk∞ ≤ 2M in every instance. Its 2n integer coefficients therefore require
+O(n log(M + 2)) = O(`2 ) bits. Reading the oracle output and computing its maximum
+coefficient norm are consequently polynomial-time operations. By (4.7), the original instance
+is YES exactly when kvk∞ ≤ M . This decides binary Subset Sum with one oracle call
+and polynomial additional computation. On YES instances, Corollary 4.3 also recovers a
+satisfying assignment from v in polynomial bit time.
+
+
+5    Conclusion
+We proved deterministic NP-completeness of exact SVP in the coefficient maximum norm for
+full-rank free rank-two modules over power-of-two cyclotomic rings. The reduction combines
+the Boolean encoding of Subset Sum with an explicit multiplier filter. This filter controls
+every ring multiplier of a short vector, permitting normalization by a signed monomial and
+recovery of a satisfying assignment. The same construction also establishes NP-hardness of
+exact shortest-vector search.
+    The proof uses individual coefficient bounds to turn skew-adjoint orthogonality into
+vanishing conditions. Extending this construction to finite-p norms or to rank-one ideals
+would require a different way to obtain this rigidity or to enforce the Boolean constraints. A
+fixed relative approximation gap would likewise require stronger norm separation than the
+additive gap established here.
+
+
+References
+ [1] M. Ajtai. The shortest vector problem in L2 is NP-hard for randomized reductions
+     (extended abstract). In Proceedings of STOC, pp. 10–19, ACM, 1998.
+     doi:10.1145/276698.276705.
+
+ [2] H. Cohen. A Course in Computational Algebraic Number Theory. Graduate Texts in
+     Mathematics 138, Springer, 1993. doi:10.1007/978-3-662-02945-9.
+
+ [3] M. R. Garey and D. S. Johnson. Computers and Intractability: A Guide to the Theory
+     of NP-Completeness. W. H. Freeman, 1979.
+
+ [4] R. M. Karp. Reducibility among combinatorial problems. In Complexity of Computer
+     Computations, pp. 85–103. Plenum Press, 1972. doi:10.1007/978-1-4684-2001-2_9.
+
+ [5] A. Langlois and D. Stehlé. Worst-case to average-case reductions for module lattices.
+     Designs, Codes and Cryptography, 75(3):565–599, 2015. doi:10.1007/s10623-014-9938-4.
+
+ [6] J. Liu, Y. Feng, and Y. Pan. SVP is NP-hard for some rank-2 cyclotomic modules.
+     arXiv:2609.01469v1, preprint, 2026.
+
+ [7] V. Lyubashevsky, C. Peikert, and O. Regev. On ideal lattices and learning with errors
+     over rings. Journal of the ACM, 60(6):43:1–43:35, 2013. doi:10.1145/2535925.
+
+ [8] D. E. Martin. NP-hardness of ideal lattice problems. arXiv:2609.15813v1, preprint,
+     2026.
+
+
+                                             14
+ [9] D. Micciancio. The shortest vector in a lattice is hard to approximate to within some
+     constant. SIAM Journal on Computing, 30(6):2008–2035, 2001.
+     doi:10.1137/S0097539700373039.
+
+[10] National Institute of Standards and Technology. Module-Lattice-Based
+     Key-Encapsulation Mechanism Standard. Federal Information Processing Standards
+     Publication 203, 2024. doi:10.6028/NIST.FIPS.203.
+
+[11] National Institute of Standards and Technology. Module-Lattice-Based Digital Signature
+     Standard. Federal Information Processing Standards Publication 204, 2024.
+     doi:10.6028/NIST.FIPS.204.
+
+[12] O. Regev. On lattices, learning with errors, random linear codes, and cryptography.
+     Journal of the ACM, 56(6):34:1–34:40, 2009. doi:10.1145/1568318.1568324.
+
+[13] P. van Emde Boas. Another NP-complete partition problem and the complexity of
+     computing short vectors in a lattice. Technical Report 81-04, Mathematisch Instituut,
+     University of Amsterdam, 1981. Original report.
+
+[14] D. Wan. NP-hardness of SVP in Euclidean space. arXiv:2603.27398v3, preprint, 2026.
+
+[15] D. Wan. Euclidean SVP is deterministically NP-hard to approximate within any
+     constant factor. arXiv:2608.12664v2, preprint, 2026.
+
+[16] D. Wan. Euclidean SVP is NP-hard for cyclic lattices. arXiv:2609.16711v1, preprint,
+     2026.
+
+[17] L. C. Washington. Introduction to Cyclotomic Fields, second edition. Graduate Texts in
+     Mathematics 83, Springer, 1997. doi:10.1007/978-1-4612-1934-7.
+
+
+
+
+                                            15
+

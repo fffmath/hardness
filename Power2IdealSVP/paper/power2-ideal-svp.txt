@@ -1,0 +1,262 @@
+      Coefficient infinity-norm SVP on principal cyclotomic ideals
+
+
+                                          27 October 2026
+
+
+1     Coefficient-infinity SVP on principal power-of-two cyclotomic
+      ideals
+Theorem 1. For the fixed ring family Rn = Z[X]/(X n + 1), with n ranging over powers of two,
+the following problem is NP-complete under deterministic polynomial-time many-one reductions:
+given f ∈ Rn \ {0} and an integer r ≥ 1, decide whether λ1,∞ (f Rn ) ≤ r, where the norm is the
+coefficient infinity norm. The input lists the n integer coefficients of f and encodes r in binary.
+    The argument below is purely theoretical. The dimension grows along the predefined power-
+of-two family; it does not assert hardness in one constant numerical dimension. No conclusion for
+coefficient Euclidean norm, canonical infinity norm, or constant-factor approximation is inferred
+from this theorem. The reduction has an additive gap: YES instances have λ1,∞ ≤ r, while NO
+instances have λ1,∞ ≥ r + 2. The radius can have exponentially large numerical value, so this
+does not yield a constant-factor approximation gap.
+
+1.1    A source graph encoded by integer differences
+We reduce from CLIQUE on a graph Γ with vertex set {1, . . . , v} and a target 3 ≤ h ≤ v. Put
+b0 = 3v 3 + 1 and
+             ai = i + b0 i2 + b20 i3 ,   A0 = max ai ,    D = {|ai − aj | : ij ∈ E(Γ)}.
+                                                i
+
+These labels have the following three-term uniqueness property: equality of two sums of three
+labels, allowing repetitions, implies equality of the two index multisets. Indeed there is no carry
+in base b0 , so the first three power sums of the three indices agree; Newton’s identities determine
+their monic cubic. In particular, nonzero ordered differences of labels are unique. All labels are
+polynomially bounded in v.
+Lemma 1 (Difference-clique extraction). If an integer set P has at least three elements and
+every positive pair difference of P belongs to D, then its size is at most v and its elements have
+the form
+                                t + ε{ai : i ∈ C},    ε ∈ {−1, 1},
+for a clique C of Γ.
+Proof. Translate one element of P to zero. Every nonzero remaining element uniquely has
+the form ai − aj , with ij an edge. For two distinct such elements ai − aj and ak − al , their
+difference is ap − aq for an edge pq. Three-term uniqueness therefore gives {i, l, q} = {j, k, p}
+as multisets. If i 6= k, then i 6= j implies i = p, whence {l, q} = {j, k}. Since k 6= l, this forces
+l = j. Thus any two representing ordered pairs share their first or their second coordinate. A
+family of at least two distinct pairs with this property lies in a single row or a single column:
+if two share their first coordinate but have distinct second coordinates, every other pair must
+share that first coordinate; the column case is symmetric. Their other indices, together with
+the common index, form a source clique, by uniqueness of ordered differences. This gives the
+asserted representation.
+
+                                                    1
+1.2   A precise sparse-spin source
+For W ⊆ {0, . . . , n − 1} of nonzero odd size, let σ ∈ {0, 1, −1}n have support W and alternate in
+sign on the increasing list of its support. Its initial sign is irrelevant. Extend it antiperiodically
+by σi+n = −σi . For an integer multiplier G ∈ Rn , put
+
+                                        Θ(G) = max min σi (Gσ)i .
+                                                    W 6=∅ i∈W
+                                                   |W | odd
+
+The multiplication matrix and all inner products below refer to the coefficient basis. For X ∗ =
+X −1 , a skew-adjoint multiplier satisfies hz, Azi = 0 for real vectors z.
+   Fix Q = 16 and write R0 = QA0 + 2. Choose n to be the least power of two greater than
+8R0 + 16. In particular n = poly(v). Define the allowed positive distances
+                                          [
+                       E+ = {1, 2} ∪          {Qd − 1, Qd, Qd + 1, Qd + 2}.
+                                               d∈D
+
+All these distances are at most R0 < n/8. Allowed cyclic differences are exactly E+ ∪ (−E+ )
+modulo n. The positive windows are formed only for positive d ∈ D; their negative windows are
+their reflections. In particular, no five-point window is introduced by symmetrizing its center.
+    List the forbidden unsigned cyclic distances as
+                                                                      s−1
+                                                                      X
+                {d0 , . . . , ds−1 } = {1, . . . , n/2} \ E+ ,   A=         5j (X dj − X −dj ).
+                                                                      j=0
+
+Define the self-adjoint small interaction
+                       X
+                  T =     (X Qd + X −Qd + X Qd+2 + X −Qd−2 ),                  RT = kT k1 ,
+                        d∈D
+
+and choose the explicit integers
+
+  C = RT + h + 1,       τ = C + h − 1,         L = 2C + RT + τ + 1,         G = LA − C(X + X −1 ) + T.
+
+Lemma 2 (Forbidden-distance guard). If an odd alternating support σ satisfies σi (Gσ)i ≥ τ on
+its support, then every pair of its support positions has an allowed cyclic difference.
+
+Proof. At a support coordinate where the integer σi (Aσ)i were negative, the whole field would
+be at most −L + 2C + RT < τ . Thus all these skew fields are nonnegative. Their sum is
+hσ, Aσi = 0, so all are zero, and hence (Aσ)i = 0 on the support. For each such coordinate,
+                                   X
+                                      5j ((X dj − X −dj )σ)i = 0.
+                                         j
+
+Each digit is an integer in [−2, 2]; uniqueness of balanced base-five representation makes every
+digit zero.
+    It remains to verify that zero active fields of Ad = X d − X −d exclude a support pair at
+distance d. The equation is σi−d = σi+d at every support coordinate. If one step-d pair were
+nonzero, these equations would propagate nonzero values throughout that step-d orbit, and
+would make them periodic with step 2d. The orbit length ` = n/ gcd(n, d) is an even power of
+two, and `d is an odd multiple of n. Iterating the period `/2 times contradicts antiperiodicity.
+This applies also to d = n/2. Thus no forbidden support pair exists.
+
+
+
+
+                                                         2
+1.3   The forced support geometry
+Lemma 3 (Exactly one trimer). A support satisfying the preceding field inequalities consists
+of dimers (runs of length two) and exactly one trimer (a run of length three). All runs lie in
+one short integer interval. After cutting at the long empty circular gap, let the trimer start at
+t. Every dimer to its left starts at t + Qq and every dimer to its right at t + Qq + 1, for some
+integer q. The set of these integers q, together with 0 for the trimer, has every positive pair
+difference in D.
+
+Proof. The forbidden guard makes the skew fields zero, so all active fields reduce to those of
+−C(X + X −1 ) + T . Adjacent active signs are opposite. A support point with no adjacent
+support neighbor therefore has field at most RT < τ , and cannot occur. Since distance three is
+forbidden, every run has length two or three. A one-zero gap would put the last point of one run
+at distance three from the second point of the next; a two-zero gap would put the two endpoints
+at distance three. Thus gaps have at least three zeros.
+      Every pair of support points has circular distance at most R0 . To see that they lie in a
+short interval, move one to zero and represent the others in [−R0 , R0 ]. The difference of the two
+extreme representatives is at most 2R0 < n − R0 , so its circular distance can be at most R0 only
+if that difference itself is at most R0 . Thus the entire support lies in an integer interval of length
+at most R0 . The complementary circular gap has length at least n−R0 , giving a consistent linear
+ordering. Multiplication by a monomial X k is a signed cyclic permutation which commutes with
+every multiplier. It preserves each local field under the induced permutation: if a coordinate
+changes sign, both factors in σi (Gσ)i change sign. We may therefore place the entire short arc in
+[0, R0 ]. All interactions between support positions can now be computed on this integer interval,
+without a negative-cyclic boundary crossing.
+      Two distinct trimers, whose start difference is δ ≥ 6, would supply all five distances δ −
+2, . . . , δ + 2. They are larger than two and hence must lie in far windows. Such windows have
+length four and are separated by at least Q − 3 > 1, so they cannot contain five consecutive
+distances. There is at most one trimer; odd support size forces exactly one.
+      For a left dimer with start p < t, its differences to the trimer are the four consecutive values
+(t − p) + {−1, 0, 1, 2}. These fit an allowed far window only if t − p = Qd for some d ∈ D. For a
+right dimer with start p > t, those four values are (p − t) + {−2, −1, 0, 1}, forcing p − t = Qd + 1.
+Thus the asserted start positions follow. For two dimers on the same side, their three pairwise
+distance values are Q|q − q 0 | + {−1, 0, 1}; these lie in a window only if |q − q 0 | ∈ D. For two on
+opposite sides the values are Q(q 0 − q) + {0, 1, 2}, with the same conclusion. This proves the last
+assertion.
+
+   Conversely, take any source clique, select one label for the trimer, place the other components
+according to the start rules in the lemma, and make the remaining components dimers. All
+component differences then fit the prescribed windows. Their separations are at least Q − 2,
+and they fit within an interval of length at most QA0 + 3 < n/2. This constructs an admissible
+odd support with exactly the desired number of components.
+
+1.4   The endpoint interaction table
+At a trimer center the nearest-neighbor contribution is 2C, so its whole small field is at least
+2C − RT > τ . At each run endpoint that contribution is C; it remains to compute σi (T σ)i there.
+   Use coordinates relative to the trimer start, retaining the integer lifts in the short interval,
+and choose its signs as (+, −, +). A left dimer has signs (+, −) and start Qq, while a right
+dimer has signs (−, +) and start Qq + 1. Around a positive edge difference center Qd, the four
+coefficients of T are
+                            (tQd−1 , tQd , tQd+1 , tQd+2 ) = (0, 1, 0, 1),
+
+
+
+                                                  3
+with self-adjoint reflection at negative distances. Contributions from distinct components are as
+follows:
+                      receiver and sender           receiver endpoint contributions
+           dimer from another dimer, on either side              (1, 1)
+                    trimer from any dimer                        (1, 1)
+                    left dimer from trimer                       (2, 1)
+                   right dimer from trimer                       (1, 2)
+
+For example a left dimer to the trimer’s left has start −Qd. Its first endpoint receives tQd −
+tQd+1 + tQd+2 = 2, while its second endpoint receives −tQd−1 + tQd − tQd+1 = 1. The other rows
+follow by the same two- or three-term sums. There are no within-component contributions from
+T.
+    If there are q components, the trimer’s two endpoint fields from T are exactly q − 1. Every
+dimer has endpoint fields q − 1 and q. Consequently
+
+                                       min           σi (T σ)i = q − 1.
+                                  i a run endpoint
+
+The small-field inequalities hold exactly when q ≥ h. Combining the forbidden guard, the
+geometric classification, the difference-clique extraction, and the converse construction, we have
+proved the exact decision equivalence
+
+                              Γ has an h-clique             ⇐⇒    Θ(G) ≥ τ.                     (1)
+
+1.5   From sparse spins to full signs and to a principal ideal
+For completeness, define the full-sign local-field objective
+
+                                  Ψ(K) =          max       min si (Ks)i .
+                                                s∈{−1,1}n    i
+
+
+Write S = 1 + X + · · · + X n−1 . Put H = G(1 − X), RH = kHk1 , B = RH + 2τ + 1, and
+K = BX + H. For a full sign vector s, set e = (1 − X)s.Q The support of e consists of
+its negative-cyclic domain walls. Their number is odd, since i si si−1 = −1. At these walls
+ei = 2si , so e = 2σ for an odd alternating support.
+                                                 P Conversely, given an odd alternating support,
+put s = Sσ. If its initial sign is positive, then j σj = 1 and
+                                          X            X
+                                 si = 2         σj −        σj ∈ {−1, 1};
+                                          j≤i           j
+
+the negative initial sign gives the negative full sign vector. Since (1 − X)S = 2, this construction
+satisfies (1 − X)s = 2σ, proving that every such support arises. The local field of BX is B at
+non-walls and −B at walls. Since the perturbation field has absolute value at most RH < B,
+the minimum is always on a wall. Therefore
+
+                                      Ψ(K) = −B + 2Θ(G).                                        (2)
+
+   The identities (1 − X)S = 2 and XS = S − 2 show
+
+                 SRn = 2Rn + ZS = {y : all coefficients have the same parity}.
+
+Its infinity-norm-one vectors are exactly all full sign vectors, and any other nonzero vector has
+infinity norm at least two. Let
+
+              RK = kKk1 ,     M = 3RK + 1,           f = (M − K)S,           r = M + B − 2τ.
+
+                                                       4
+Multiplication by M − K satisfies
+
+                               k(M − K)yk∞ ≥ (M − RK )kyk∞ .
+
+On a full sign vector, its norm is M − mini si (Ks)i ≤ M + RK . All other nonzero y ∈ SRn give
+norm at least 2(M − RK ) > M + RK . Thus
+
+                          λ1,∞ (f Rn ) = M − Ψ(K) = M + B − 2Θ(G).                             (3)
+
+Equations (1)–(3) give precisely the required SVP threshold equivalence. In particular f 6= 0.
+The identities themselves hold without a promise on the intermediate local-field threshold. The
+chosen clock amplitude makes the output radius positive, since r = M + RH + 1. In a NO
+instance, the integer Θ(G) is at most τ − 1, so equation (3) gives λ1,∞ (f Rn ) ≥ r + 2. This is an
+additive gap only and does not imply a constant-factor hardness result.
+    All integers have polynomial encoding length. The labels are polynomially bounded, n
+is polynomial in the source size, and the largest guard coefficient 5s−1 has O(n) bits. All
+subsequent sums, products, and norm bounds retain polynomial bit length. Ring generators
+and their negacyclic multiplication bases are therefore constructible in polynomial time. Finally,
+membership in NP follows by providing a nonzero integral coefficient vector v with |vi | ≤ r, whose
+encoding has O(n log(r + 1)) bits. The multiplication matrix mf is nonsingular; rational linear
+algebra computes m−1 f v and checks that its entries are integral. This verifies ideal membership
+in polynomial time and completes the proof of the theorem.
+
+1.6   A concrete obstruction to reusing the layer at finite exponents
+The failure to infer finite-p hardness has a direct short-vector explanation. Keep f = (M − K)S,
+RK = kKk1 , and M = 3RK + 1. For every fixed real 1 ≤ p < ∞ and n ≥ 4p , every full sign
+vector satisfies
+
+                 k(M − K)skp ≥ (M − RK )n1/p ≥ 4(M − RK ) > 2(M + RK ).
+
+Here convolution has operator norm at most RK on coefficient `p . In contrast, 2 ∈ SRn gives
+the nonzero ideal vector
+
+                      2(M − K) ∈ f Rn ,       k2(M − K)kp ≤ 2(M + RK ).
+
+Thus no image of the full sign layer can be a finite-p shortest vector in these dimensions. In
+particular, for p = 2 the obstruction already applies when n ≥ 16. This rules out the direct
+reuse of this specific minimum-layer argument; it does not give an algorithm for arbitrary ideals
+or rule out a different finite-p reduction.
+
+
+
+
+                                                5
+

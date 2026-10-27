@@ -1,7 +1,9 @@
 name = "hardness"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["IdealCVP", "Rank2ModuleSVP", "Power2ModuleSVP"]
+defaultTargets = [
+  "IdealCVP", "Rank2ModuleSVP", "Power2ModuleSVP", "Power2ModuleSVPSubsetSum", "Power2IdealSVP"
+]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -29,3 +31,9 @@ rev = "ba134c185f6b76f68bd31c3a6b89abe8afd0f3c6"
 
 [[lean_lib]]
 name = "Power2ModuleSVP"
+
+[[lean_lib]]
+name = "Power2ModuleSVPSubsetSum"
+
+[[lean_lib]]
+name = "Power2IdealSVP"
