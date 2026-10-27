@@ -17,11 +17,6 @@ theorem one_le_pairSup_of_ne_zero {d : ℕ} (v : Coeff d × Coeff d) (hv : v ≠
   have h : pairSup v ≠ 0 := fun h => hv ((pairSup_eq_zero_iff v).mp h)
   omega
 
-/-- Nonzero coefficient pairs have positive maximum norm. -/
-theorem pairSup_pos_iff {d : ℕ} (v : Coeff d × Coeff d) :
-    0 < pairSup v ↔ v ≠ 0 := by
-  rw [Nat.pos_iff_ne_zero, ne_eq, pairSup_eq_zero_iff]
-
 /-- A negative decision answer gives an additive unit gap for every nonzero module vector. -/
 theorem not_ModuleYes_iff_gap {d : ℕ} (a b : Coeff d × Coeff d) (M : ℕ) :
     ¬ModuleYes a b M ↔
@@ -56,12 +51,5 @@ theorem firstMinimum_of_ModuleYes_of_short_eq {d : ℕ}
   by_cases hn : pairSup (moduleVector a b u v) ≤ M
   · exact (hexact u v hne hn).ge
   · omega
-
-/-- Radius zero never contains a nonzero integral module vector. -/
-theorem not_ModuleYes_zero {d : ℕ} (a b : Coeff d × Coeff d) :
-    ¬ModuleYes a b 0 := by
-  rintro ⟨u, v, hne, hn⟩
-  have := one_le_pairSup_of_ne_zero _ hne
-  omega
 
 end Power2ModuleSVPSubsetSum.Reduction

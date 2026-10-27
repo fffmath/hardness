@@ -114,9 +114,11 @@ def positiveReduce (w : List ℕ) (B : ℕ) : SVPInput :=
   ((n, (scale n 2 p.H, constant n (2 * (p.M : ℤ))),
     (topRight, scale n (-(p.M : ℤ)) p.u)), p.M)
 
+/-- Scaling produces exactly the requested number of coefficients. -/
 @[simp] theorem length_scale (n : ℕ) (c : ℤ) (a : List ℤ) :
     (scale n c a).length = n := by simp [scale]
 
+/-- The stored constant has exactly the requested degree. -/
 @[simp] theorem length_constant (n : ℕ) (c : ℤ) :
     (constant n c).length = n := by simp [constant]
 

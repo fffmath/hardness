@@ -38,12 +38,6 @@ theorem M_pos {m : ℕ} (H V : Coeff (2 * m)) : 0 < M H V := by
   unfold M
   omega
 
-/-- Both error scales are strictly dominated by the main scale. -/
-theorem M_dominates {m : ℕ} (H V : Coeff (2 * m)) :
-    L H V * rho m + nu V + F H < M H V := by
-  unfold M
-  omega
-
 /-- The distinguished coefficient of the multiplier filter is exactly `M`. -/
 theorem Q_zero {m : ℕ} (hm : 0 < m) (H V : Coeff (2 * m)) :
     Q H V ⟨0, by omega⟩ = (M H V : ℤ) := by
