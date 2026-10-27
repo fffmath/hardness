@@ -1,5 +1,4 @@
 import Power2IdealSVP.Algebra.SpinBasic
-import Mathlib.Data.Finset.Lattice.Fold
 
 /-!
 # Sparse spins and their finite local-field objective
@@ -28,6 +27,7 @@ theorem antiperiodicExtension_antiperiodic {n : ℕ} (σ : Coeff n) :
 def support {n : ℕ} (σ : Coeff n) : Finset (Fin n) :=
   Finset.univ.filter fun i => σ i ≠ 0
 
+/-- Membership in the support means the coefficient is nonzero. -/
 @[simp] theorem mem_support {n : ℕ} (σ : Coeff n) (i : Fin n) :
     i ∈ support σ ↔ σ i ≠ 0 := by simp [support]
 
@@ -71,6 +71,7 @@ The definition has no promise concerning `G` or a decision threshold.
 noncomputable def Theta {n : ℕ} (G : Coeff n) : ℤ :=
   if hs : (spinSet n).Nonempty then (spinSet n).sup' hs (spinValue G) else 0
 
+/-- The finite ternary enumeration contains exactly the ternary arrays. -/
 theorem mem_ternaryCoeffs {n : ℕ} (σ : Coeff n) :
     σ ∈ ternaryCoeffs n ↔ Ternary σ := by
   classical
@@ -89,6 +90,7 @@ theorem mem_ternaryCoeffs {n : ℕ} (σ : Coeff n) :
     funext i
     rcases h i with hi | hi | hi <;> simp [f, hi]
 
+/-- The finite spin enumeration contains exactly the odd alternating arrays. -/
 @[simp] theorem mem_spinSet {n : ℕ} (σ : Coeff n) :
     σ ∈ spinSet n ↔ OddAlternating σ := by
   classical
@@ -151,10 +153,12 @@ theorem Ternary.cube {n : ℕ} {σ : Coeff n} (hσ : Ternary σ) :
   intro i
   rcases hσ i with hi | hi | hi <;> simp [hi]
 
+/-- Global sign reversal preserves the support. -/
 @[simp] theorem support_neg {n : ℕ} (σ : Coeff n) : support (-σ) = support σ := by
   ext i
   simp
 
+/-- Global sign reversal preserves the support rank. -/
 @[simp] theorem supportRank_neg {n : ℕ} (σ : Coeff n) (i : Fin n) :
     supportRank (-σ) i = supportRank σ i := by simp [supportRank]
 

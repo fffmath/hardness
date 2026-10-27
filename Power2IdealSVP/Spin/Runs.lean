@@ -1,6 +1,3 @@
-import Mathlib.Data.Finset.Card
-import Mathlib.Data.Finset.Lattice.Union
-import Mathlib.Data.Int.Interval
 import Mathlib.Tactic
 
 /-!
@@ -30,6 +27,7 @@ def runStarts (W : Finset ℤ) : Finset ℤ := W.filter fun p => p - 1 ∉ W
 def runBlock (W : Finset ℤ) (p : ℤ) : Finset ℤ :=
   if p + 2 ∈ W then {p, p + 1, p + 2} else {p, p + 1}
 
+/-- A run starts precisely at an active position with an inactive predecessor. -/
 @[simp] theorem mem_runStarts {W : Finset ℤ} {p : ℤ} :
     p ∈ runStarts W ↔ p ∈ W ∧ p - 1 ∉ W := by
   simp [runStarts]

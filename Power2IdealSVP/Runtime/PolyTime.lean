@@ -1,6 +1,4 @@
 import Power2IdealSVP.Runtime.Construction
-import IdealCVP.Complexity.Verifier
-import Complexity.Computability.Machines.Turing.MultiTape.Complexity.PolyTime.Nat.Log
 
 /-!
 # Native polynomial-time certificates for the ideal SVP reduction

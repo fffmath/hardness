@@ -44,6 +44,7 @@ def smallAnswer (x : Graph × ℕ) : Bool :=
   decide (x.2 = 0) || (decide (x.2 = 1) && decide (0 < vertexCount x.1)) ||
     (decide (x.2 = 2) && !(normalEdges x.1).isEmpty)
 
+/-- Normalization preserves the set of declared vertex labels. -/
 @[simp] theorem mem_graphVertices {G : Graph} {a : ℕ} :
     a ∈ graphVertices G ↔ a ∈ G.1 := G.mem_distinctVertices
 

@@ -98,9 +98,11 @@ theorem difference_mul_injective {n : ℕ} (hn : 0 < n) :
 def prefixSum {n : ℕ} (a : Coeff n) (k : ℕ) : ℤ :=
   ∑ i : Fin n, if i.val < k then a i else 0
 
+/-- The empty prefix has sum zero. -/
 @[simp] theorem prefixSum_zero {n : ℕ} (a : Coeff n) : prefixSum a 0 = 0 := by
   simp [prefixSum]
 
+/-- The full prefix sums all coefficients. -/
 @[simp] theorem prefixSum_all {n : ℕ} (a : Coeff n) : prefixSum a n = ∑ i, a i := by
   simp [prefixSum]
 

@@ -23,6 +23,7 @@ noncomputable def spinSupport {n : ℕ} (σ : Coeff n) : Finset (Fin n) := by
   classical
   exact Finset.univ.filter (fun i => σ i ≠ 0)
 
+/-- Membership in the wall-spin support means the coefficient is nonzero. -/
 @[simp] theorem mem_spinSupport {n : ℕ} (σ : Coeff n) (i : Fin n) :
     i ∈ spinSupport σ ↔ σ i ≠ 0 := by
   classical

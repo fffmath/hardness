@@ -1,4 +1,3 @@
-import Mathlib.Data.Finset.Prod
 import Mathlib.Tactic
 
 /-!

@@ -1,6 +1,5 @@
 import Power2IdealSVP.Runtime.Graph
 import Power2IdealSVP.Problem
-import IdealCVP.Complexity.ListRing
 
 /-!
 # Executable principal ideal reduction
