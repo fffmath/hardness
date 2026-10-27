@@ -21,16 +21,20 @@ def index {v : ℕ} (i : Fin v) : ℤ := (i.val : ℤ) + 1
 def label {v : ℕ} (i : Fin v) : ℤ :=
   index i + (base v : ℤ) * index i ^ 2 + (base v : ℤ) ^ 2 * index i ^ 3
 
+/-- The label base is positive, including for an empty vertex set. -/
 @[simp] theorem base_pos (v : ℕ) : 0 < base v := by unfold base; omega
 
+/-- The one-based vertex index is positive. -/
 @[simp] theorem index_pos {v : ℕ} (i : Fin v) : 0 < index i := by
   unfold index
   omega
 
+/-- Every one-based vertex index is at most the vertex count. -/
 theorem index_le {v : ℕ} (i : Fin v) : index i ≤ v := by
   unfold index
   exact_mod_cast Nat.succ_le_of_lt i.isLt
 
+/-- One-based indexing preserves distinct vertices. -/
 theorem index_injective {v : ℕ} : Function.Injective (@index v) := by
   intro i j h
   apply Fin.ext

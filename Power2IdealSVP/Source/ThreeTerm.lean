@@ -1,4 +1,3 @@
-import Mathlib.Data.Multiset.MapFold
 import Mathlib.Tactic
 
 /-!

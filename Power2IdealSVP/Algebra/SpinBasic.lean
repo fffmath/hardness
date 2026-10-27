@@ -1,5 +1,4 @@
 import Power2ModuleSVP.Coset.ParityBlock
-import Mathlib.Algebra.Field.Periodic
 
 /-!
 # Sparse-spin coefficient arithmetic
@@ -18,14 +17,18 @@ open IdealCVP.Cyclotomic
 /-- The sign `(-1)^q`, including for negative integer exponents. -/
 def signZ (q : ℤ) : ℤ := (q.negOnePow : ℤ)
 
+/-- The sign at exponent zero is positive. -/
 @[simp] theorem signZ_zero : signZ 0 = 1 := by simp [signZ]
 
+/-- Addition of integer exponents multiplies their signs. -/
 @[simp] theorem signZ_add (p q : ℤ) : signZ (p + q) = signZ p * signZ q := by
   simp [signZ, Int.negOnePow_add]
 
+/-- Increasing an integer exponent by one reverses its sign. -/
 @[simp] theorem signZ_add_one (q : ℤ) : signZ (q + 1) = -signZ q := by
   simp [signZ, Int.negOnePow_add]
 
+/-- Negating an integer exponent preserves its sign. -/
 @[simp] theorem signZ_neg (q : ℤ) : signZ (-q) = signZ q := by
   simp [signZ, Int.negOnePow_neg]
 
@@ -33,9 +36,11 @@ def signZ (q : ℤ) : ℤ := (q.negOnePow : ℤ)
 theorem signZ_cases (q : ℤ) : signZ q = 1 ∨ signZ q = -1 := by
   rcases Int.units_eq_one_or q.negOnePow with h | h <;> simp [signZ, h]
 
+/-- Every integer power of minus one has absolute value one. -/
 @[simp] theorem abs_signZ (q : ℤ) : |signZ q| = 1 := by
   rcases signZ_cases q with h | h <;> simp [h]
 
+/-- Every integer power of minus one squares to one. -/
 @[simp] theorem signZ_sq (q : ℤ) : signZ q * signZ q = 1 := by
   rcases signZ_cases q with h | h <;> simp [h]
 

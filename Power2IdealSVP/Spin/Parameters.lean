@@ -1,5 +1,4 @@
 import Power2IdealSVP.Algebra.SpinBasic
-import Mathlib.Data.Nat.Log
 
 /-!
 # Sparse-spin parameters and distance windows

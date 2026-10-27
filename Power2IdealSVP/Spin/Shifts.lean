@@ -1,5 +1,4 @@
 import Power2IdealSVP.Spin.Defs
-import Power2ModuleSVP.Coset.ParityBlock
 
 /-!
 # Signed shifts preserve local fields

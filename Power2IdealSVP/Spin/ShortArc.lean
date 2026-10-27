@@ -1,4 +1,3 @@
-import Mathlib.Data.Finset.Max
 import Mathlib.Tactic
 
 /-!

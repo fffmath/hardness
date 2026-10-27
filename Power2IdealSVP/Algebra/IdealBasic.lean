@@ -19,9 +19,11 @@ def coeffL1 {n : ℕ} (a : Coeff n) : ℤ := ∑ i, |a i|
 /-- The coefficient maximum norm, viewed as an integer. -/
 def normInf {n : ℕ} (a : Coeff n) : ℤ := (coeffSup a : ℤ)
 
+/-- The integer-valued coefficient maximum norm is nonnegative. -/
 @[simp] theorem normInf_nonneg {n : ℕ} (a : Coeff n) : 0 ≤ normInf a := by
   exact Int.natCast_nonneg _
 
+/-- The integer-valued coefficient one-norm is nonnegative. -/
 @[simp] theorem coeffL1_nonneg {n : ℕ} (a : Coeff n) : 0 ≤ coeffL1 a := by
   exact Finset.sum_nonneg (fun _ _ => abs_nonneg _)
 
@@ -47,6 +49,7 @@ theorem normInf_le {n : ℕ} (a : Coeff n) {b : ℤ} (hb : 0 ≤ b)
     normInf a ≤ (b.toNat : ℤ) := by unfold normInf; exact_mod_cast h'
     _ = b := Int.toNat_of_nonneg hb
 
+/-- The zero coefficient array has maximum norm zero. -/
 @[simp] theorem normInf_zero {n : ℕ} : normInf (0 : Coeff n) = 0 := by
   simp [normInf, coeffSup]
 
