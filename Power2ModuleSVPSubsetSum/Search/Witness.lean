@@ -80,8 +80,9 @@ theorem signed_mul_injective {n : ℕ} (hn : 0 < n) {b : Coeff n}
 
 /-- The full gadget map has unique multipliers, proved directly from its two coordinates. -/
 theorem gadget_multipliers_injective (w : List ℕ) (B : ℕ) :
-    Function.Injective (fun p : Coeff (2 * halfDegree w.length) × Coeff (2 * halfDegree w.length) =>
-      moduleVector (gadgetA w B) (gadgetB w B) p.1 p.2) := by
+    Function.Injective
+      (fun p : Coeff (2 * halfDegree w.length) × Coeff (2 * halfDegree w.length) =>
+        moduleVector (gadgetA w B) (gadgetB w B) p.1 p.2) := by
   rintro ⟨a, b⟩ ⟨a', b'⟩ he
   dsimp only at he
   simp only [gadgetA, gadgetB, model_vector] at he
