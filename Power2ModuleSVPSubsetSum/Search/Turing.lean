@@ -23,6 +23,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace Power2ModuleSVPSubsetSum.Search
+
 open Power2ModuleSVP IdealCVP.Cyclotomic Reduction
 open Turing.MultiTapeTM Turing.MultiTapeTM.ComputableTidilyInPolyTime
 open Cslib Cslib.Complexity
@@ -142,7 +143,7 @@ theorem subsetSum_searchReducible_exactShortest :
   · intro x word h
     exact ⟨answerTest (x, word), rfl, answerTest_correct x word h⟩
 
-/-- A unary reply budget includes framing, sign bits, and both length-degree lists.
+/-- A unary reply budget includes framing, sign bits, and both degree-length lists.
 The radius-zero constant NO case is covered by `2M + 1`. -/
 def answerLimit (x : List ℕ × ℕ) : ℕ :=
   3 * (reduce x).1.1 * (2 * ((encNat (2 * (reduce x).2 + 1)).length + 1) + 1) + 1

@@ -4,7 +4,7 @@ import Power2ModuleSVPSubsetSum.Membership.NP
 import Power2ModuleSVPSubsetSum.Search.Turing
 
 /-!
-# NP-completeness of arbitrary-radius power-of-two module SVP
+# Decision completeness and exact search hardness of power-of-two module SVP
 
 The native polynomial-time coefficient-list reduction from binary Subset Sum,
 its mathematical correctness, and the binary-radius verifier establish
@@ -15,6 +15,7 @@ Paper: `paper/power2svp-subsetsum.pdf`, Theorem 1.1 and Corollary 4.4.
 -/
 
 namespace Power2ModuleSVPSubsetSum
+
 open Turing.MultiTapeTM Cslib.Complexity
 
 /-- Binary Subset Sum reduces in polynomial time to arbitrary-radius module SVP. -/
