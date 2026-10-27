@@ -546,7 +546,7 @@ Specific Lean care points:
 
 ## 16. Reproducible computational checks and their limits
 
-Run from `/workspace/shared/jobs/hardness-power2-new`:
+Run from the audit workspace:
 
 ```sh
 python3 out/auditB/check_combinatorial.py > out/auditB/check_combinatorial_results.json

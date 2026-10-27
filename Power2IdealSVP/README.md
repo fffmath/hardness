@@ -124,13 +124,13 @@ NP verification uses bounded integral multiplier lists and reused Cramer bounds.
 
 ## Build
 
-From the repository root, always use the machine-wide build lock:
+From the repository root:
 
 ```sh
-LAKE_CACHE_DIR=/tmp/hardness-lake-cache /workspace/shared/bin/lake-locked build Power2IdealSVP
+lake build Power2IdealSVP
 ```
 
 For an axiom check, put `import Power2IdealSVP` followed by
 `#print axioms Power2IdealSVP.idealSVP_npComplete` in a temporary Lean file and run
-`LAKE_CACHE_DIR=/tmp/hardness-lake-cache /workspace/shared/bin/lake-locked env lean /tmp/check.lean`.
+`lake env lean Check.lean`.
 The checked theorem uses only `propext`, `Classical.choice`, and `Quot.sound`.

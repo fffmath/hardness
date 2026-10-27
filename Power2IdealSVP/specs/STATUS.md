@@ -76,22 +76,18 @@ Paper §1.6 (finite-`p` obstruction) is outside the formalised scope.
 
 ## Verification
 
-The pre-tidy full locked build passed (7180 jobs), recorded in
-`/tmp/hp2n-bdocs-build.log`. Earlier component and final integration audits
+The full repository build passed (9098 jobs). Earlier component and final integration audits
 also reported only `propext`, `Classical.choice`, and `Quot.sound`.
 
-Post-tidy full build **PASSED** (7180 jobs); headline-signature and axiom checks
+Post-tidy library build **PASSED** (7180 jobs); headline-signature and axiom checks
 **PASSED**, using:
 
 ```sh
-LAKE_CACHE_DIR=/tmp/hardness-lake-cache /workspace/shared/bin/lake-locked build Power2IdealSVP
-LAKE_CACHE_DIR=/tmp/hardness-lake-cache /workspace/shared/bin/lake-locked env lean /tmp/hp2n-bdocs-axioms.lean
+lake build Power2IdealSVP
+lake env lean Check.lean
 ```
 
-Build log: `/tmp/hp2n-bdocs-build-final.log`.
-Axiom/signature script: `/tmp/hp2n-bdocs-axioms.lean`;
-log: `/tmp/hp2n-bdocs-axioms.log`.
-The script checks the five headline signatures, the literal degree bound and
+The check script verifies the five headline signatures, the literal degree bound and
 axioms of completeness, total correctness, and NP membership. All three depend
 on exactly `[propext, Classical.choice, Quot.sound]`.
 

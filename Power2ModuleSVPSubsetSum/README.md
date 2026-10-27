@@ -145,12 +145,12 @@ integer-list multiplier witnesses. Algebra and membership APIs are also reused b
 
 ## Build
 
-From the repository root, use the machine-wide build lock:
+From the repository root, run:
 
 ```sh
-LAKE_CACHE_DIR=/tmp/hardness-lake-cache /workspace/shared/bin/lake-locked build Power2ModuleSVPSubsetSum
+lake build Power2ModuleSVPSubsetSum
 ```
 
-Axiom checks use the same wrapper, `... lake-locked env lean /tmp/check.lean`.
+Axiom checks use `lake env lean Check.lean`.
 The checked decision, rigidity, gap, and search endpoints use only `propext`,
 `Classical.choice`, and `Quot.sound`; see STATUS for the verification record.

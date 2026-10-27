@@ -47,8 +47,7 @@ shared algebra/membership APIs remain available, including uncalled paper-facing
 
 ## Earlier verification (before final root integration)
 
-The earlier documentation checks exited 0, using `LAKE_CACHE_DIR=/tmp/hardness-lake-cache` and
-`/workspace/shared/bin/lake-locked` exclusively:
+The earlier documentation checks exited 0, using the machine-wide build lock:
 
 - Earlier `build Power2ModuleSVPSubsetSum`: successful, 7044 jobs; at that time the root
   imported only Problem. The final full-root check is recorded below.
@@ -56,7 +55,7 @@ The earlier documentation checks exited 0, using `LAKE_CACHE_DIR=/tmp/hardness-l
   `.Search.Shortest`, and `.Rigidity.Bounds`: successful, 7119 jobs, covering the
   changed implementation files. After wrapping a flagged docstring line, the final
   targeted `.Search.Shortest` rebuild passed (7093 jobs) without project warnings.
-- `env lean /tmp/hp2n-adocs-check.lean`: successful. Exact headline signatures and
+- `env lean Check.lean`: successful. Exact headline signatures and
   paper-map declaration names elaborate. All 19 axiom reports (decision/runtime,
   correctness/gaps, rigidity/exact norm, witness/recovery, shortest-vector endpoints)
   contain only `propext`, `Classical.choice`, and `Quot.sound`.
@@ -64,8 +63,6 @@ The earlier documentation checks exited 0, using `LAKE_CACHE_DIR=/tmp/hardness-l
   forbidden-proof-token scans. README/NOTES links resolve; `git diff --check` passes.
 
 Existing dependency module-system warnings remain; changed project files have no warnings.
-Logs: `/tmp/hp2n-adocs-build.log`, `/tmp/hp2n-adocs-endpoints-build.log`,
-`/tmp/hp2n-adocs-shortest-build.log`, `/tmp/hp2n-adocs-check.log`.
 No decision, witness-bijection, or Corollary 4.4 obligations remain. Fixed problem
 interfaces, dependency sources, and other subprojects are unchanged.
 
@@ -143,22 +140,21 @@ unproved resource assumption is needed.
 Successful final targeted build (exit 0):
 
 ```sh
-LAKE_CACHE_DIR=/tmp/hardness-lake-cache /workspace/shared/bin/lake-locked build \
+lake build \
   Power2ModuleSVPSubsetSum.Search.Turing Power2ModuleSVPSubsetSum.Main
 ```
 
-Log: `/tmp/hp2n-asearch2-build6.log`, 7905 jobs. `Search/Shortest.lean` also rebuilt successfully
+The build completed 7905 jobs. `Search/Shortest.lean` also rebuilt successfully
 after replacing its outdated runtime-scope docstring. No new warnings in the changed modules;
 existing dependency module-system warnings were replayed.
 
 Successful declaration, axiom, and executable check (exit 0):
 
 ```sh
-LAKE_CACHE_DIR=/tmp/hardness-lake-cache /workspace/shared/bin/lake-locked env lean \
-  /tmp/hp2n-asearch2-check.lean
+lake env lean Check.lean
 ```
 
-Log: `/tmp/hp2n-asearch2-check.log`. Axiom checks of `exactShortest_domain`,
+Axiom checks of `exactShortest_domain`,
 `subsetSum_searchReducible_exactShortest`, `answer_length_polyBounded`,
 `shortestProgram_polytime`, `shortestProgram_correct`, and both Main hardness theorems
 report only `propext`, `Classical.choice`, and `Quot.sound`.
@@ -179,17 +175,15 @@ as in the other root files. README and NOTES contain the exact search hardness s
 encodings, bounded-reply runtime scope, and one-query guarantee. The repository README
 lists all five subprojects.
 
-Final commands used `LAKE_CACHE_DIR=/tmp/hardness-lake-cache` and only
-`/workspace/shared/bin/lake-locked`:
+Final commands used the machine-wide build lock:
 
 - `build Power2ModuleSVPSubsetSum`: exit 0, 7912 jobs, including all 37 project modules
   and the root. No project warnings; existing dependency module-system warnings remain.
-- `env lean /tmp/hp2n-afinal-check.lean`: exit 0. The three documented Corollary 4.4
+- `env lean Check.lean`: exit 0. The three documented Corollary 4.4
   signatures elaborate against their actual declarations through the root import.
   `#print axioms` on `moduleSVP_npComplete` and `moduleSVP_search_turing_npHard`
   reports only `propext`, `Classical.choice`, and `Quot.sound` for each.
 - Root import coverage, local documentation links, 100-character limits for changed
   Lean files, unchanged theorem/proof bodies, and `git diff --check` pass.
 
-Logs: `/tmp/hp2n-afinal-build.log`, `/tmp/hp2n-afinal-check.log`.
-No obligations remain for hp2n-afinal; no files under `Power2IdealSVP/` were changed.
+No obligations remain for Paper A.

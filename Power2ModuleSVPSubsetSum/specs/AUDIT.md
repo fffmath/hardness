@@ -2,7 +2,7 @@
 
 **Paper:** *ModuleSVP^(2)_∞(Z[ζ_(2^k)]) Is NP-Hard*, supplied as `papers/A.pdf` (15 pages), with extracted text `papers/A.txt`.  
 **Purpose:** check the mathematical reduction and identify the exact obligations for a later Lean 4 formalisation. No Lean implementation is included.  
-**Audit date:** 2026-10-28. All paths below are relative to `/workspace/shared/jobs/hardness-power2-new` unless specified otherwise.
+**Audit date:** 2026-10-28. All paths below are relative to the audit workspace unless specified otherwise.
 
 ## Verdict and how to read this report
 

@@ -9,7 +9,7 @@ by Yansong Feng and coauthors.
 | [Rank2ModuleSVP](Rank2ModuleSVP/README.md) | [SVP Is NP-Hard for Some Rank-2 Cyclotomic Modules, v2](Rank2ModuleSVP/paper/rank2svp_v2.pdf); v1 arXiv:2609.01469 (ePrint 2026/1856) | [Rank2ModuleSVP.lean](Rank2ModuleSVP.lean) | `Rank2ModuleSVP.moduleSVP_npComplete_of`, conditional on `WanPowerSumEstimates`; NP membership unconditional |
 | [Power2ModuleSVP](Power2ModuleSVP/README.md) | [Rank-Two Module SVP in Power-of-Two Cyclotomic Rings](Power2ModuleSVP/paper/power2svp.pdf) | [Power2ModuleSVP.lean](Power2ModuleSVP.lean) | Unconditional `Power2ModuleSVP.moduleSVP_npComplete` and `Power2ModuleSVP.coset_npComplete` |
 | [Power2ModuleSVPSubsetSum](Power2ModuleSVPSubsetSum/README.md) | [ModuleSVP^(2)_∞(Z[ζ_(2^k)]) Is NP-Hard](Power2ModuleSVPSubsetSum/paper/power2svp-subsetsum.pdf) | [Power2ModuleSVPSubsetSum.lean](Power2ModuleSVPSubsetSum.lean) | NP-completeness of coefficient ∞-norm rank-two module SVP on Z[X]/(X^n+1), reduction from binary Subset Sum; headline `Power2ModuleSVPSubsetSum.moduleSVP_npComplete`; one-query exact search hardness `moduleSVP_search_turing_npHard` |
-| [Power2IdealSVP](Power2IdealSVP/) | [Principal-ideal SVP](Power2IdealSVP/paper/power2-ideal-svp.pdf) | [Power2IdealSVP.lean](Power2IdealSVP.lean) | NP-completeness of coefficient ∞-norm SVP on principal ideals of Z[X]/(X^n+1), reduction from CLIQUE; headline `Power2IdealSVP.idealSVP_npComplete` |
+| [Power2IdealSVP](Power2IdealSVP/README.md) | [Principal-ideal SVP](Power2IdealSVP/paper/power2-ideal-svp.pdf) | [Power2IdealSVP.lean](Power2IdealSVP.lean) | NP-completeness of coefficient ∞-norm SVP on principal ideals of Z[X]/(X^n+1), reduction from CLIQUE; headline `Power2IdealSVP.idealSVP_npComplete` |
 
 ## Layout
 
@@ -29,16 +29,13 @@ Toolchain: `leanprover/lean4:v4.36.0-rc1`, Mathlib `v4.36.0-rc1`, complexitylib 
 [lake-manifest.json](lake-manifest.json). From the repository root:
 
 ```sh
-/workspace/shared/bin/lake-locked build  # all five libraries (default targets)
-/workspace/shared/bin/lake-locked build IdealCVP           # principal-ideal CVP and module-SIVP
-/workspace/shared/bin/lake-locked build Rank2ModuleSVP     # odd-prime rank-two module SVP
-/workspace/shared/bin/lake-locked build Power2ModuleSVP    # power-of-two rank-two module SVP and principal cosets
-/workspace/shared/bin/lake-locked build Power2ModuleSVPSubsetSum
-/workspace/shared/bin/lake-locked build Power2IdealSVP
+lake build                    # all five libraries (default targets)
+lake build IdealCVP           # principal-ideal CVP and module-SIVP
+lake build Rank2ModuleSVP     # odd-prime rank-two module SVP
+lake build Power2ModuleSVP    # power-of-two rank-two module SVP and principal cosets
+lake build Power2ModuleSVPSubsetSum  # max-norm module SVP via Subset Sum
+lake build Power2IdealSVP            # principal-ideal SVP via CLIQUE
 ```
-
-Only one Lean build may run on this machine at a time; use the lock wrapper for all builds
-and for `env lean` checks.
 
 If the artifact cache is read-only, prefix commands with
 `LAKE_CACHE_DIR=/tmp/hardness-lake-cache`.
@@ -49,7 +46,8 @@ The formalisation uses no proof placeholders or added axioms. Audits of the main
 report only
 Lean's standard `propext`, `Classical.choice`, and `Quot.sound`. Rank2ModuleSVP's completeness
 result takes `hWan : WanPowerSumEstimates` explicitly; this is a theorem premise, not an added
-axiom. IdealCVP, Power2ModuleSVP, and Power2ModuleSVPSubsetSum completeness are unconditional.
+axiom. IdealCVP, Power2ModuleSVP, Power2ModuleSVPSubsetSum, and Power2IdealSVP completeness are
+unconditional.
 IdealCVP's CVPP consequences
 assume the stated circuits or polynomial advice and query-time bounds.
 
