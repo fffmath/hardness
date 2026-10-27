@@ -11,18 +11,9 @@ the oracle answer has norm at most `2M`. Thus all its integer coefficients are b
 For that map the correct universal bound is `max 1 (2M)`: its fixed NO instance has radius
 zero and shortest norm one. The paper's `2M` bound applies to the gadget, whose `M` is positive.
 
-Infrastructure survey: complexitylib DOES contain `Cslib.Complexity.WordQueryComp`,
-`ComputableInPolyTimeWithOracle`, and `PWithOracle` in
-`Complexity/Computability/Complexity/Classes/Oracle.lean`, and `FNP`, `FPSearch`, `TFNP`,
-`SearchReducible`, and `SearchHard` in `Classes/TFNP.lean`. The latter reductions are between
-search relations, not the decision-to-total-search Turing reduction in this corollary.
-There is no declaration named `TuringReducible` in the surveyed checkout.
-
-This file formalises the mathematical one-query correctness and coefficient bounds. It does
-NOT claim polynomial-time Turing hardness in complexitylib: the gadget construction's
-polynomial-time TM certificate is not yet available in this project, and neither the oracle
-answer encoding/parser nor the oracle program's runtime is certified here. In particular the
-coefficient bound alone is not a formal polynomial bound in the source encoding length.
+`Search/Turing.lean` uses these bounds, the native `reduce_polytime` certificate, and the
+signed-binary vector encoding to prove the full one-query polynomial-time Turing reduction in
+complexitylib's oracle-machine model. This file supplies its mathematical shortest-vector core.
 No new oracle-machine framework is introduced.
 -/
 
