@@ -1,8 +1,47 @@
+import Power2ModuleSVPSubsetSum.Algebra.Adjoint
+import Power2ModuleSVPSubsetSum.Algebra.Norms
+import Power2ModuleSVPSubsetSum.Algebra.Units
+import Power2ModuleSVPSubsetSum.Main
+import Power2ModuleSVPSubsetSum.Membership.Certificates
+import Power2ModuleSVPSubsetSum.Membership.NP
+import Power2ModuleSVPSubsetSum.Membership.PolyTime
+import Power2ModuleSVPSubsetSum.Membership.Radius
+import Power2ModuleSVPSubsetSum.Membership.Verifier
 import Power2ModuleSVPSubsetSum.Problem
+import Power2ModuleSVPSubsetSum.Reduction.Boolean
+import Power2ModuleSVPSubsetSum.Reduction.Bridge
+import Power2ModuleSVPSubsetSum.Reduction.Constants
+import Power2ModuleSVPSubsetSum.Reduction.Construction
+import Power2ModuleSVPSubsetSum.Reduction.Correctness
+import Power2ModuleSVPSubsetSum.Reduction.ExactNorm
+import Power2ModuleSVPSubsetSum.Reduction.ExactVector
+import Power2ModuleSVPSubsetSum.Reduction.Gap
+import Power2ModuleSVPSubsetSum.Reduction.Map
+import Power2ModuleSVPSubsetSum.Reduction.Model
+import Power2ModuleSVPSubsetSum.Reduction.Soundness
+import Power2ModuleSVPSubsetSum.Reduction.Source
+import Power2ModuleSVPSubsetSum.Reduction.UnitAction
+import Power2ModuleSVPSubsetSum.Reduction.UpperBound
+import Power2ModuleSVPSubsetSum.Reduction.Validity
+import Power2ModuleSVPSubsetSum.Reduction.WeightIdentity
+import Power2ModuleSVPSubsetSum.Rigidity.Bounds
+import Power2ModuleSVPSubsetSum.Rigidity.Filter
+import Power2ModuleSVPSubsetSum.Rigidity.Multiplier
+import Power2ModuleSVPSubsetSum.Rigidity.Parameters
+import Power2ModuleSVPSubsetSum.Rigidity.Skew
+import Power2ModuleSVPSubsetSum.Rigidity.Support
+import Power2ModuleSVPSubsetSum.Runtime.Primitives
+import Power2ModuleSVPSubsetSum.Runtime.Reduction
+import Power2ModuleSVPSubsetSum.Search.Shortest
+import Power2ModuleSVPSubsetSum.Search.Turing
+import Power2ModuleSVPSubsetSum.Search.Witness
 
 /-!
-# Power2ModuleSVPSubsetSum
+# Subset Sum hardness of power-of-two module SVP
 
-Library root for the Subset Sum reduction to maximum-norm rank-two module SVP over
-`ℤ[X]/(X^n + 1)`. Modules are added below as the formalisation proceeds.
+Import all modules of the formalisation, including decision NP-completeness and
+exact shortest-vector search hardness under one-query polynomial-time Turing reductions.
+
+Paper: `Power2ModuleSVPSubsetSum/paper/power2svp-subsetsum.pdf`,
+Theorem 1.1 and Corollaries 4.3–4.4.
 -/

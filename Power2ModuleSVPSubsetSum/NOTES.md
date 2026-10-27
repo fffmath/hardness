@@ -37,12 +37,51 @@ multitape Turing machines on explicitly encoded coefficient lists.
 | Corollary 4.3, bijection and count | `Search.witnessEquiv`, `Search.card_shortVectors` | [Search/Witness.lean](Search/Witness.lean) |
 | Corollary 4.3, recovery from multipliers | `Search.recover_correct`, `Search.recover_signed_boolean` | [Search/Witness.lean](Search/Witness.lean) |
 | Corollary 4.4, mathematical threshold test and answer bounds | `Search.positiveReduce_search`, `Search.reduce_search_correct`, `Search.reduce_shortest_bound` | [Search/Shortest.lean](Search/Shortest.lean) |
+| Corollary 4.4, encoded search reduction and bounded oracle runtime | `Search.subsetSum_searchReducible_exactShortest`, `Search.answer_length_polyBounded`, `Search.shortestProgram_polytime`, `Search.shortestProgram_correct`, `Search.shortestProgram_queries` | [Search/Turing.lean](Search/Turing.lean) |
+| Corollary 4.4, hardness for every NP language | `moduleSVP_search_npHard`, `moduleSVP_search_turing_npHard` | [Main.lean](Main.lean) |
 
 The §2.3 row describes reused verification infrastructure; no separate polynomial-time
 algorithm recovering multipliers from an arbitrary vector is claimed by `Search/Witness`.
-Corollary 4.4's full oracle/runtime claim is to be reconciled with the separate
-`Search/Turing.lean` job. The `Search/` docstrings delimit the mathematical results.
-<!-- TODO-for-dispatcher: update the Corollary 4.4 row after integrating Search/Turing.lean. -->
+Corollary 4.4 is proved in [Search/Turing.lean](Search/Turing.lean) and exported by
+[Main.lean](Main.lean). The exact statements below use namespace
+`Power2ModuleSVPSubsetSum`, with `Turing.MultiTapeTM` and `Cslib.Complexity` open.
+
+```lean
+theorem Search.subsetSum_searchReducible_exactShortest :
+    SearchReducible Reduction.encSource IdealCVP.encPairRingArgs
+      (Search.DecisionAnswer SubsetSum) Search.ExactShortest
+
+theorem moduleSVP_search_npHard :
+    HardUnder (fun enc L S => SearchReducible enc IdealCVP.encPairRingArgs
+      (Search.DecisionAnswer L) S) @NP Search.ExactShortest
+
+theorem moduleSVP_search_turing_npHard {α : Type} (enc : α ↪ List Bool) (L : Set α)
+    (hL : L ∈ NP enc) :
+    ∃ program : α → WordQueryComp Unit Bool,
+      Cslib.Probability.IsOraclePPTOn enc encBool
+        (fun a => Cslib.OracleComp.interpret Cslib.ProbOracleComp.query (program a)) ∧
+      (∀ (oracle : Unit × List Bool → List Bool),
+        (∀ x, Power2ModuleSVP.SVPInput.WellFormed x →
+          Search.ExactShortest x (oracle ((), IdealCVP.encPairRingArgs x))) →
+        ∀ a, a ∈ L ↔ Cslib.OracleComp.interpret (m := Id) oracle (program a) = true) ∧
+      (∀ a, ∃ query, ∀ oracle : Unit × List Bool → List Bool,
+        Cslib.OracleComp.queriesWith oracle (program a) = [((), query)])
+```
+
+`Search.ExactShortest` takes a module without a radius, encoded by
+`IdealCVP.encPairRingArgs`, and returns the actual shortest nonzero vector as two
+exact-length signed-binary coefficient lists. Its domain is precisely the wellformed
+module inputs. `Search.DecisionAnswer` represents a decision language by its correct bit.
+The `HardUnder` statement uses that adapter because `NPHard` itself has a decision target.
+
+The deterministic `Search.shortestProgram` makes exactly one query and tests the
+returned vector against the reduction's radius. Its strict `IsOraclePPTOn` certificate
+holds against arbitrary stateful word handlers, including malformed or arbitrarily long
+replies: it reads only `Search.answerLimit x` bits. Every valid shortest answer fits in
+that budget, including signs and list/pair framing; `Search.answer_length_polyBounded`
+bounds it by a polynomial in the binary source length. The budget uses `2M + 1` to
+cover the radius-zero constant NO case. Correctness holds for every valid shortest-vector
+oracle, independent of which shortest vector it returns.
 
 The total source map removes zeros and uses fixed identity instances when normalization
 empties the list. The gadget degree is `2 * 2 ^ Nat.clog 2 (max 2 weights.length)`.

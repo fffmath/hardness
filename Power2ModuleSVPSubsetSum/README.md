@@ -13,8 +13,8 @@ binary. [Problem.lean](Problem.lean) rejects malformed arrays and singular bases
 ## Headline Lean statements
 
 Names are in `Power2ModuleSVPSubsetSum` unless qualified. Import
-`Power2ModuleSVPSubsetSum.Main` for decision completeness; the library root currently
-imports only `Problem`. Import `Search.Witness` and `Search.Shortest` explicitly for search.
+`Power2ModuleSVPSubsetSum` for all modules, including `Main`, `Search.Witness`,
+`Search.Shortest`, and `Search.Turing`. `Main` exports decision and search hardness.
 Read the signatures below inside namespace `Power2ModuleSVPSubsetSum`, with
 `Turing.MultiTapeTM`, `Cslib.Complexity`, and `Power2ModuleSVP` open.
 
@@ -69,13 +69,50 @@ Search.card_shortVectors (w : List ℕ) (B : ℕ) :
 
 `witnessEquiv` is noncomputable; executable recovery on supplied multipliers is proved
 correct by `Search.recover_correct` and `Search.recover_signed_boolean`.
-[Search/Shortest.lean](Search/Shortest.lean) supplies Corollary 4.4's mathematical
-one-query threshold test for every shortest answer, existence, and coefficient bounds.
-For the paper gadget the bound is `2M`; for the total reduction it is `max 1 (2M)`
-because the constant NO instance has radius zero. Consult the `Search/` module docstrings
-for the precise oracle/runtime scope; these mathematical statements alone do not assert
-full polynomial-time Turing hardness.
-<!-- TODO-for-dispatcher: reconcile Corollary 4.4 with the separate Search/Turing.lean job. -->
+[Search/Shortest.lean](Search/Shortest.lean) proves shortest-vector existence,
+threshold correctness for every shortest answer, and coefficient bounds: `2M` for the
+paper gadget and `max 1 (2M)` for the total reduction's radius-zero NO instance.
+
+Corollary 4.4 is proved in [Search/Turing.lean](Search/Turing.lean) and exported by
+[Main.lean](Main.lean). The exact statements below use namespace
+`Power2ModuleSVPSubsetSum`, with `Turing.MultiTapeTM` and `Cslib.Complexity` open.
+
+```lean
+theorem Search.subsetSum_searchReducible_exactShortest :
+    SearchReducible Reduction.encSource IdealCVP.encPairRingArgs
+      (Search.DecisionAnswer SubsetSum) Search.ExactShortest
+
+theorem moduleSVP_search_npHard :
+    HardUnder (fun enc L S => SearchReducible enc IdealCVP.encPairRingArgs
+      (Search.DecisionAnswer L) S) @NP Search.ExactShortest
+
+theorem moduleSVP_search_turing_npHard {α : Type} (enc : α ↪ List Bool) (L : Set α)
+    (hL : L ∈ NP enc) :
+    ∃ program : α → WordQueryComp Unit Bool,
+      Cslib.Probability.IsOraclePPTOn enc encBool
+        (fun a => Cslib.OracleComp.interpret Cslib.ProbOracleComp.query (program a)) ∧
+      (∀ (oracle : Unit × List Bool → List Bool),
+        (∀ x, Power2ModuleSVP.SVPInput.WellFormed x →
+          Search.ExactShortest x (oracle ((), IdealCVP.encPairRingArgs x))) →
+        ∀ a, a ∈ L ↔ Cslib.OracleComp.interpret (m := Id) oracle (program a) = true) ∧
+      (∀ a, ∃ query, ∀ oracle : Unit × List Bool → List Bool,
+        Cslib.OracleComp.queriesWith oracle (program a) = [((), query)])
+```
+
+`Search.ExactShortest` takes a module without a radius, encoded by
+`IdealCVP.encPairRingArgs`, and returns the actual shortest nonzero vector as two
+exact-length signed-binary coefficient lists. Its domain is precisely the wellformed
+module inputs. `Search.DecisionAnswer` represents a decision language by its correct bit.
+The `HardUnder` statement uses that adapter because `NPHard` itself has a decision target.
+
+The deterministic `Search.shortestProgram` makes exactly one query and tests the
+returned vector against the reduction's radius. Its strict `IsOraclePPTOn` certificate
+holds against arbitrary stateful word handlers, including malformed or arbitrarily long
+replies: it reads only `Search.answerLimit x` bits. Every valid shortest answer fits in
+that budget, including signs and list/pair framing; `Search.answer_length_polyBounded`
+bounds it by a polynomial in the binary source length. The budget uses `2M + 1` to
+cover the radius-zero constant NO case. Correctness holds for every valid shortest-vector
+oracle, independent of which shortest vector it returns.
 
 The theorem concerns exact decision SVP in the coefficient maximum norm, with arbitrary
 binary radius. Euclidean/canonical norms, fixed degree, rank-one ideals, and a fixed
@@ -91,8 +128,8 @@ relative approximation gap are outside this result.
 | `Reduction/` | Total source normalization, executable gadget, determinant, exact norm, gaps |
 | `Membership/` | Binary-radius verifier, Cramer witness bounds, native runtime, NP membership |
 | `Runtime/` | Native multitape-TM certificates for primitives and the total reduction |
-| `Search/` | Witness bijection/recovery and shortest-vector consequences |
-| `Main.lean` | Unconditional polynomial reduction, NP-hardness, NP-completeness |
+| `Search/` | Witness bijection/recovery and one-query exact search hardness |
+| `Main.lean` | Decision NP-completeness and exact search hardness |
 | `paper/`, `specs/` | Paper, retained audit, plan, and verification status |
 
 The filter forces each short multiplier to be zero or a signed monomial. Boolean encoding
@@ -103,7 +140,7 @@ integer-list multiplier witnesses. Algebra and membership APIs are also reused b
 `Power2IdealSVP`; existing lattice infrastructure comes from `IdealCVP` and `Power2ModuleSVP`.
 
 [NOTES.md](NOTES.md) maps paper results to declarations and retains detailed API signatures.
-[specs/STATUS.md](specs/STATUS.md) records verification and the remaining search scope;
+[specs/STATUS.md](specs/STATUS.md) records verification and the completed search reduction;
 [specs/AUDIT.md](specs/AUDIT.md) is the historical mathematical audit.
 
 ## Build
